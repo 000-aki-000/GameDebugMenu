@@ -1,2 +1,2 @@
-# 000-aki-000-GameDebugMenu
+# GameDebugMenu
 Debug Menu for UnrealEngine4
