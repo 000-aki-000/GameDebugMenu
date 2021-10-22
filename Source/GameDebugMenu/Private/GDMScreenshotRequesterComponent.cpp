@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2020 akihiko moroi
+* Copyright (c) 2021 akihiko moroi
 *
 * This software is released under the MIT License.
 * (See accompanying file LICENSE.txt or copy at http://opensource.org/licenses/MIT)
@@ -41,7 +41,7 @@ void UGDMScreenshotRequesterComponent::RequestScreenshot()
 	OnScreenshotCapturedHandle         = UGameViewportClient::OnScreenshotCaptured().AddUObject(this, &UGDMScreenshotRequesterComponent::OnScreenshotCaptured);
 	OnScreenshotRequestProcessedHandle = FScreenshotRequest::OnScreenshotRequestProcessed().AddUObject(this, &UGDMScreenshotRequesterComponent::OnScreenshotRequestProcessed);
 
-	/* ƒXƒNƒVƒ‡ŠJn */
+	/* ï¿½Xï¿½Nï¿½Vï¿½ï¿½ï¿½Jï¿½n */
 	FScreenshotRequest::Reset();
 	FScreenshotRequest::RequestScreenshot(true);
 }
@@ -62,7 +62,7 @@ void UGDMScreenshotRequesterComponent::OnScreenshotCaptured(int32 Width, int32 H
 
 		for(const auto Widget : Widgets)
 		{
-			/* DebugƒŒƒ|[ƒg—pWidget‚ª‚ ‚ê‚Î’Ê’m‚µ‚Ä‚ ‚°‚é */
+			/* Debugï¿½ï¿½ï¿½|ï¿½[ï¿½gï¿½pWidgetï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î’Ê’mï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½ï¿½ï¿½ */
 			if(UGDMDebugReportWidget* ReportWidget = Cast<UGDMDebugReportWidget>(Widget))
 			{
 				ReportWidget->OnScreenshotCaptured(Width, Height, Bitmap);

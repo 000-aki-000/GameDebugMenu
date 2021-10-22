@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2020 akihiko moroi
+* Copyright (c) 2021 akihiko moroi
 *
 * This software is released under the MIT License.
 * (See accompanying file LICENSE.txt or copy at http://opensource.org/licenses/MIT)
@@ -14,7 +14,7 @@ bool IGDMInputInterface::IsEnableInputGDM_Implementation()
 
 int32 IGDMInputInterface::GetInputPriorityGDM_Implementation()
 {
-	/** BlueprintŠÖ”‚ÌuGDM Input Priority Firstv‚Æ“¯‚¶ */
+	/** Blueprintï¿½Öï¿½ï¿½ÌuGDM Input Priority Firstï¿½vï¿½Æ“ï¿½ï¿½ï¿½ */
 	return 10;
 }
 

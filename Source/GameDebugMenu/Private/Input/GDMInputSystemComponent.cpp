@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2020 akihiko moroi
+* Copyright (c) 2021 akihiko moroi
 *
 * This software is released under the MIT License.
 * (See accompanying file LICENSE.txt or copy at http://opensource.org/licenses/MIT)
@@ -60,7 +60,7 @@ void UGDMInputSystemComponent::RepeatButtonInfo::Tick(float DeltaTime)
 	{
 		ElapsedTime = UGameDebugMenuSettings::Get()->ButtonRepeatInterval;
 
-		/* ƒCƒxƒ“ƒgŒÄ‚Ño‚µ */
+		/* ï¿½Cï¿½xï¿½ï¿½ï¿½gï¿½Ä‚Ñoï¿½ï¿½ */
 		(Instance->*CallFunction)(EventName);
 	}
 }
@@ -125,7 +125,7 @@ void UGDMInputSystemComponent::BeginPlay()
 
 void UGDMInputSystemComponent::TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
-	/* Slomo‚È‚ÇŠÔ‘€ì‚É‰e‹¿ó‚¯‚È‚¢‚æ‚¤‚É‚·‚é */
+	/* Slomoï¿½È‚Çï¿½ï¿½Ô‘ï¿½ï¿½ï¿½É‰eï¿½ï¿½ï¿½ó‚¯‚È‚ï¿½ï¿½æ‚¤ï¿½É‚ï¿½ï¿½ï¿½ */
 	DeltaTime /= GetOwner()->GetWorldSettings()->GetEffectiveTimeDilation();
 
 	TickRepeatButtons(DeltaTime);
@@ -190,7 +190,7 @@ bool UGDMInputSystemComponent::UnregisterInputObject(UObject* TargetObject)
 		{
 			UE_LOG(LogGDM, Verbose, TEXT("Unregister Release event is called: %s"), *GetNameSafe(TargetObject));
 
-			/* “ü—Í‘ÎÛ‚ÌƒIƒuƒWƒFƒNƒg‚È‚Ì‚Å1“xƒŠƒŠ[ƒX‚ğŒÄ‚Ô */
+			/* ï¿½ï¿½ï¿½Í‘ÎÛ‚ÌƒIï¿½uï¿½Wï¿½Fï¿½Nï¿½gï¿½È‚Ì‚ï¿½1ï¿½xï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½Xï¿½ï¿½ï¿½Ä‚ï¿½ */
 			CallReleasedButtons();
 			CurrentInputObject = nullptr;
 		}
@@ -322,7 +322,7 @@ void UGDMInputSystemComponent::UpdateInputObject()
 	{
 		if(!RegisterInputObjects[Index].IsValid())
 		{
-			/* ‚È‚­‚È‚Á‚Ä‚¢‚½‚Ì‚Åíœ */
+			/* ï¿½È‚ï¿½ï¿½È‚ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½ï¿½Ì‚Åíœ */
 			UE_LOG(LogGDM, Error, TEXT("UpdateInputObject Not found InputObject: Index %d"), Index);
 			RegisterInputObjects.RemoveAt(Index);
 			continue;
@@ -330,16 +330,16 @@ void UGDMInputSystemComponent::UpdateInputObject()
 
 		if(!IGDMInputInterface::Execute_IsEnableInputGDM(RegisterInputObjects[Index].Get()))
 		{
-			/* –³Œø‚Èê‡ */
+			/* ï¿½ï¿½ï¿½ï¿½ï¿½Èê‡ */
 			if(IGDMInputInterface::Execute_IsModalModeGDM(RegisterInputObjects[Index].Get()))
 			{
-				/* ƒ‚[ƒ_ƒ‹‰»‚µ‚Ä‚é‚Ì‚Å‚±‚±‚ÅI—¹B’á—Dæ“xƒIƒuƒWƒFƒNƒg‚ª“ü—Í‚·‚é‚É‚Í
-				‚±‚ÌƒIƒuƒWƒFƒNƒg‚ªUnregisterGDMInputObject‚³‚ê‚é‚©Modal‚ğFalse‚É‚·‚é‚©‚Ì‚Ç‚Á‚¿‚© */
+				/* ï¿½ï¿½ï¿½[ï¿½_ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½Ì‚Å‚ï¿½ï¿½ï¿½ï¿½ÅIï¿½ï¿½ï¿½Bï¿½ï¿½Dï¿½ï¿½xï¿½Iï¿½uï¿½Wï¿½Fï¿½Nï¿½gï¿½ï¿½ï¿½ï¿½ï¿½Í‚ï¿½ï¿½ï¿½É‚ï¿½
+				ï¿½ï¿½ï¿½ÌƒIï¿½uï¿½Wï¿½Fï¿½Nï¿½gï¿½ï¿½UnregisterGDMInputObjectï¿½ï¿½ï¿½ï¿½é‚©Modalï¿½ï¿½Falseï¿½É‚ï¿½ï¿½é‚©ï¿½Ì‚Ç‚ï¿½ï¿½ï¿½ï¿½ï¿½ */
 				return;
 			}
 			else
 			{
-				/* ƒ‚[ƒ_ƒ‹‚Í–³Œø‚É‚È‚Á‚Ä‚¢‚é‚Ì‚ÅŸ‚Ì—Dæ“x‚ÌƒIƒuƒWƒFƒNƒg‚É“ü—ÍŠm”F‚µ‚Ä‚­ */
+				/* ï¿½ï¿½ï¿½[ï¿½_ï¿½ï¿½ï¿½Í–ï¿½ï¿½ï¿½ï¿½É‚È‚ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½Ì‚Åï¿½ï¿½Ì—Dï¿½ï¿½xï¿½ÌƒIï¿½uï¿½Wï¿½Fï¿½Nï¿½gï¿½É“ï¿½ï¿½ÍŠmï¿½Fï¿½ï¿½ï¿½Ä‚ï¿½ */
 				continue;
 			}
 		}
@@ -352,7 +352,7 @@ void UGDMInputSystemComponent::UpdateInputObject()
 	{
 		UE_LOG(LogGDM, Verbose, TEXT("Change input object %s -> %s"), *GetNameSafe(CurrentInputObject.Get()) , *GetNameSafe(NewInputObject));
 
-		/* ‘ÎÛ‚ª•Ï‚í‚Á‚½‚ç‚P“xƒŠƒŠ[ƒX‚ğŒÄ‚Ño‚· */
+		/* ï¿½ÎÛ‚ï¿½ï¿½Ï‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Pï¿½xï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½Xï¿½ï¿½ï¿½Ä‚Ñoï¿½ï¿½ */
 		CallReleasedButtons();
 
 		UObject* OldObject = CurrentInputObject.Get();

@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2020 akihiko moroi
+* Copyright (c) 2021 akihiko moroi
 *
 * This software is released under the MIT License.
 * (See accompanying file LICENSE.txt or copy at http://opensource.org/licenses/MIT)
@@ -17,7 +17,7 @@ class AGameDebugMenuManager;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FGDMGameDebugMenuScreenshotDelegate);
 
 /**
-* DebugMenu‚Å‚ÌƒXƒNƒVƒ‡ˆ—
+* DebugMenuï¿½Å‚ÌƒXï¿½Nï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 */
 UCLASS()
 class GAMEDEBUGMENU_API UGDMScreenshotRequesterComponent : public UActorComponent
@@ -25,7 +25,7 @@ class GAMEDEBUGMENU_API UGDMScreenshotRequesterComponent : public UActorComponen
 	GENERATED_BODY()
 
 public:
-	/** ƒXƒNƒVƒ‡ˆ—‚ÌI—¹‚ÉŒÄ‚Î‚ê‚éƒCƒxƒ“ƒg */
+	/** ï¿½Xï¿½Nï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÌIï¿½ï¿½ï¿½ï¿½ï¿½ÉŒÄ‚Î‚ï¿½ï¿½Cï¿½xï¿½ï¿½ï¿½g */
 	UPROPERTY(BlueprintAssignable, Category = "GDM|Dispatcher")
 	FGDMGameDebugMenuScreenshotDelegate OnScreenshotRequestProcessedDispatcher;
 
