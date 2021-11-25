@@ -1,0 +1,30 @@
+{
+  "FileVersion": 3,
+  "Version": 2,
+  "VersionName": "1.04",
+  "FriendlyName": "GameDebugMenu",
+  "Description": "",
+  "Category": "Other",
+  "CreatedBy": "akihiko moroi",
+  "CreatedByURL": "",
+  "DocsURL": "",
+  "MarketplaceURL": "",
+  "SupportURL": "",
+  "CanContainContent": true,
+  "IsBetaVersion": false,
+  "Installed": false,
+  "Modules": [
+    {
+      "Name": "GameDebugMenu",
+      "Type": "RunTime",
+      "LoadingPhase": "Default",
+      "WhitelistPlatforms": [ "Win64", "PS4", "Switch" ]
+    },
+    {
+      "Name": "GameDebugMenuEditor",
+      "Type": "Editor",
+      "LoadingPhase": "PreLoadingScreen",
+      "WhitelistPlatforms": [ "Win64" ]
+    }
+  ]
+}

@@ -1,8 +1,0 @@
-{
-	"BuildId": "16433597",
-	"Modules": 
-	{
-		"GameDebugMenu": "UnrealEditor-GameDebugMenu.dll",
-		"GameDebugMenuEditor": "UnrealEditor-GameDebugMenuEditor.dll"
-	}
-}
