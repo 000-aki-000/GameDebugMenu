@@ -111,9 +111,6 @@ protected:
 	UPROPERTY(Transient)
 	TMap<FString, FString> DebugMenuStrings;
 
-	TArray<UStringTable*> Tables;
-
-
 	UPROPERTY(BlueprintReadOnly, Category = "GDM")
 	FName CurrentDebugMenuLanguage;
 
