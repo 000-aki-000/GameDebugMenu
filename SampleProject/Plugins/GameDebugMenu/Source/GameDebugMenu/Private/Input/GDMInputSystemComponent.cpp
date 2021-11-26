@@ -152,11 +152,13 @@ bool UGDMInputSystemComponent::RegisterInputObject(UObject* TargetObject)
 {
 	if(!IsValid(TargetObject))
 	{
+		UE_LOG(LogGDM, Warning, TEXT("Failed register input [not found TargetObject]"));
 		return false;
 	}
 
 	if(!TargetObject->Implements<UGDMInputInterface>())
 	{
+		UE_LOG(LogGDM, Warning, TEXT("Failed register input[Implement UGDMInputInterface]: %s "), *GetNameSafe(TargetObject));
 		return false;
 	}
 
@@ -177,29 +179,31 @@ bool UGDMInputSystemComponent::RegisterInputObject(UObject* TargetObject)
 
 bool UGDMInputSystemComponent::UnregisterInputObject(UObject* TargetObject)
 {
-	if(RegisterInputObjects.Remove(TargetObject) >= 0)
+	if( !RegisterInputObjects.Contains(TargetObject) )
 	{
-		RegisterInputObjects.Sort([](const TWeakObjectPtr<UObject>& A, const TWeakObjectPtr<UObject>& B)
-								  {
-									  return IGDMInputInterface::Execute_GetInputPriorityGDM(A.Get()) <= IGDMInputInterface::Execute_GetInputPriorityGDM(B.Get());
-								  });
-
-		UE_LOG(LogGDM, Verbose, TEXT("Unregister input object: %s"), *GetNameSafe(TargetObject));
-
-		if(CurrentInputObject.Get() == TargetObject)
-		{
-			UE_LOG(LogGDM, Verbose, TEXT("Unregister Release event is called: %s"), *GetNameSafe(TargetObject));
-
-			/* 入力対象のオブジェクトなので1度リリースを呼ぶ */
-			CallReleasedButtons();
-			CurrentInputObject = nullptr;
-		}
-
-		IGDMInputInterface::Execute_OnUnregisterGDMInputSystem(TargetObject);
-		return true;
+		return false;
 	}
 
-	return false;
+	RegisterInputObjects.Remove(TargetObject);
+
+	RegisterInputObjects.Sort([](const TWeakObjectPtr<UObject>& A, const TWeakObjectPtr<UObject>& B)
+	{
+		return IGDMInputInterface::Execute_GetInputPriorityGDM(A.Get()) <= IGDMInputInterface::Execute_GetInputPriorityGDM(B.Get());
+	});
+
+	UE_LOG(LogGDM, Verbose, TEXT("Unregister input object: %s"), *GetNameSafe(TargetObject));
+
+	if( CurrentInputObject.Get() == TargetObject )
+	{
+		UE_LOG(LogGDM, Verbose, TEXT("Unregister Release event is called: %s"), *GetNameSafe(TargetObject));
+
+		/* 入力対象のオブジェクトなので1度リリースを呼ぶ */
+		CallReleasedButtons();
+		CurrentInputObject = nullptr;
+	}
+
+	IGDMInputInterface::Execute_OnUnregisterGDMInputSystem(TargetObject);
+	return true;
 }
 
 void UGDMInputSystemComponent::SetIgnoreInput(bool bNewInput)
