@@ -27,9 +27,6 @@ TSharedRef<IPropertyTypeCustomization> FGDMGameplayCategoryKeyCustomization::Mak
 
 void FGDMGameplayCategoryKeyCustomization::CustomizeHeader(TSharedRef<IPropertyHandle> PropertyHandle, FDetailWidgetRow& HeaderRow, IPropertyTypeCustomizationUtils& CustomizationUtils)
 {
-	FCoreUObjectDelegates::OnObjectPropertyChanged.RemoveAll(this);
-	FCoreUObjectDelegates::OnObjectPropertyChanged.AddRaw(this, &FGDMGameplayCategoryKeyCustomization::OnObjectPropertyChanged);
-
 	MakeGameplayCategoryNames();
 
 	uint32 NumChildren;
@@ -103,26 +100,6 @@ void FGDMGameplayCategoryKeyCustomization::OnSelectionChanged(TSharedPtr<FString
 
 		UGameDebugMenuSettings* Settings = GetMutableDefault<UGameDebugMenuSettings>();
 		IndexHandle->SetValue(Settings->GetGameplayCategoryIndex(ArrayIndex));
-	}
-}
-
-void FGDMGameplayCategoryKeyCustomization::OnObjectPropertyChanged(UObject* Asset, FPropertyChangedEvent& PropertyChangedEvent)
-{
-	if( Asset->GetClass() == UGameDebugMenuSettings::StaticClass() && TextComboBox.IsValid() )
-	{
-		MakeGameplayCategoryNames();
-
-		TextComboBox->RefreshOptions();
-
-		int32 CategoryIndex = 0;
-		IndexHandle->GetValue(CategoryIndex);
-
-		ArrayIndex = GetArrayIndex(CategoryIndex);
-
-		if( GameplayCategoryNames.IsValidIndex(ArrayIndex) )
-		{
-			TextComboBox->SetSelectedItem(GameplayCategoryNames[ArrayIndex]);
-		}
 	}
 }
 

@@ -34,6 +34,5 @@ private:
 	void SetCategoryValue(const int32 InArrayIndex);
 	void OnSelectionChanged(TSharedPtr<FString> ItemSelected, ESelectInfo::Type SelectInfo);
 	EVisibility GetStateKeyVisibility() const;
-	void OnObjectPropertyChanged(UObject* Asset, FPropertyChangedEvent& PropertyChangedEvent);
 
 };
