@@ -222,7 +222,7 @@ public:
 	* 生成済みのDebug画面となるWidgetを取得
 	*/
 	UFUNCTION(BlueprintCallable, Category = "GDM")
-	bool GetDebugMenuInstances(TArray<UGameDebugMenuWidget*>& OutInstances);
+	bool GetDebugMenuWidgetInstances(TArray<UGameDebugMenuWidget*>& OutInstances);
 
 	/** 
 	* ゲーム内のログ取得

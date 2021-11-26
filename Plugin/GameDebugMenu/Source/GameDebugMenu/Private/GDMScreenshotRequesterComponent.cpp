@@ -71,7 +71,7 @@ void UGDMScreenshotRequesterComponent::OnScreenshotCaptured(int32 Width, int32 H
 	if(AGameDebugMenuManager* DebugMenuManager = GetOwnerGameDebugMenuManager())
 	{
 		TArray<UGameDebugMenuWidget*> Widgets;
-		DebugMenuManager->GetDebugMenuInstances(Widgets);
+		DebugMenuManager->GetDebugMenuWidgetInstances(Widgets);
 
 		for(const auto Widget : Widgets)
 		{

@@ -550,7 +550,7 @@ TSubclassOf<UGameDebugMenuWidget> AGameDebugMenuManager::GetDebugMenuWidgetClass
 	return (*WidgetClass);
 }
 
-bool AGameDebugMenuManager::GetDebugMenuInstances(TArray<UGameDebugMenuWidget*>& OutInstances)
+bool AGameDebugMenuManager::GetDebugMenuWidgetInstances(TArray<UGameDebugMenuWidget*>& OutInstances)
 {
 	DebugMenuInstances.GenerateValueArray(OutInstances);
 	return (OutInstances.Num() > 0);
