@@ -18,8 +18,6 @@
 void SGDMGameplayCategoryKeyPin::Construct(const FArguments& InArgs, UEdGraphPin* InGraphPinObj)
 {
 	SGraphPin::Construct(SGraphPin::FArguments(), InGraphPinObj);
-
-	FCoreUObjectDelegates::OnObjectPropertyChanged.AddRaw(this, &SGDMGameplayCategoryKeyPin::OnObjectPropertyChanged);
 }
 
 TSharedRef<SWidget>	SGDMGameplayCategoryKeyPin::GetDefaultValueWidget()
@@ -113,21 +111,4 @@ void SGDMGameplayCategoryKeyPin::OnSelectionChanged(TSharedPtr<FString> ItemSele
 EVisibility SGDMGameplayCategoryKeyPin::GetStateKeyVisibility() const
 {
 	return IsConnected() ? EVisibility::Collapsed : EVisibility::Visible;
-}
-
-void SGDMGameplayCategoryKeyPin::OnObjectPropertyChanged(UObject* Asset, FPropertyChangedEvent& PropertyChangedEvent)
-{
-	if( Asset->GetClass() == UGameDebugMenuSettings::StaticClass() && TextComboBox.IsValid() )
-	{
-		MakeGameplayCategoryNames();
-
-		TextComboBox->RefreshOptions();
-
-		ArrayIndex = GetCategoryNameArrayIndex();
-
-		if( GameplayCategoryNames.IsValidIndex(ArrayIndex) )
-		{
-			TextComboBox->SetSelectedItem(GameplayCategoryNames[ArrayIndex]);
-		}
-	}
 }

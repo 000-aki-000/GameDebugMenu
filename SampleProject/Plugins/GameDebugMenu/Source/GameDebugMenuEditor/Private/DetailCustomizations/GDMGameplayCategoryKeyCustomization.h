@@ -28,7 +28,6 @@ public:
 private:
 	void MakeGameplayCategoryNames();
 	void OnSelectionChanged(TSharedPtr<FString> ItemSelected, ESelectInfo::Type SelectInfo);
-	void OnObjectPropertyChanged(UObject* Asset, FPropertyChangedEvent& PropertyChangedEvent);
 	int32 GetArrayIndex(int32 CategoryIndex);
 
 };
