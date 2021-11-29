@@ -9,6 +9,7 @@
 #include <Kismet/KismetTextLibrary.h>
 #include "GameDebugMenuSettings.h"
 #include "GameDebugMenuManager.h"
+#include "Widgets/GameDebugMenuRootWidget.h"
 
 #define LOCTEXT_NAMESPACE "UMG"
 
@@ -45,12 +46,25 @@ void UGDMTextBlock::SetText(FText InText)
 		DebugMenuStringKey.Reset();
 	}
 
+	UWorld* World = GetWorld();
+	if( !IsValid(World) )
+	{
+		if( UGameDebugMenuRootWidget* RootWidget = Cast<UGameDebugMenuRootWidget>(GetOuter()) )
+		{
+			World = RootWidget->DebugMenuManager->GetWorld();
+		}
+		else
+		{
+			World = GEngine->GetWorldFromContextObject(World, EGetWorldErrorMode::LogAndReturnNull);
+		}
+	}
+
 	FString DebugMenuStr;
 
 #if WITH_EDITORONLY_DATA
 	if( !InText.IsEmpty() )
 	{
-		if( UWorld* World = GEngine->GetWorldFromContextObject(this, EGetWorldErrorMode::LogAndReturnNull) )
+		if( IsValid(World) )
 		{
 			/* テキストのStringKeyなら取得しセットするテキストを上書きする */
 
@@ -63,7 +77,7 @@ void UGDMTextBlock::SetText(FText InText)
 					InText = FText::FromString(DebugMenuStr);
 				}
 			}
-			else if( AGameDebugMenuManager* Manager = UGameDebugMenuFunctions::GetGameDebugMenuManager(this) )
+			else if( AGameDebugMenuManager* Manager = UGameDebugMenuFunctions::GetGameDebugMenuManager(World) )
 			{
 				if( Manager->GetDebugMenuString(StringKey, DebugMenuStr) )
 				{
@@ -76,7 +90,7 @@ void UGDMTextBlock::SetText(FText InText)
 #else
 	if( !InText.IsEmpty() )
 	{
-		if( UGameDebugMenuFunctions::GetDebugMenuString(this, StringKey, DebugMenuStr) )
+		if( UGameDebugMenuFunctions::GetDebugMenuString(World, StringKey, DebugMenuStr) )
 		{
 			DebugMenuStringKey = InText.ToString();
 			InText = FText::FromString(DebugMenuStr);

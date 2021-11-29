@@ -346,7 +346,7 @@ UGameDebugMenuRootWidget* UGameDebugMenuFunctions::GetGameDebugMenuRootWidget(UO
 	return GDMManager->GetDebugMenuRootWidget();
 }
 
-bool UGameDebugMenuFunctions::RegisterGDMObjectProperty(UObject* TargetObject, const FGDMPropertyUIConfigInfo PropertyUIConfigInfo,FName PropertyName,const FGDMGameplayCategoryKey CategoryKey,const FText DisplayPropertyName,const FText Description)
+bool UGameDebugMenuFunctions::RegisterGDMObjectProperty(UObject* TargetObject, const FGDMPropertyUIConfigInfo PropertyUIConfigInfo,FName PropertyName,const FGDMGameplayCategoryKey CategoryKey,const FText DisplayPropertyName,const FText Description, const int32 DisplayPriority)
 {
 	if(bDisableGameDebugMenu)
 	{
@@ -364,13 +364,14 @@ bool UGameDebugMenuFunctions::RegisterGDMObjectProperty(UObject* TargetObject, c
 		PendingData.DisplayPropertyName = DisplayPropertyName;
 		PendingData.Description         = Description;
 		PendingData.ConfigInfo          = PropertyUIConfigInfo;
+		PendingData.DisplayPriority		= DisplayPriority;
 		RegisterPendingProperties.Add(PendingData);
 		return false;
 	}
-	return GDMManager->RegisterObjectProperty( TargetObject, PropertyName, CategoryKey, DisplayPropertyName, Description, PropertyUIConfigInfo);
+	return GDMManager->RegisterObjectProperty( TargetObject, PropertyName, CategoryKey, DisplayPropertyName, Description, PropertyUIConfigInfo, DisplayPriority);
 }
 
-bool UGameDebugMenuFunctions::RegisterGDMObjectFunction(UObject* TargetObject,FName FunctionName,const FGDMGameplayCategoryKey CategoryKey,const FText DisplayFunctionName,const FText Description)
+bool UGameDebugMenuFunctions::RegisterGDMObjectFunction(UObject* TargetObject,FName FunctionName,const FGDMGameplayCategoryKey CategoryKey,const FText DisplayFunctionName,const FText Description, const int32 DisplayPriority)
 {
 	if(bDisableGameDebugMenu)
 	{
@@ -387,10 +388,11 @@ bool UGameDebugMenuFunctions::RegisterGDMObjectFunction(UObject* TargetObject,FN
 		PendingData.CategoryKey			= CategoryKey;
 		PendingData.DisplayPropertyName = DisplayFunctionName;
 		PendingData.Description         = Description;
+		PendingData.DisplayPriority		= DisplayPriority;
 		RegisterPendingFunctions.Add(PendingData);
 		return false;
 	}
-	return GDMManager->RegisterObjectFunction(TargetObject,FunctionName, CategoryKey, DisplayFunctionName, Description);
+	return GDMManager->RegisterObjectFunction(TargetObject,FunctionName, CategoryKey, DisplayFunctionName, Description, DisplayPriority);
 }
 
 void UGameDebugMenuFunctions::UnregisterGDMObject(UObject* TargetObject)

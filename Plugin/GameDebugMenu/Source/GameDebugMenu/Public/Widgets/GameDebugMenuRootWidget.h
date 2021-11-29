@@ -31,6 +31,9 @@ public:
 	virtual void NativeDestruct() override;
 
 public:
+	UFUNCTION(BlueprintImplementableEvent, Category = "GDM")
+	void InitializeRootWidget();
+
 	UFUNCTION(BlueprintImplementableEvent, Category = "GDM|Event")
 	void ShowDebugReport();
 

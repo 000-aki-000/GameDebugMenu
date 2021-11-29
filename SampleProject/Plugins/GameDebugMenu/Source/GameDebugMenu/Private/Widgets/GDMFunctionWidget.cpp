@@ -15,7 +15,7 @@ bool UGDMFunctionWidget::TryCallObjectFunction(FName EventName)
 
 bool UGDMFunctionWidget::GDMProcessEvent(FName EventName, void* Parms)
 {
-	if(IsValid(TargetObject) == false)
+	if(!IsValid(TargetObject))
 	{
 		UE_LOG(LogGDM, Warning, TEXT("GDMFunctionWidget ProcessEvent: Not found Object"));
 		return false;
@@ -28,7 +28,7 @@ bool UGDMFunctionWidget::GDMProcessEvent(FName EventName, void* Parms)
 	}
 
 	UFunction* TargetFunction = TargetObject->FindFunction(EventName);
-	if(IsValid(TargetFunction) == false)
+	if(!IsValid(TargetFunction))
 	{
 		UE_LOG(LogGDM, Warning, TEXT("GDMFunctionWidget ProcessEvent: Not found Function"));
 		return false;

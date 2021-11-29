@@ -103,10 +103,11 @@ public:
 	* @param CategoryKey		  - カテゴリ
 	* @param DisplayPropertyName  - UI上のプロパティ名,何も指定しなければ「PropertyName」で表示
 	* @param Description          - 説明文
+	* @param DisplayPriority	　- リスト追加時の表示優先度（降順）
 	* @return True: 登録成功 False: 何らかの要因で失敗した（ログに出力されてます）
 	*/
 	UFUNCTION(BlueprintCallable, BlueprintCosmetic, Category = "GDM|Functions", meta = (Keywords = "DebugMenu GDM", AdvancedDisplay = "4"))
-	static bool RegisterGDMObjectProperty(UObject* TargetObject, const FGDMPropertyUIConfigInfo PropertyUIConfigInfo,FName PropertyName,const FGDMGameplayCategoryKey CategoryKey,const FText DisplayPropertyName,const FText Description);
+	static bool RegisterGDMObjectProperty(UObject* TargetObject, const FGDMPropertyUIConfigInfo PropertyUIConfigInfo,FName PropertyName,const FGDMGameplayCategoryKey CategoryKey,const FText DisplayPropertyName,const FText Description,const int32 DisplayPriority = 0);
 
 	/**
 	* DebugMenuに表示させるオブジェクトの関数（カスタムイベント）を登録する
@@ -116,11 +117,12 @@ public:
 	* @param CategoryKey		 - カテゴリ
 	* @param DisplayFunctionName - UI上の関数（カスタムイベント）名,何も指定しなければ「FunctionName」
 	* @param Description         - 説明文
+	* @param DisplayPriority	　- リスト追加時の表示優先度（降順）
 	* @return True: 登録成功 False: 何らかの要因で失敗した（ログに出力されてます）
 	* @memo ここで登録できるのは引数０の関数（カスタムイベント）のみ
 	*/
 	UFUNCTION(BlueprintCallable, BlueprintCosmetic, Category = "GDM|Functions", meta = (Keywords = "DebugMenu GDM", AdvancedDisplay = "3"))
-	static bool RegisterGDMObjectFunction(UObject* TargetObject,FName FunctionName,const FGDMGameplayCategoryKey CategoryKey,const FText DisplayFunctionName,const FText Description);
+	static bool RegisterGDMObjectFunction(UObject* TargetObject,FName FunctionName,const FGDMGameplayCategoryKey CategoryKey,const FText DisplayFunctionName,const FText Description, const int32 DisplayPriority = 0);
 
 	/**
 	* 対象のオブジェクトが登録したプロパティ＆関数を解除する

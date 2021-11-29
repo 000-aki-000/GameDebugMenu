@@ -250,6 +250,7 @@ void AGameDebugMenuManager::CreateDebugMenuRootWidget()
 	DebugMenuRootWidget->DebugMenuManager = this;
 	DebugMenuRootWidget->AddToViewport(WidgetZOrder);
 	DebugMenuRootWidget->SetVisibility(ESlateVisibility::Collapsed);
+	DebugMenuRootWidget->InitializeRootWidget();
 }
 
 void AGameDebugMenuManager::CreateDebugCameraInputClass()
@@ -352,6 +353,8 @@ void AGameDebugMenuManager::SyncLoadDebugMenuStringTables(FName TargetDebugMenuL
 
 	if( FGDMStringTableList* StringTableList = UGameDebugMenuSettings::Get()->GameDebugMenuStringTables.Find(TargetDebugMenuLanguage) )
 	{
+		UE_LOG(LogGDM, Verbose, TEXT("Call SyncLoadDebugMenuStringTables %s"), *TargetDebugMenuLanguage.ToString());
+
 		for( auto& StrTablePtr : StringTableList->StringTables )
 		{
 			if( UStringTable* StringTable = StrTablePtr.LoadSynchronous() )
@@ -361,6 +364,7 @@ void AGameDebugMenuManager::SyncLoadDebugMenuStringTables(FName TargetDebugMenuL
 					if( !DebugMenuStrings.Contains(InKey) )
 					{
 						DebugMenuStrings.Add(InKey, InSourceString);
+						UE_LOG(LogGDM, VeryVerbose, TEXT("Load string | Key %s SourceString %s"), *InKey, *InSourceString);
 					}
 					else
 					{
@@ -370,6 +374,10 @@ void AGameDebugMenuManager::SyncLoadDebugMenuStringTables(FName TargetDebugMenuL
 				});
 			}
 		}
+	}
+	else
+	{
+		UE_LOG(LogGDM, Error, TEXT("Failed Load DebugMenuStringTables %s"), *TargetDebugMenuLanguage.ToString());
 	}
 }
 
@@ -599,7 +607,7 @@ EGDMPropertyType AGameDebugMenuManager::GetPropertyType(FProperty* TargetPropert
 	return EGDMPropertyType::GDM_Null;
 }
 
-bool AGameDebugMenuManager::RegisterObjectProperty(UObject* TargetObject,FName PropertyName, const FGDMGameplayCategoryKey& CategoryKey,const FText& DisplayPropertyName,const FText& Description, const FGDMPropertyUIConfigInfo PropertyUIConfigInfo)
+bool AGameDebugMenuManager::RegisterObjectProperty(UObject* TargetObject,FName PropertyName, const FGDMGameplayCategoryKey& CategoryKey,const FText& DisplayPropertyName,const FText& Description, const FGDMPropertyUIConfigInfo& PropertyUIConfigInfo, const int32& DisplayPriority)
 {
 	if(!IsValid(TargetObject))
 	{
@@ -628,6 +636,7 @@ bool AGameDebugMenuManager::RegisterObjectProperty(UObject* TargetObject,FName P
 	PropertyInfo->TargetProperty                    = Property;
 	PropertyInfo->ConfigInfo                        = PropertyUIConfigInfo;
 	PropertyInfo->Description						= Description;
+	PropertyInfo->DisplayPriority					= DisplayPriority;
 
 	/* Enumならセット */
 	const FEnumProperty* EnumProp = CastField<FEnumProperty>(Property);/* C++定義だとこっち */
@@ -646,13 +655,13 @@ bool AGameDebugMenuManager::RegisterObjectProperty(UObject* TargetObject,FName P
 
 	ObjectProperties.Sort([](const TSharedPtr<FGDMObjectPropertyInfo>& A,const TSharedPtr<FGDMObjectPropertyInfo>& B)
 	{
-		return A->CategoryKey < B->CategoryKey;
+		return A->DisplayPriority >= B->DisplayPriority;
 	});
 
 	return true;
 }
 
-bool AGameDebugMenuManager::RegisterObjectFunction(UObject* TargetObject,FName FunctionName, const FGDMGameplayCategoryKey& CategoryKey,const FText& DisplayFunctionName,const FText& Description)
+bool AGameDebugMenuManager::RegisterObjectFunction(UObject* TargetObject,FName FunctionName, const FGDMGameplayCategoryKey& CategoryKey,const FText& DisplayFunctionName,const FText& Description,const int32& DisplayPriority)
 {
 	if(!IsValid(TargetObject))
 	{
@@ -680,12 +689,13 @@ bool AGameDebugMenuManager::RegisterObjectFunction(UObject* TargetObject,FName F
 	FunctionInfo->FunctionName                      = FunctionName;
 	FunctionInfo->TargetFunction                    = Function;
 	FunctionInfo->Description						= Description;
+	FunctionInfo->DisplayPriority					= DisplayPriority;
 
 	ObjectFunctions.Add(FunctionInfo);
 
 	ObjectFunctions.Sort([](const TSharedPtr<FGDMObjectFunctionInfo>& A,const TSharedPtr<FGDMObjectFunctionInfo>& B)
 	{
-		return A->CategoryKey < B->CategoryKey;
+		return A->DisplayPriority >= B->DisplayPriority;
 	});
 
 	return true;
@@ -847,6 +857,8 @@ bool AGameDebugMenuManager::IsInputIgnored() const
 
 void AGameDebugMenuManager::ChangeDebugMenuLanguage(FName LanguageKey, bool bForcedUpdate)
 {
+	UE_LOG(LogGDM, Verbose, TEXT("Call ChangeDebugMenuLanguage LanguageKey:%s bForcedUpdate:%d"), *LanguageKey.ToString(), bForcedUpdate);
+
 	if( !bForcedUpdate )
 	{
 		if( LanguageKey == NAME_None )
@@ -885,7 +897,7 @@ bool AGameDebugMenuManager::GetDebugMenuString(const FString& StringKey, FString
 	else
 	{
 		OutString = StringKey;
-		UE_LOG(LogGDM, Warning, TEXT("GetDebugMenuString: Not found StringKey %s"), *StringKey);
+		UE_LOG(LogGDM, Verbose, TEXT("GetDebugMenuString: Not found StringKey %s"), *StringKey);
 		return false;
 	}
 

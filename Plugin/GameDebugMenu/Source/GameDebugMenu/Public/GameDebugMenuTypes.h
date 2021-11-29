@@ -372,7 +372,7 @@ public:
 	FName PropertyName;
 	TWeakObjectPtr<UEnum> EnumType;
 	FGDMPropertyUIConfigInfo ConfigInfo;
-
+	int32 DisplayPriority;
 
 	FGDMObjectPropertyInfo()
 		: CategoryKey()
@@ -383,6 +383,7 @@ public:
 		, PropertyName(NAME_None)
 		, EnumType(nullptr)
 		, ConfigInfo()
+		, DisplayPriority(0)
 	{
 	}
 };
@@ -399,6 +400,7 @@ public:
 	TWeakObjectPtr<UObject>	TargetObject;
 	TWeakObjectPtr<UFunction> TargetFunction;
 	FName FunctionName;
+	int32 DisplayPriority;
 
 	FGDMObjectFunctionInfo()
 		: CategoryKey()
@@ -407,6 +409,7 @@ public:
 		, TargetObject(nullptr)
 		, TargetFunction(nullptr)
 		, FunctionName(NAME_None)
+		, DisplayPriority(0)
 	{
 	}
 };
@@ -422,6 +425,7 @@ struct GAMEDEBUGMENU_API FGDMPendingObjectData
 	FText DisplayPropertyName;
 	FText Description;
 	FGDMPropertyUIConfigInfo ConfigInfo;
+	int32 DisplayPriority;
 
 	FGDMPendingObjectData()
 		: TargetObject(nullptr)
@@ -430,6 +434,7 @@ struct GAMEDEBUGMENU_API FGDMPendingObjectData
 		, DisplayPropertyName(FText::GetEmpty())
 		, Description(FText::GetEmpty())
 		, ConfigInfo()
+		, DisplayPriority(0)
 	{
 	}
 };

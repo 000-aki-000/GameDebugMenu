@@ -234,8 +234,8 @@ public:
 	* プロパティ＆関数の登録、取得、イベントの通知
 	*/
 	virtual EGDMPropertyType GetPropertyType(FProperty* TargetProperty);
-	virtual bool RegisterObjectProperty(UObject* TargetObject, FName PropertyName, const FGDMGameplayCategoryKey& CategoryKey, const FText& DisplayPropertyName, const FText& Description, const FGDMPropertyUIConfigInfo PropertyUIConfigInfo);
-	virtual bool RegisterObjectFunction(UObject* TargetObject, FName FunctionName, const FGDMGameplayCategoryKey& CategoryKey, const FText& DisplayFunctionName, const FText& Description);
+	virtual bool RegisterObjectProperty(UObject* TargetObject, FName PropertyName, const FGDMGameplayCategoryKey& CategoryKey, const FText& DisplayPropertyName, const FText& Description, const FGDMPropertyUIConfigInfo& PropertyUIConfigInfo, const int32& DisplayPriority);
+	virtual bool RegisterObjectFunction(UObject* TargetObject, FName FunctionName, const FGDMGameplayCategoryKey& CategoryKey, const FText& DisplayFunctionName, const FText& Description, const int32& DisplayPriority);
 	virtual UObject* GetObjectProperty(const int32 Index, FGDMGameplayCategoryKey& OutCategoryKey, FText& OutDisplayPropertyName, FText& OutDescription, FName& OutPropertyName, EGDMPropertyType& OutPropertyType, FName& OutEnumTypeName, FGDMPropertyUIConfigInfo& PropertyUIConfigInfo);
 	virtual void RemoveObjectProperty(const int32 Index);
 	virtual UObject* GetObjectFunction(const int32 Index, FGDMGameplayCategoryKey& OutCategoryKey, FText& OutDisplayFunctionName, FText& OutDescription, FName& OutFunctionName);
