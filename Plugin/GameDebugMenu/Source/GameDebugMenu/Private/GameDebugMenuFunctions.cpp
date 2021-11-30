@@ -154,7 +154,8 @@ bool UGameDebugMenuFunctions::TryCreateDebugMenuManager(UObject* WorldContextObj
 										  PendingData.TargetName,
 										  PendingData.CategoryKey,
 										  PendingData.DisplayPropertyName,
-										  PendingData.Description
+										  PendingData.Description,
+										  PendingData.DisplayPriority
 				);
 			}
 		}
@@ -172,7 +173,8 @@ bool UGameDebugMenuFunctions::TryCreateDebugMenuManager(UObject* WorldContextObj
 										  PendingData.TargetName,
 										  PendingData.CategoryKey,
 										  PendingData.DisplayPropertyName,
-										  PendingData.Description
+										  PendingData.Description,
+										  PendingData.DisplayPriority
 				);
 			}
 		}
@@ -923,7 +925,8 @@ void UGameDebugMenuFunctions::OnActorSpawnedClientWaitManager(AGameDebugMenuMana
 										  PendingData.TargetName,
 										  PendingData.CategoryKey,
 										  PendingData.DisplayPropertyName,
-										  PendingData.Description
+										  PendingData.Description,
+										  PendingData.DisplayPriority
 				);
 			}
 		}
@@ -940,7 +943,8 @@ void UGameDebugMenuFunctions::OnActorSpawnedClientWaitManager(AGameDebugMenuMana
 										  PendingData.TargetName,
 										  PendingData.CategoryKey,
 										  PendingData.DisplayPropertyName,
-										  PendingData.Description
+										  PendingData.Description,
+										  PendingData.DisplayPriority
 				);
 			}
 		}
