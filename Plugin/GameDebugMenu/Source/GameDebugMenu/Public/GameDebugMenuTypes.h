@@ -299,6 +299,11 @@ struct GAMEDEBUGMENU_API FGDMActionMappingKey
 {
 	GENERATED_BODY()
 
+	/* 入力のリピート処理に対応するか */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, config)
+	bool bRepeat;
+
+	/* 入力キー */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, config)
 	TArray<FKey> Keys;
 };

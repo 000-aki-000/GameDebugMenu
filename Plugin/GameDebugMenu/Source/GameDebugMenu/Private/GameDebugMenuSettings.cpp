@@ -1607,6 +1607,7 @@ void UGameDebugMenuSettings::SetupInputActions()
 	ActionKey.Keys.Add(EKeys::Gamepad_DPad_Up);
 	ActionKey.Keys.Add(EKeys::Gamepad_LeftStick_Up);
 	ActionKey.Keys.Add(EKeys::W);
+	ActionKey.bRepeat = true;
 	ActionMappingKeys.Add(GDMInputEventNames::Up,ActionKey);
 
 	ActionKey.Keys.Reset();
@@ -1614,6 +1615,7 @@ void UGameDebugMenuSettings::SetupInputActions()
 	ActionKey.Keys.Add(EKeys::Gamepad_DPad_Down);
 	ActionKey.Keys.Add(EKeys::Gamepad_LeftStick_Down);
 	ActionKey.Keys.Add(EKeys::S);
+	ActionKey.bRepeat = true;
 	ActionMappingKeys.Add(GDMInputEventNames::Down,ActionKey);
 
 	ActionKey.Keys.Reset();
@@ -1621,6 +1623,7 @@ void UGameDebugMenuSettings::SetupInputActions()
 	ActionKey.Keys.Add(EKeys::Gamepad_DPad_Left);
 	ActionKey.Keys.Add(EKeys::Gamepad_LeftStick_Left);
 	ActionKey.Keys.Add(EKeys::A);
+	ActionKey.bRepeat = true;
 	ActionMappingKeys.Add(GDMInputEventNames::Left,ActionKey);
 
 	ActionKey.Keys.Reset();
@@ -1628,6 +1631,7 @@ void UGameDebugMenuSettings::SetupInputActions()
 	ActionKey.Keys.Add(EKeys::Gamepad_DPad_Right);
 	ActionKey.Keys.Add(EKeys::Gamepad_LeftStick_Right);
 	ActionKey.Keys.Add(EKeys::D);
+	ActionKey.bRepeat = true;
 	ActionMappingKeys.Add(GDMInputEventNames::Right,ActionKey);
 
 	ActionKey.Keys.Reset();
@@ -1635,6 +1639,7 @@ void UGameDebugMenuSettings::SetupInputActions()
 	ActionKey.Keys.Add(EKeys::Enter);
 	ActionKey.Keys.Add(EKeys::SpaceBar);
 	ActionKey.Keys.Add(EKeys::ThumbMouseButton2);	
+	ActionKey.bRepeat = false;
 	ActionMappingKeys.Add(GDMInputEventNames::Decide,ActionKey);
 
 	ActionKey.Keys.Reset();
@@ -1642,22 +1647,26 @@ void UGameDebugMenuSettings::SetupInputActions()
 	ActionKey.Keys.Add(EKeys::BackSpace);
 	ActionKey.Keys.Add(EKeys::C);
 	ActionKey.Keys.Add(EKeys::ThumbMouseButton);
+	ActionKey.bRepeat = false;
 	ActionMappingKeys.Add(GDMInputEventNames::Cancel,ActionKey);
 
 	ActionKey.Keys.Reset();
 	ActionKey.Keys.Add(EKeys::Gamepad_Special_Left);
 	ActionKey.Keys.Add(EKeys::Zero);
 	ActionKey.Keys.Add(EKeys::NumPadZero);
+	ActionKey.bRepeat = false;
 	ActionMappingKeys.Add(GDMInputEventNames::MenuOpenAndClose,ActionKey);
 
 	ActionKey.Keys.Reset();
 	ActionKey.Keys.Add(EKeys::R);
+	ActionKey.bRepeat = false;
 	ActionMappingKeys.Add(GDMInputEventNames::DebugReport, ActionKey);
 
 	/* ADebugCameraController側ではパッドに割り当ててないので
 	カメラ操作時使用してない左トリガーに追加 */
 	ActionKey.Keys.Reset();
 	ActionKey.Keys.Add(EKeys::Gamepad_LeftTrigger);
+	ActionKey.bRepeat = false;
 	ActionMappingKeys.Add(GDMInputEventNames::OrbitHitPoint, ActionKey);
 
 	/* ---Axis--- */

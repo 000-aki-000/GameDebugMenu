@@ -47,6 +47,7 @@ protected:
 		void Stop();
 	};
 
+	DECLARE_DELEGATE_OneParam(FGDMInputActionDelegate, FName);
 
 	/** 各種キーのリピート処理 */
 	TMap< FName, RepeatButtonInfo > RepeatButtons;
@@ -108,29 +109,12 @@ protected:
 	virtual void UpdateInputObject();
 
 	/************************************************************************/
-	/* 押されたときの入力													*/
+	/* 押された(離した)ときの入力											*/
 	/************************************************************************/
 protected:
-	virtual void CallInputPressedInterfaceEvent(const FName& EventName);
-	virtual void OnPressedUp();
-	virtual void OnPressedDown();
-	virtual void OnPressedLeft();
-	virtual void OnPressedRight();
-	virtual void OnPressedDecide();
-	virtual void OnPressedCancel();
-	virtual void OnPressedMenuClose();
+	virtual void CallInputPressedInterfaceEvent(FName EventName);
+	virtual void CallInputReleasedInterfaceEvent(FName EventName);
 
-	/************************************************************************/
-	/* 離したときの入力														*/
-	/************************************************************************/
-protected:
-	virtual void CallInputReleasedInterfaceEvent(const FName& EventName);
-	virtual void OnReleasedUp();
-	virtual void OnReleasedDown();
-	virtual void OnReleasedLeft();
-	virtual void OnReleasedRight();
-	virtual void OnReleasedDecide();
-	virtual void OnReleasedCancel();
 public:
 	virtual void CallReleasedButtons();
 

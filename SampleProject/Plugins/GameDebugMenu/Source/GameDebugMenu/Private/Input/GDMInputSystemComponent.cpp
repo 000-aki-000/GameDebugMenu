@@ -104,7 +104,6 @@ UGDMInputSystemComponent::UGDMInputSystemComponent()
 	PrimaryComponentTick.bStartWithTickEnabled       = true;
 	PrimaryComponentTick.TickGroup                   = ETickingGroup::TG_PrePhysics;
 	PrimaryComponentTick.bTickEvenWhenPaused         = true;
-	PrimaryComponentTick.bAllowTickOnDedicatedServer = true;
 	bNeverNeedsRenderUpdate                          = true;
 }
 
@@ -227,17 +226,17 @@ void UGDMInputSystemComponent::InitializeInputMapping()
 	{
 		bActionMappingBindingsAdded = true;
 
-		auto& ActionMappingKeys = UGameDebugMenuSettings::Get()->ActionMappingKeys;
-		for(auto& Pair : ActionMappingKeys)
+		const auto& ActionMappingKeys = UGameDebugMenuSettings::Get()->ActionMappingKeys;
+		for( const auto& Pair : ActionMappingKeys)
 		{
-			for(auto& KeyEvent : Pair.Value.Keys)
+			for( const auto& KeyEvent : Pair.Value.Keys)
 			{
 				UPlayerInput::AddEngineDefinedActionMapping(FInputActionKeyMapping(Pair.Key, KeyEvent));
 			}
 		}
 
-		auto& AxisMappingKeys = UGameDebugMenuSettings::Get()->AxisMappingKeys;
-		for(auto& Pair : AxisMappingKeys)
+		const auto& AxisMappingKeys = UGameDebugMenuSettings::Get()->AxisMappingKeys;
+		for( const auto& Pair : AxisMappingKeys)
 		{
 			const FGDMAxisMappingKey& Axis = Pair.Value;
 			for(int32 Index = 0; Index < Axis.Keys.Num(); ++Index)
@@ -257,33 +256,15 @@ void UGDMInputSystemComponent::SetupInputComponentBindActions(UInputComponent* O
 {
 	FInputActionBinding* InputActionBinding = nullptr;
 
-	InputActionBinding = &OwnerInputComponent->BindAction(GDMInputEventNames::Up, EInputEvent::IE_Pressed, this, &UGDMInputSystemComponent::OnPressedUp);
-	InputActionBinding->bExecuteWhenPaused = true;
-	InputActionBinding = &OwnerInputComponent->BindAction(GDMInputEventNames::Down, EInputEvent::IE_Pressed, this, &UGDMInputSystemComponent::OnPressedDown);
-	InputActionBinding->bExecuteWhenPaused = true;
-	InputActionBinding = &OwnerInputComponent->BindAction(GDMInputEventNames::Left, EInputEvent::IE_Pressed, this, &UGDMInputSystemComponent::OnPressedLeft);
-	InputActionBinding->bExecuteWhenPaused = true;
-	InputActionBinding = &OwnerInputComponent->BindAction(GDMInputEventNames::Right, EInputEvent::IE_Pressed, this, &UGDMInputSystemComponent::OnPressedRight);
-	InputActionBinding->bExecuteWhenPaused = true;
-	InputActionBinding = &OwnerInputComponent->BindAction(GDMInputEventNames::Decide, EInputEvent::IE_Pressed, this, &UGDMInputSystemComponent::OnPressedDecide);
-	InputActionBinding->bExecuteWhenPaused = true;
-	InputActionBinding = &OwnerInputComponent->BindAction(GDMInputEventNames::Cancel, EInputEvent::IE_Pressed, this, &UGDMInputSystemComponent::OnPressedCancel);
-	InputActionBinding->bExecuteWhenPaused = true;
-	InputActionBinding = &OwnerInputComponent->BindAction(GDMInputEventNames::MenuOpenAndClose, EInputEvent::IE_Pressed, this, &UGDMInputSystemComponent::OnPressedMenuClose);
-	InputActionBinding->bExecuteWhenPaused = true;
+	const auto& ActionMappingKeys = UGameDebugMenuSettings::Get()->ActionMappingKeys;
+	for( const auto& Pair : ActionMappingKeys )
+	{
+		InputActionBinding = &OwnerInputComponent->BindAction<FGDMInputActionDelegate>(Pair.Key, EInputEvent::IE_Pressed, this, &UGDMInputSystemComponent::CallInputPressedInterfaceEvent, Pair.Key);
+		InputActionBinding->bExecuteWhenPaused = true;
 
-	InputActionBinding = &OwnerInputComponent->BindAction(GDMInputEventNames::Up, EInputEvent::IE_Released, this, &UGDMInputSystemComponent::OnReleasedUp);
-	InputActionBinding->bExecuteWhenPaused = true;
-	InputActionBinding = &OwnerInputComponent->BindAction(GDMInputEventNames::Down, EInputEvent::IE_Released, this, &UGDMInputSystemComponent::OnReleasedDown);
-	InputActionBinding->bExecuteWhenPaused = true;
-	InputActionBinding = &OwnerInputComponent->BindAction(GDMInputEventNames::Left, EInputEvent::IE_Released, this, &UGDMInputSystemComponent::OnReleasedLeft);
-	InputActionBinding->bExecuteWhenPaused = true;
-	InputActionBinding = &OwnerInputComponent->BindAction(GDMInputEventNames::Right, EInputEvent::IE_Released, this, &UGDMInputSystemComponent::OnReleasedRight);
-	InputActionBinding->bExecuteWhenPaused = true;
-	InputActionBinding = &OwnerInputComponent->BindAction(GDMInputEventNames::Decide, EInputEvent::IE_Released, this, &UGDMInputSystemComponent::OnReleasedDecide);
-	InputActionBinding->bExecuteWhenPaused = true;
-	InputActionBinding = &OwnerInputComponent->BindAction(GDMInputEventNames::Cancel, EInputEvent::IE_Released, this, &UGDMInputSystemComponent::OnReleasedCancel);
-	InputActionBinding->bExecuteWhenPaused = true;
+		InputActionBinding = &OwnerInputComponent->BindAction<FGDMInputActionDelegate>(Pair.Key, EInputEvent::IE_Released, this, &UGDMInputSystemComponent::CallInputReleasedInterfaceEvent, Pair.Key);
+		InputActionBinding->bExecuteWhenPaused = true;
+	}
 
 	FInputAxisBinding* InputAxisBinding = nullptr;
 	InputAxisBinding = &OwnerInputComponent->BindAxis(GDMInputEventNames::AxisMoveForward, this, &UGDMInputSystemComponent::OnAxisMoveForward);
@@ -366,8 +347,19 @@ void UGDMInputSystemComponent::UpdateInputObject()
 	}
 }
 
-void UGDMInputSystemComponent::CallInputPressedInterfaceEvent(const FName& EventName)
+void UGDMInputSystemComponent::CallInputPressedInterfaceEvent(FName EventName)
 {
+	if( EventName == GDMInputEventNames::MenuOpenAndClose )
+	{
+		if( IsInputIgnored() )
+		{
+			return;
+		}
+
+		GetOwnerGameDebugMenuManager()->HideDebugMenu();
+		return;
+	}
+
 	TWeakObjectPtr<UObject> Obj = GetCurrentInputObject();
 	if(Obj.IsValid())
 	{
@@ -384,47 +376,7 @@ void UGDMInputSystemComponent::CallInputPressedInterfaceEvent(const FName& Event
 	}
 }
 
-void UGDMInputSystemComponent::OnPressedUp()
-{
-	CallInputPressedInterfaceEvent(GDMInputEventNames::Up);
-}
-
-void UGDMInputSystemComponent::OnPressedDown()
-{
-	CallInputPressedInterfaceEvent(GDMInputEventNames::Down);
-}
-
-void UGDMInputSystemComponent::OnPressedLeft()
-{
-	CallInputPressedInterfaceEvent(GDMInputEventNames::Left);
-}
-
-void UGDMInputSystemComponent::OnPressedRight()
-{
-	CallInputPressedInterfaceEvent(GDMInputEventNames::Right);
-}
-
-void UGDMInputSystemComponent::OnPressedDecide()
-{
-	CallInputPressedInterfaceEvent(GDMInputEventNames::Decide);
-}
-
-void UGDMInputSystemComponent::OnPressedCancel()
-{
-	CallInputPressedInterfaceEvent(GDMInputEventNames::Cancel);
-}
-
-void UGDMInputSystemComponent::OnPressedMenuClose()
-{
-	if(IsInputIgnored())
-	{
-		return;
-	}
-
-	GetOwnerGameDebugMenuManager()->HideDebugMenu();
-}
-
-void UGDMInputSystemComponent::CallInputReleasedInterfaceEvent(const FName& EventName)
+void UGDMInputSystemComponent::CallInputReleasedInterfaceEvent(FName EventName)
 {
 	if(TWeakObjectPtr<UObject>* Obj = CachePressedInputObjects.Find(EventName))
 	{
@@ -444,44 +396,13 @@ void UGDMInputSystemComponent::CallInputReleasedInterfaceEvent(const FName& Even
 	}
 }
 
-void UGDMInputSystemComponent::OnReleasedUp()
-{
-	CallInputReleasedInterfaceEvent(GDMInputEventNames::Up);
-}
-
-void UGDMInputSystemComponent::OnReleasedDown()
-{
-	CallInputReleasedInterfaceEvent(GDMInputEventNames::Down);
-}
-
-void UGDMInputSystemComponent::OnReleasedLeft()
-{
-	CallInputReleasedInterfaceEvent(GDMInputEventNames::Left);
-}
-
-void UGDMInputSystemComponent::OnReleasedRight()
-{
-	CallInputReleasedInterfaceEvent(GDMInputEventNames::Right);
-}
-
-void UGDMInputSystemComponent::OnReleasedDecide()
-{
-	CallInputReleasedInterfaceEvent(GDMInputEventNames::Decide);
-}
-
-void UGDMInputSystemComponent::OnReleasedCancel()
-{
-	CallInputReleasedInterfaceEvent(GDMInputEventNames::Cancel);
-}
-
 void UGDMInputSystemComponent::CallReleasedButtons()
 {
-	OnReleasedUp();
-	OnReleasedDown();
-	OnReleasedLeft();
-	OnReleasedRight();
-	OnReleasedDecide();
-	OnReleasedCancel();
+	const auto& ActionMappingKeys = UGameDebugMenuSettings::Get()->ActionMappingKeys;
+	for( const auto& Pair : ActionMappingKeys )
+	{
+		CallInputReleasedInterfaceEvent(Pair.Key);
+	}
 }
 
 void UGDMInputSystemComponent::OnAxisMoveForward(float Value)
@@ -546,17 +467,15 @@ void UGDMInputSystemComponent::SetupRepeatButtons()
 	RepeatButtonInfo Repeat(this);
 	Repeat.SetFunction(&UGDMInputSystemComponent::OnInputRepeat);
 
-	Repeat.EventName = GDMInputEventNames::Up;
-	RepeatButtons.Add(GDMInputEventNames::Up, Repeat);
-
-	Repeat.EventName = GDMInputEventNames::Down;
-	RepeatButtons.Add(GDMInputEventNames::Down, Repeat);
-
-	Repeat.EventName = GDMInputEventNames::Left;
-	RepeatButtons.Add(GDMInputEventNames::Left, Repeat);
-
-	Repeat.EventName = GDMInputEventNames::Right;
-	RepeatButtons.Add(GDMInputEventNames::Right, Repeat);
+	const auto& ActionMappingKeys = UGameDebugMenuSettings::Get()->ActionMappingKeys;
+	for( const auto& Pair : ActionMappingKeys )
+	{
+		if( Pair.Value.bRepeat )
+		{
+			Repeat.EventName = Pair.Key;
+			RepeatButtons.Add(Pair.Key, Repeat);
+		}
+	}
 }
 
 void UGDMInputSystemComponent::TickRepeatButtons(const float DeltaTime)
