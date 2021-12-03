@@ -22,6 +22,8 @@ void UGameDebugMenuWidget::AddToScreen(ULocalPlayer* LocalPlayer, int32 ZOrder)
 	}
 	else
 	{
+		check(GetWorld() != nullptr);
+
 		GetWorld()->GetTimerManager().SetTimer(WaitDebugMenuManagerTimerHandle, FTimerDelegate::CreateWeakLambda(this, [this]()
 		{
 			if( AGameDebugMenuManager* DebugMenuManager = UGameDebugMenuFunctions::GetGameDebugMenuManager(this) )
@@ -39,11 +41,11 @@ void UGameDebugMenuWidget::RemoveFromParent()
 	if( UWorld* World = GetWorld() )
 	{
 		World->GetTimerManager().ClearTimer(WaitDebugMenuManagerTimerHandle);
-	}
 
-	if( AGameDebugMenuManager* DebugMenuManager = UGameDebugMenuFunctions::GetGameDebugMenuManager(this) )
-	{
-		DebugMenuManager->UnregisterViewportDebugMenuWidget(this);
+		if( AGameDebugMenuManager* DebugMenuManager = UGameDebugMenuFunctions::GetGameDebugMenuManager(this) )
+		{
+			DebugMenuManager->UnregisterViewportDebugMenuWidget(this);
+		}
 	}
 
 	Super::RemoveFromParent();
