@@ -6,10 +6,48 @@
 */
 
 #include "Widgets/GameDebugMenuWidget.h"
+#include <Blueprint/WidgetTree.h>
+#include <Kismet/GameplayStatics.h>
 #include "GameDebugMenuManager.h"
 #include "GameDebugMenuFunctions.h"
-#include <Kismet/GameplayStatics.h>
 #include <GDMPlayerControllerProxyComponent.h>
+
+void UGameDebugMenuWidget::AddToScreen(ULocalPlayer* LocalPlayer, int32 ZOrder)
+{
+	Super::AddToScreen(LocalPlayer, ZOrder);
+
+	if( AGameDebugMenuManager* DebugMenuManager = UGameDebugMenuFunctions::GetGameDebugMenuManager(this) )
+	{
+		DebugMenuManager->RegisterViewportDebugMenuWidget(this);
+	}
+	else
+	{
+		GetWorld()->GetTimerManager().SetTimer(WaitDebugMenuManagerTimerHandle, FTimerDelegate::CreateWeakLambda(this, [this]()
+		{
+			if( AGameDebugMenuManager* DebugMenuManager = UGameDebugMenuFunctions::GetGameDebugMenuManager(this) )
+			{
+				DebugMenuManager->RegisterViewportDebugMenuWidget(this);
+				GetWorld()->GetTimerManager().ClearTimer(WaitDebugMenuManagerTimerHandle);
+			}
+
+		}), 0.016f, true);
+	}
+}
+
+void UGameDebugMenuWidget::RemoveFromParent()
+{
+	if( UWorld* World = GetWorld() )
+	{
+		World->GetTimerManager().ClearTimer(WaitDebugMenuManagerTimerHandle);
+	}
+
+	if( AGameDebugMenuManager* DebugMenuManager = UGameDebugMenuFunctions::GetGameDebugMenuManager(this) )
+	{
+		DebugMenuManager->UnregisterViewportDebugMenuWidget(this);
+	}
+
+	Super::RemoveFromParent();
+}
 
 void UGameDebugMenuWidget::SendSelfEvent(FName EventName)
 {
@@ -18,19 +56,13 @@ void UGameDebugMenuWidget::SendSelfEvent(FName EventName)
 
 void UGameDebugMenuWidget::ExecuteGDMConsoleCommand(const FString Command, EGDMConsoleCommandNetType CommandNetType)
 {
-	APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
-	if (IsValid(PC) == false)
+	if ( APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0) )
 	{
-		return;
+		if( UGDMPlayerControllerProxyComponent* DebugMenuPCProxyComponent = PC->FindComponentByClass<UGDMPlayerControllerProxyComponent>() )
+		{
+			DebugMenuPCProxyComponent->ExecuteConsoleCommand(Command, CommandNetType);
+		}
 	}
-
-	UGDMPlayerControllerProxyComponent* DebugMenuPCProxyComponent = PC->FindComponentByClass<UGDMPlayerControllerProxyComponent>();
-	if (IsValid(DebugMenuPCProxyComponent) == false)
-	{
-		return;
-	}
-
-	DebugMenuPCProxyComponent->ExecuteConsoleCommand(Command, CommandNetType);
 }
 
 bool UGameDebugMenuWidget::IsActivateDebugMenu()
@@ -40,9 +72,9 @@ bool UGameDebugMenuWidget::IsActivateDebugMenu()
 
 void UGameDebugMenuWidget::ActivateDebugMenu(bool bAlwaysExecute)
 {
-	if (bAlwaysExecute == false)
+	if (!bAlwaysExecute)
 	{
-		if (bActivateMenu != false)
+		if (bActivateMenu)
 		{
 			return;
 		}
@@ -54,7 +86,7 @@ void UGameDebugMenuWidget::ActivateDebugMenu(bool bAlwaysExecute)
 
 void UGameDebugMenuWidget::DeactivateDebugMenu()
 {
-	if (bActivateMenu == false)
+	if (!bActivateMenu)
 	{
 		return;
 	}
@@ -66,4 +98,71 @@ void UGameDebugMenuWidget::DeactivateDebugMenu()
 void UGameDebugMenuWidget::OnChangeDebugMenuLanguage(const FName& NewLanguageKey, const FName& OldLanguageKey)
 {
 	OnChangeDebugMenuLanguageBP(NewLanguageKey, OldLanguageKey);
+}
+
+bool UGameDebugMenuWidget::GetWidgetChildrenOfClass(TSubclassOf<UWidget> WidgetClass, TArray<UWidget*>& OutChildWidgets, bool bEndSearchAsYouFind)
+{
+	OutChildWidgets.Reset();
+
+	/* 現在チェックするWidget郡 */
+	TInlineComponentArray<UWidget*> WidgetsToCheck;
+
+	/* チェック済みWidget郡 */
+	TInlineComponentArray<UWidget*> CheckedWidgets;
+
+	/* 作業用 */
+	TArray<UWidget*> WorkWidgets;
+
+	WidgetsToCheck.Push(this);
+
+	while( WidgetsToCheck.Num() > 0 )
+	{
+		UWidget* PossibleParent = WidgetsToCheck.Pop(false);
+
+		if( CheckedWidgets.Contains(PossibleParent) )
+		{
+			/* チェック済み */
+			continue;
+		}
+
+		CheckedWidgets.Add(PossibleParent);
+
+		WorkWidgets.Reset();
+
+		if( UUserWidget* UserWidget = Cast<UUserWidget>(PossibleParent) )
+		{
+			if( UserWidget->WidgetTree != nullptr )
+			{
+				UserWidget->WidgetTree->GetAllWidgets(WorkWidgets);
+			}
+		}
+		else
+		{
+			UWidgetTree::GetChildWidgets(PossibleParent, WorkWidgets);
+		}
+
+		for( UWidget* Widget : WorkWidgets )
+		{
+			if( CheckedWidgets.Contains(Widget) )
+			{
+				/* チェック済み */
+				continue;
+			}
+
+			if( Widget->GetClass()->IsChildOf(WidgetClass) )
+			{
+				OutChildWidgets.Add(Widget);
+
+				if( bEndSearchAsYouFind )
+				{
+					/* 一致したものがあればそのまま終了 */
+					return (OutChildWidgets.Num() > 0);
+				}
+			}
+
+			WidgetsToCheck.Push(Widget);
+		}
+	}
+
+	return (OutChildWidgets.Num() > 0);
 }

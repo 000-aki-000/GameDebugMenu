@@ -25,6 +25,8 @@ class GAMEDEBUGMENU_API UGameDebugMenuWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
+	FTimerHandle WaitDebugMenuManagerTimerHandle;
+
 public:
 	/** イベント通知ディスパッチャー */
 	UPROPERTY(BlueprintAssignable)
@@ -38,6 +40,10 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GDM|Config")
 	FString GameDebugMenuName;
+
+public:
+	virtual void AddToScreen(ULocalPlayer* LocalPlayer, int32 ZOrder) override;
+	virtual void RemoveFromParent() override;
 
 public:
 	/**
@@ -107,4 +113,13 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category = "GDM|Event")
 	void OnChangeDebugMenuLanguageBP(const FName& NewLanguageKey, const FName& OldLanguageKey);
 
+	/**
+	* 指定クラスの子供Widgetをすべて取得する
+	* @param WidgetClass         - 対象のクラス
+	* @param OutChildWidgets     - 取得できたWidget
+	* @param bEndSearchAsYouFind - 最初に見つけた時点で終了する
+	* @return true: １つ以上OutChildWidgetsがある　false: １つもWidgetがなかった
+	*/
+	UFUNCTION(BlueprintCallable, Category = "GDM", meta = (DeterminesOutputType = "WidgetClass", DynamicOutputParam = "OutChildWidgets"))
+	virtual bool GetWidgetChildrenOfClass(TSubclassOf<UWidget> WidgetClass, TArray<UWidget*>& OutChildWidgets, bool bEndSearchAsYouFind);
 };

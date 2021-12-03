@@ -117,6 +117,9 @@ protected:
 	UPROPERTY(Transient)
 	bool bCurrentDebugMenuDirectStringKey;
 
+	UPROPERTY(Transient)
+	TArray<UGameDebugMenuWidget*> ViewportDebugMenuWidgets;
+
 public:
 	AGameDebugMenuManager(const FObjectInitializer& ObjectInitializer);
 protected:
@@ -291,6 +294,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "GDM")
 	virtual TArray<FName> GetDebugMenuLanguageKeys();
+
+	void RegisterViewportDebugMenuWidget(UGameDebugMenuWidget* TargetWidget);
+	void UnregisterViewportDebugMenuWidget(UGameDebugMenuWidget* TargetWidget);
 
 protected:
 	virtual void CallExecuteConsoleCommandDispatcher(const FString& Command);

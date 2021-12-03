@@ -248,7 +248,12 @@ AGameDebugMenuManager* UGameDebugMenuFunctions::GetGameDebugMenuManager(UObject*
 	}
 
 	UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::LogAndReturnNull);
-	
+	if( !IsValid(World) )
+	{
+		UE_LOG(LogGDM, Warning, TEXT("GetGameDebugMenuManager: not found World"));
+		return nullptr;
+	}
+
 	AGameDebugMenuManager* GDMManager = CurrentGameDebugMenuManager.Get();
 	if (IsValid(GDMManager))
 	{

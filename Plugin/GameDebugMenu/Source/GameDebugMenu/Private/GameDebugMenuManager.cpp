@@ -28,6 +28,7 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include <Internationalization/StringTableCore.h>
+#include "Widgets/GDMTextBlock.h"
 
 
 /************************************************************************/
@@ -877,6 +878,38 @@ void AGameDebugMenuManager::ChangeDebugMenuLanguage(FName LanguageKey, bool bFor
 
 	SyncLoadDebugMenuStringTables(CurrentDebugMenuLanguage);
 
+	TArray<UWidget*> ChildWidgets;
+	for( auto ViewportWidget : ViewportDebugMenuWidgets )
+	{
+		/* Viewportに追加 Widget 内にあるすべてのTextBlockとDebugMenuWidgetを更新 */
+		{
+			ViewportWidget->GetWidgetChildrenOfClass(UGDMTextBlock::StaticClass(), ChildWidgets, false);
+
+			for( auto ChildWidget : ChildWidgets )
+			{
+				if( UGDMTextBlock* TextBlock = Cast<UGDMTextBlock>(ChildWidget) )
+				{
+					if( !TextBlock->DebugMenuStringKey.IsEmpty() )
+					{
+						TextBlock->SetText(FText::FromString(TextBlock->DebugMenuStringKey));
+					}
+				}
+			}
+
+			ViewportWidget->GetWidgetChildrenOfClass(UGameDebugMenuWidget::StaticClass(), ChildWidgets, false);
+
+			for( auto ChildWidget : ChildWidgets )
+			{
+				if( UGameDebugMenuWidget* DebugMenuWidget = Cast<UGameDebugMenuWidget>(ChildWidget) )
+				{
+					DebugMenuWidget->OnChangeDebugMenuLanguage(LanguageKey, Old);
+				}
+			}
+		}
+
+		ViewportWidget->OnChangeDebugMenuLanguage(LanguageKey, Old);
+	}
+
 	CallChangeDebugMenuLanguageDispatcher(LanguageKey, Old);
 }
 
@@ -909,6 +942,16 @@ TArray<FName> AGameDebugMenuManager::GetDebugMenuLanguageKeys()
 	TArray<FName> ReturnValues;
 	UGameDebugMenuSettings::Get()->GameDebugMenuStringTables.GetKeys(ReturnValues);
 	return ReturnValues;
+}
+
+void AGameDebugMenuManager::RegisterViewportDebugMenuWidget(UGameDebugMenuWidget* TargetWidget)
+{
+	ViewportDebugMenuWidgets.AddUnique(TargetWidget);
+}
+
+void AGameDebugMenuManager::UnregisterViewportDebugMenuWidget(UGameDebugMenuWidget* TargetWidget)
+{
+	ViewportDebugMenuWidgets.RemoveSingle(TargetWidget);
 }
 
 void AGameDebugMenuManager::CallExecuteConsoleCommandDispatcher(const FString& Command)

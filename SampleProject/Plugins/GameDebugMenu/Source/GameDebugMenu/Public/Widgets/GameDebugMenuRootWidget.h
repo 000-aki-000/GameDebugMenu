@@ -12,7 +12,6 @@
 #include "GameDebugMenuRootWidget.generated.h"
 
 class AGameDebugMenuManager;
-class UGDMListenerComponent;
 
 /**
  * DebugMenuのルートに当たるWidget
@@ -36,9 +35,4 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "GDM|Event")
 	void ShowDebugReport();
-
-protected:
-	virtual void OnChangeDebugMenuLanguage(const FName& NewLanguageKey, const FName& OldLanguageKey) override;
-	virtual bool GetWidgetChildrenOfClass(TSubclassOf<UWidget> WidgetClass, TArray<UWidget*>& OutChildWidgets, bool bEndSearchAsYouFind);
-
 };
