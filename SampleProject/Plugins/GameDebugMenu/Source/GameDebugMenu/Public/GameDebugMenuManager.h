@@ -298,6 +298,9 @@ public:
 	void RegisterViewportDebugMenuWidget(UGameDebugMenuWidget* TargetWidget);
 	void UnregisterViewportDebugMenuWidget(UGameDebugMenuWidget* TargetWidget);
 
+	UFUNCTION(BlueprintCallable, Category = "GDM")
+	TArray<UGameDebugMenuWidget*> GetViewportDebugMenuWidgets();
+
 protected:
 	virtual void CallExecuteConsoleCommandDispatcher(const FString& Command);
 	virtual void CallShowDispatcher();

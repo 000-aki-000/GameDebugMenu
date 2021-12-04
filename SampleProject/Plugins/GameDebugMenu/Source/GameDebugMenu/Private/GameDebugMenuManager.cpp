@@ -467,7 +467,8 @@ bool AGameDebugMenuManager::ShowDebugMenu(bool bWaitToCaptureBeforeOpeningMenuFl
 	}
 	else
 	{
-		for ( auto ViewportWidget : ViewportDebugMenuWidgets )
+		TArray<UGameDebugMenuWidget*> DebugMenuWidgets = AGameDebugMenuManager::GetViewportDebugMenuWidgets();
+		for ( auto ViewportWidget : DebugMenuWidgets )
 		{
 			if( ViewportWidget->IsActivateDebugMenu() )
 			{
@@ -526,7 +527,8 @@ void AGameDebugMenuManager::HideDebugMenu()
 
 	DebugMenuInputSystemComponent->CallReleasedButtons();
 
-	for( auto ViewportWidget : ViewportDebugMenuWidgets )
+	TArray<UGameDebugMenuWidget*> DebugMenuWidgets = AGameDebugMenuManager::GetViewportDebugMenuWidgets();
+	for( auto ViewportWidget : DebugMenuWidgets )
 	{
 		if( ViewportWidget->IsActivateDebugMenu() )
 		{
@@ -959,6 +961,11 @@ TArray<FName> AGameDebugMenuManager::GetDebugMenuLanguageKeys()
 void AGameDebugMenuManager::RegisterViewportDebugMenuWidget(UGameDebugMenuWidget* TargetWidget)
 {
 	ViewportDebugMenuWidgets.AddUnique(TargetWidget);
+}
+
+TArray<UGameDebugMenuWidget*> AGameDebugMenuManager::GetViewportDebugMenuWidgets()
+{
+	return ViewportDebugMenuWidgets;
 }
 
 void AGameDebugMenuManager::UnregisterViewportDebugMenuWidget(UGameDebugMenuWidget* TargetWidget)
