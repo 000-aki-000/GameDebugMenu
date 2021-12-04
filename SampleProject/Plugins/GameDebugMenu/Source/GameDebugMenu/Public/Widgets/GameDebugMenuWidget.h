@@ -27,13 +27,14 @@ class GAMEDEBUGMENU_API UGameDebugMenuWidget : public UUserWidget
 
 	FTimerHandle WaitDebugMenuManagerTimerHandle;
 
+protected:
+	UPROPERTY()
+	bool bActivateMenu;
+
 public:
 	/** イベント通知ディスパッチャー */
 	UPROPERTY(BlueprintAssignable)
 	FGDMWidgetDelegate OnSendWidgetEventDispatcher;
-
-	UPROPERTY()
-	bool bActivateMenu;
 
 	UPROPERTY(BlueprintReadOnly, Category = "GDM", Meta = (ExposeOnSpawn = true))
 	UGameDebugMenuWidget* ParentGameDebugMenuWidget;
@@ -60,24 +61,28 @@ public:
 
 	/**
 	* UIを表示するときのイベント
+	* @memo 呼ばれるのはActivateされてるときのみ
 	*/
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category = "GDM|Event")
 	void OnShowingMenu();
 
 	/**
 	* UIを非表示にするときのイベント
+	* @memo 呼ばれるのはActivateされてるときのみ
 	*/
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category = "GDM|Event")
-	void OnClosingMenu();
+	void OnHidingMenu();
 
 	/**
 	* アクティベート化をするときに呼ばれるイベント
+	* @memo ここで表示したり、操作できる状態に移行する
 	*/	
 	UFUNCTION(BlueprintImplementableEvent, Category = "GDM|Event")
 	void OnActivateDebugMenu(bool bAlwaysExecute);
 
 	/**
 	* ディアクティベート化をするときに呼ばれるイベント
+	* @memo ここで非表示にしたり、メニューの終了処理を行う
 	*/
 	UFUNCTION(BlueprintImplementableEvent, Category = "GDM|Event")
 	void OnDeactivateDebugMenu();
@@ -89,14 +94,14 @@ public:
 	virtual bool IsActivateDebugMenu();
 
 	/**
-	* UIのアクティベート化をする
+	* UIのアクティベート化をする(表示、操作できる状態になる)
 	* @param 基本Activate済みの場合無視するので必ず処理させる場合Trueにする
 	*/
 	UFUNCTION(BlueprintCallable, Category = "GDM|Event")
 	virtual void ActivateDebugMenu(bool bAlwaysExecute);
 
 	/**
-	* UIのディアクティベート化をする
+	* UIのディアクティベート化をする(非表示、操作不可状態になる)
 	*/
 	UFUNCTION(BlueprintCallable, Category = "GDM|Event")
 	virtual void DeactivateDebugMenu();
@@ -110,6 +115,9 @@ public:
 	UFUNCTION()
 	virtual void OnChangeDebugMenuLanguage(const FName& NewLanguageKey, const FName& OldLanguageKey);
 
+	/**
+	* デバックメニューの使用言語が変更されたら呼ばれる
+	*/
 	UFUNCTION(BlueprintImplementableEvent, Category = "GDM|Event")
 	void OnChangeDebugMenuLanguageBP(const FName& NewLanguageKey, const FName& OldLanguageKey);
 

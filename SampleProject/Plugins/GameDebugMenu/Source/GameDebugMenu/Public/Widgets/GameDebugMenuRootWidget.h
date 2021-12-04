@@ -28,6 +28,8 @@ public:
 public:
 	virtual void NativeConstruct() override;
 	virtual void NativeDestruct() override;
+	virtual void ActivateDebugMenu(bool bAlwaysExecute) override;
+	virtual void DeactivateDebugMenu() override;
 
 public:
 	UFUNCTION(BlueprintImplementableEvent, Category = "GDM")

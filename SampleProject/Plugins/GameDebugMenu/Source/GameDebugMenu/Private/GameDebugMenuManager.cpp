@@ -467,7 +467,13 @@ bool AGameDebugMenuManager::ShowDebugMenu(bool bWaitToCaptureBeforeOpeningMenuFl
 	}
 	else
 	{
-		DebugMenuRootWidget->OnShowingMenu();
+		for ( auto ViewportWidget : ViewportDebugMenuWidgets )
+		{
+			if( ViewportWidget->IsActivateDebugMenu() )
+			{
+				ViewportWidget->OnShowingMenu();
+			}
+		}
 	}
 
 	CallShowDispatcher();
@@ -520,7 +526,13 @@ void AGameDebugMenuManager::HideDebugMenu()
 
 	DebugMenuInputSystemComponent->CallReleasedButtons();
 
-	DebugMenuRootWidget->OnClosingMenu();
+	for( auto ViewportWidget : ViewportDebugMenuWidgets )
+	{
+		if( ViewportWidget->IsActivateDebugMenu() )
+		{
+			ViewportWidget->OnHidingMenu();
+		}
+	}
 
 	CallHideDispatcher();
 
