@@ -14,6 +14,7 @@
 #include "CoreGlobals.h"
 #include "Misc/ConfigCacheIni.h"
 #include <GeneralProjectSettings.h>
+#include "Input/GDMInputSystemComponent.h"
 
 TArray< TWeakObjectPtr<AGameDebugMenuManager> > GGameDebugMenuManagers;
 TWeakObjectPtr<AGameDebugMenuManager> UGameDebugMenuFunctions::CurrentGameDebugMenuManager = nullptr;
@@ -29,9 +30,10 @@ UGameDebugMenuFunctions::UGameDebugMenuFunctions(const FObjectInitializer& Objec
 	if(!IsRunningCommandlet())
 	{
 		auto& ConsoleManager = IConsoleManager::Get();
-		const FString ShowCommand = TEXT("GDMShow");
-		const FString HideCommand = TEXT("GDMHide");
-		const FString ToggleCommand = TEXT("GDMToggle");
+		const FString ShowCommand = TEXT("GDM.Show");
+		const FString HideCommand = TEXT("GDM.Hide");
+		const FString ToggleMenuCommand = TEXT("GDM.ToggleMenu");
+		const FString ToggleInputCommand = TEXT("GDM.ToggleInput");
 
 		if(ConsoleManager.FindConsoleObject(*ShowCommand) == nullptr)
 		{
@@ -41,10 +43,15 @@ UGameDebugMenuFunctions::UGameDebugMenuFunctions(const FObjectInitializer& Objec
 		{
 			ConsoleManager.RegisterConsoleCommand(*HideCommand, TEXT("Hide Game Debug Menu"), FConsoleCommandDelegate::CreateStatic(UGameDebugMenuFunctions::HideDebugConsoleCommand), ECVF_Default);
 		}
-		if(ConsoleManager.FindConsoleObject(*ToggleCommand) == nullptr)
+		if(ConsoleManager.FindConsoleObject(*ToggleMenuCommand) == nullptr)
 		{
-			ConsoleManager.RegisterConsoleCommand(*ToggleCommand, TEXT("Toggle Game Debug Menu"), FConsoleCommandDelegate::CreateStatic(UGameDebugMenuFunctions::ToggleDebugConsoleCommand), ECVF_Default);
+			ConsoleManager.RegisterConsoleCommand(*ToggleMenuCommand, TEXT("Toggle Game Debug Menu"), FConsoleCommandDelegate::CreateStatic(UGameDebugMenuFunctions::ToggleDebugConsoleCommand), ECVF_Default);
 		}
+		if( ConsoleManager.FindConsoleObject(*ToggleInputCommand) == nullptr )
+		{
+			ConsoleManager.RegisterConsoleCommand(*ToggleInputCommand, TEXT("Toggle Game Debug Menu InputSystem Log"), FConsoleCommandDelegate::CreateStatic(UGameDebugMenuFunctions::ToggleInputSystemLog), ECVF_Default);
+		}
+
 	}
 }
 
@@ -818,7 +825,7 @@ TArray<FString> UGameDebugMenuFunctions::GetGDMCultureList()
 	return UGameDebugMenuSettings::Get()->CultureList;
 }
 
-void UGameDebugMenuFunctions::PrintLog(UObject* WorldContextObject, const FString& InString, float Duration)
+void UGameDebugMenuFunctions::PrintLogScreen(UObject* WorldContextObject, const FString& InString, float Duration, bool bPrintToLog)
 {
 #if !(UE_BUILD_SHIPPING)
 
@@ -867,7 +874,14 @@ void UGameDebugMenuFunctions::PrintLog(UObject* WorldContextObject, const FStrin
 		UE_LOG(LogGDM, Log, TEXT("Screen messages disabled (!GAreScreenMessagesEnabled).  Cannot print to screen."));
 	}
 
-	UE_LOG(LogGDM, Log, TEXT("%s"), *FinalDisplayString);
+	if( bPrintToLog )
+	{
+		UE_LOG(LogGDM, Log, TEXT("%s"), *FinalDisplayString);
+	}
+	else
+	{
+		UE_LOG(LogGDM, Verbose, TEXT("%s"), *FinalLogString);
+	}
 
 #endif
 }
@@ -1028,6 +1042,18 @@ void UGameDebugMenuFunctions::ToggleDebugConsoleCommand()
 		else
 		{
 			CurrentGameDebugMenuManager->ShowDebugMenu();
+		}
+	}
+}
+
+void UGameDebugMenuFunctions::ToggleInputSystemLog()
+{
+	/* キャッシュしてるマネージャーに対して実行 */
+	if( CurrentGameDebugMenuManager.IsValid() )
+	{
+		if( UGDMInputSystemComponent* InputSystemComponent = CurrentGameDebugMenuManager->GetDebugMenuInputSystemComponent() )
+		{
+			InputSystemComponent->bOutputDebugLog = !InputSystemComponent->bOutputDebugLog;
 		}
 	}
 }

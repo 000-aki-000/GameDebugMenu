@@ -345,6 +345,39 @@ void UGDMInputSystemComponent::UpdateInputObject()
 
 		GetOwnerGameDebugMenuManager()->CallChangeActiveInputObjectDispatcher(NewInputObject,OldObject);
 	}
+
+	if( bOutputDebugLog )
+	{
+		for( int32 Index = 0; Index < RegisterInputObjects.Num(); ++Index )
+		{
+			UObject* Current    = RegisterInputObjects[Index].Get();
+			const bool bIsEnableInput = IGDMInputInterface::Execute_IsEnableInputGDM(Current);
+			const bool bIsModalMode   = IGDMInputInterface::Execute_IsModalModeGDM(Current);
+			const int32 InputPriority = IGDMInputInterface::Execute_GetInputPriorityGDM(Current);
+
+			FString LogString;
+			if( CurrentInputObject.Get() != Current )
+			{
+				LogString = FString::Printf(TEXT("Input Objects | Priority=%d | Name=%s | IsEnableInput=%s | IsModalMode=%s")
+											, InputPriority
+											, *GetNameSafe(Current)
+											, bIsEnableInput ? TEXT("true") : TEXT("false")
+											, bIsModalMode ? TEXT("true") : TEXT("false")
+											);
+			}
+			else
+			{
+				LogString = FString::Printf(TEXT("Input Objects | ** Current ** | Priority=%d | Name=%s | IsEnableInput=%s | IsModalMode=%s")
+											, InputPriority
+											, *GetNameSafe(Current)
+											, bIsEnableInput ? TEXT("true") : TEXT("false")
+											, bIsModalMode ? TEXT("true") : TEXT("false")
+				);
+			}
+
+			UGameDebugMenuFunctions::PrintLogScreen(this, LogString, 0.0f/* Duration */);
+		}
+	}
 }
 
 void UGDMInputSystemComponent::CallInputPressedInterfaceEvent(FName EventName)

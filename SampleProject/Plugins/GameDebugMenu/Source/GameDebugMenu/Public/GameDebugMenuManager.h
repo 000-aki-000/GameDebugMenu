@@ -29,11 +29,11 @@ class GAMEDEBUGMENU_API AGameDebugMenuManager : public AActor
 	GENERATED_BODY()
 
 	/** DebugMenuの入力操作を制御するコンポーネント */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "GDM", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, Category = "GDM", meta = (AllowPrivateAccess = "true"))
 	UGDMInputSystemComponent* DebugMenuInputSystemComponent;
 
 	/** DebugMenuで使用するスクリーンショットを制御するコンポーネント */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "GDM", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, Category = "GDM", meta = (AllowPrivateAccess = "true"))
 	UGDMScreenshotRequesterComponent* ScreenshotRequesterComponent;
 
 	UPROPERTY(Transient)

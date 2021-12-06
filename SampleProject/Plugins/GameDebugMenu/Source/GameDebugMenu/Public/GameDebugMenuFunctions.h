@@ -307,8 +307,8 @@ public:
 	UFUNCTION(BlueprintPure, BlueprintCosmetic, Category = "GDM|Functions", meta = (Keywords = "DebugMenu GDM"))
 	static TArray<FString> GetGDMCultureList();
 	
-	UFUNCTION(BlueprintCallable, BlueprintCosmetic, Category = "GDM|Functions", meta = (Keywords = "DebugMenu GDM", WorldContext = "WorldContextObject", DisplayName = "PrintLogGDM"))
-	static void PrintLog(UObject* WorldContextObject, const FString& InString, float Duration = 0.2f);
+	UFUNCTION(BlueprintCallable, BlueprintCosmetic, Category = "GDM|Functions", meta = (Keywords = "DebugMenu GDM", WorldContext = "WorldContextObject", DisplayName = "PrintLogScreenGDM"))
+	static void PrintLogScreen(UObject* WorldContextObject, const FString& InString, float Duration = 0.2f, bool bPrintToLog = false);
 
 	/**
 	* マネージャーのInputComponentのbBlockInputを動的に変更する
@@ -345,4 +345,6 @@ private:
 	static void ShowDebugConsoleCommand();
 	static void HideDebugConsoleCommand();
 	static void ToggleDebugConsoleCommand();
+	static void ToggleInputSystemLog();
+
 };

@@ -70,6 +70,10 @@ protected:
 	/** True: マッピング追加完了 */
 	bool bActionMappingBindingsAdded;
 
+public:
+	UPROPERTY(BlueprintReadWrite, Category = "GDM|Debug")
+	bool bOutputDebugLog;
+
 public:	
 	UGDMInputSystemComponent();
 	virtual void BeginPlay() override;

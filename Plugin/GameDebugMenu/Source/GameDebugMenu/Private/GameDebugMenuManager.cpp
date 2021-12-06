@@ -92,7 +92,7 @@ void AGameDebugMenuManager::BeginPlay()
 
 	UGameDebugMenuFunctions::RegisterGameDebugMenuManagerInstance(this);
 
-	UGameDebugMenuFunctions::PrintLog(this, TEXT("AGameDebugMenuManager: Call BeginPlay"), 4.0f);
+	UGameDebugMenuFunctions::PrintLogScreen(this, TEXT("AGameDebugMenuManager: Call BeginPlay"), 4.0f);
 
 	OutputLog = MakeShareable(new FGDMOutputDevice);
 
@@ -124,12 +124,12 @@ void AGameDebugMenuManager::BeginPlay()
 				}
 				else
 				{
-					UGameDebugMenuFunctions::PrintLog(this, TEXT("AGameDebugMenuManager: Beginplay error StartupConsoleCommands"), 4.0f);
+					UGameDebugMenuFunctions::PrintLogScreen(this, TEXT("AGameDebugMenuManager: Beginplay error StartupConsoleCommands"), 4.0f);
 				}
 			}
 			else
 			{
-				UGameDebugMenuFunctions::PrintLog(this, TEXT("AGameDebugMenuManager: Beginplay Notfound PlayerController"), 4.0f);
+				UGameDebugMenuFunctions::PrintLogScreen(this, TEXT("AGameDebugMenuManager: Beginplay Notfound PlayerController"), 4.0f);
 			}
 		}
 	}));
@@ -137,7 +137,7 @@ void AGameDebugMenuManager::BeginPlay()
 
 void AGameDebugMenuManager::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
-	UGameDebugMenuFunctions::PrintLog(this, TEXT("AGameDebugMenuManager: Call EndPlay"), 4.0f);
+	UGameDebugMenuFunctions::PrintLogScreen(this, TEXT("AGameDebugMenuManager: Call EndPlay"), 4.0f);
 
 	OutputLog.Reset();
 
@@ -189,7 +189,7 @@ void AGameDebugMenuManager::EnableInput(class APlayerController* PlayerControlle
 		{
 			/* この時点でまだない場合,Clientの可能性があるのでローカルで実行できるようにチートを有効にする */
 			PlayerController->EnableCheats();
-			UGameDebugMenuFunctions::PrintLog(this, TEXT("AGameDebugMenuManager: EnableCheats"), 4.0f);
+			UGameDebugMenuFunctions::PrintLogScreen(this, TEXT("AGameDebugMenuManager: EnableCheats"), 4.0f);
 		}
 	}
 }
@@ -409,7 +409,7 @@ void AGameDebugMenuManager::ExecuteConsoleCommand(const FString& Command, APlaye
 			{
 				/* DebugCameraControllerが動作してた場合はそっちで実行 */
 				LogCommand = DCC->ConsoleCommand(Command);
-				UGameDebugMenuFunctions::PrintLog(this, FString::Printf(TEXT("ExecuteConsoleCommand DCC: %s: Log %s"), *Command, *LogCommand), 4.0f);
+				UGameDebugMenuFunctions::PrintLogScreen(this, FString::Printf(TEXT("ExecuteConsoleCommand DCC: %s: Log %s"), *Command, *LogCommand), 4.0f);
 				CallExecuteConsoleCommandDispatcher(Command);
 				return;
 			}
@@ -417,7 +417,7 @@ void AGameDebugMenuManager::ExecuteConsoleCommand(const FString& Command, APlaye
 	}
 
 	LogCommand = PC->ConsoleCommand(Command);
-	UGameDebugMenuFunctions::PrintLog(this, FString::Printf(TEXT("ExecuteConsoleCommand PC: %s: Log %s"), *Command, *LogCommand), 4.0f);
+	UGameDebugMenuFunctions::PrintLogScreen(this, FString::Printf(TEXT("ExecuteConsoleCommand PC: %s: Log %s"), *Command, *LogCommand), 4.0f);
 	CallExecuteConsoleCommandDispatcher(Command);
 }
 
@@ -425,27 +425,27 @@ bool AGameDebugMenuManager::ShowDebugMenu(bool bWaitToCaptureBeforeOpeningMenuFl
 {
 	if(bShowDebugMenu)
 	{
-		UGameDebugMenuFunctions::PrintLog(this, TEXT("ShowDebugMenu: bShowDebugMenu TRUE"), 4.0f);
+		UGameDebugMenuFunctions::PrintLogScreen(this, TEXT("ShowDebugMenu: bShowDebugMenu TRUE"), 4.0f);
 		return false;
 	}
 
 	UWorld* World = GetWorld();
 	if(!IsValid(World))
 	{
-		UGameDebugMenuFunctions::PrintLog(this, TEXT("ShowDebugMenu: Not found World"), 4.0f);
+		UGameDebugMenuFunctions::PrintLogScreen(this, TEXT("ShowDebugMenu: Not found World"), 4.0f);
 		return false;
 	}
 
 	APlayerController* PC = UGameplayStatics::GetPlayerController(World, 0);
 	if(!IsValid(PC))
 	{
-		UGameDebugMenuFunctions::PrintLog(this, TEXT("ShowDebugMenu: Not found PlayerController"), 4.0f);
+		UGameDebugMenuFunctions::PrintLogScreen(this, TEXT("ShowDebugMenu: Not found PlayerController"), 4.0f);
 		return false;
 	}
 
 	if(!IsValid(DebugMenuRootWidget))
 	{
-		UGameDebugMenuFunctions::PrintLog(this, TEXT("ShowDebugMenu: Not found DebugMenuRootWidget"), 4.0f);
+		UGameDebugMenuFunctions::PrintLogScreen(this, TEXT("ShowDebugMenu: Not found DebugMenuRootWidget"), 4.0f);
 		return false;
 	}
 
@@ -487,34 +487,34 @@ void AGameDebugMenuManager::HideDebugMenu()
 {
 	if(!bShowDebugMenu)
 	{
-		UGameDebugMenuFunctions::PrintLog(this, TEXT("HideDebugMenu: bShowDebugMenu FALSE"), 4.0f);
+		UGameDebugMenuFunctions::PrintLogScreen(this, TEXT("HideDebugMenu: bShowDebugMenu FALSE"), 4.0f);
 		return;
 	}
 
 	if(bWaitToCaptureBeforeOpeningDebugReportMenu)
 	{
 		/* キャプチャ後１度UIを開く予定なので閉じないようにする */
-		UGameDebugMenuFunctions::PrintLog(this, TEXT("HideDebugMenu: bWaitToCaptureBeforeOpeningMenu TRUE"), 4.0f);
+		UGameDebugMenuFunctions::PrintLogScreen(this, TEXT("HideDebugMenu: bWaitToCaptureBeforeOpeningMenu TRUE"), 4.0f);
 		return;
 	}
 
 	UWorld* World = GetWorld();
 	if(!IsValid(World))
 	{
-		UGameDebugMenuFunctions::PrintLog(this, TEXT("HideDebugMenu: Not found World"), 4.0f);
+		UGameDebugMenuFunctions::PrintLogScreen(this, TEXT("HideDebugMenu: Not found World"), 4.0f);
 		return;
 	}
 
 	APlayerController* PC = UGameplayStatics::GetPlayerController(World,0);
 	if(!IsValid(PC))
 	{
-		UGameDebugMenuFunctions::PrintLog(this, TEXT("HideDebugMenu: Not found PlayerController"), 4.0f);
+		UGameDebugMenuFunctions::PrintLogScreen(this, TEXT("HideDebugMenu: Not found PlayerController"), 4.0f);
 		return;
 	}
 
 	if(!IsValid(DebugMenuRootWidget))
 	{
-		UGameDebugMenuFunctions::PrintLog(this, TEXT("HideDebugMenu: Not found DebugMenuWidget"), 4.0f);
+		UGameDebugMenuFunctions::PrintLogScreen(this, TEXT("HideDebugMenu: Not found DebugMenuWidget"), 4.0f);
 		return;
 	}
 

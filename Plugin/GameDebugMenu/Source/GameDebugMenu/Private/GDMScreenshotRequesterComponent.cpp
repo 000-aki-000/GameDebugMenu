@@ -66,7 +66,7 @@ AGameDebugMenuManager* UGDMScreenshotRequesterComponent::GetOwnerGameDebugMenuMa
 
 void UGDMScreenshotRequesterComponent::OnScreenshotCaptured(int32 Width, int32 Height, const TArray<FColor>& Bitmap)
 {
-	UGameDebugMenuFunctions::PrintLog(this, TEXT("OnScreenshotCaptured"), 4.0f);
+	UGameDebugMenuFunctions::PrintLogScreen(this, TEXT("OnScreenshotCaptured"), 4.0f);
 
 	if(AGameDebugMenuManager* DebugMenuManager = GetOwnerGameDebugMenuManager())
 	{
@@ -88,7 +88,7 @@ void UGDMScreenshotRequesterComponent::OnScreenshotRequestProcessed()
 {
 	ResetHandle();
 
-	UGameDebugMenuFunctions::PrintLog(this, TEXT("OnScreenshotRequestProcessed"), 4.0f);
+	UGameDebugMenuFunctions::PrintLogScreen(this, TEXT("OnScreenshotRequestProcessed"), 4.0f);
 
 	bRequestProcessed = true;
 

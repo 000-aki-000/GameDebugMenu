@@ -51,7 +51,7 @@ public:
 	*
 	* @return True : 入力処理をする, False : 入力処理をしない
 	*/
-	UFUNCTION(BlueprintNativeEvent,Category = "GDM|InputInterface")
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent,Category = "GDM|InputInterface")
 	bool IsEnableInputGDM();
 	virtual bool IsEnableInputGDM_Implementation();
 
@@ -60,13 +60,13 @@ public:
 	* 
 	* @return true : IsEnableInputGDMがFalseになっても優先度が下のオブジェクトに入力処理が映らなくなる False : 自分より優先度の低いオブジェクトに入力処理が移る
 	*/
-	UFUNCTION(BlueprintImplementableEvent,Category = "GDM|InputInterface")
+	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent,Category = "GDM|InputInterface")
 	bool IsModalModeGDM();
 
 	/**
 	* 入力処理の自身の優先度。数字が大きいほど優先度があがる
 	*/
-	UFUNCTION(BlueprintNativeEvent,Category = "GDM|InputInterface")
+	UFUNCTION(BlueprintCallable,BlueprintNativeEvent,Category = "GDM|InputInterface")
 	int32 GetInputPriorityGDM();
 	virtual int32 GetInputPriorityGDM_Implementation();
 
