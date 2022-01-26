@@ -1029,7 +1029,7 @@ void UGameDebugMenuSettings::SetupCategoryScalability()
 	ConsoleCommandNumbers.Add(Number);
 
 	Number.Title                            = FText::FromString(TEXT("DynamicRes.OperationMode"));
-	Number.Description                      = FText::FromString(TEXT("動的解像度の使用方法の切り替え\n0 = 無効: 1 = GameUserSettingsの設定に基づいて有効化 : 2 = GameUserSettingsを考慮せず有効化"));
+	Number.Description                      = FText::FromString(TEXT("動的解像度の使用方法の切り替え\n 0 = 無効\n 1 = GameUserSettingsの設定に基づいて有効化\n2 = GameUserSettingsを考慮せず有効化"));
 	Number.ConsoleCommandName               = TEXT("DynamicRes.OperationMode");
 	Number.ConsoleVariableName				= TEXT("r.DynamicRes.OperationMode");
 	Number.UIConfigInfo.Range.bUseMax       = true;
