@@ -35,8 +35,12 @@ public:
 	virtual void SynchronizeProperties() override;
 	virtual void SetText(FText InText) override;
 
+	UFUNCTION(BlueprintCallable, Category = "Appearance")
+	virtual void SetWrapTextAt(float InWrapTextAt);
+
 public:
 #if WITH_EDITOR
 	virtual const FText GetPaletteCategory() override;
+	virtual bool CanEditChange(const FProperty* InProperty) const override;
 #endif
 };

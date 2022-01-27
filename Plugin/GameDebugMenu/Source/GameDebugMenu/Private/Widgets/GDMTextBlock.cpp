@@ -20,16 +20,15 @@ UGDMTextBlock::UGDMTextBlock(const FObjectInitializer& ObjectInitializer)
 	, PreviewLanguageKey(TEXT("Japanese"))
 #endif
 {
+	if( !IsRunningDedicatedServer() )
+	{
+		Font = FSlateFontInfo(UGameDebugMenuSettings::Get()->GetGDMFont(), 24, FName("Bold"));
+	}
 }
 
 void UGDMTextBlock::SynchronizeProperties()
 {
 	Super::SynchronizeProperties();
-
-	if( IsValid(UGameDebugMenuSettings::Get()->GetGDMFont()) )
-	{
-		Font.FontObject = UGameDebugMenuSettings::Get()->GetGDMFont();
-	}
 
 	if( !DebugMenuStringKey.IsEmpty() )
 	{
@@ -101,11 +100,25 @@ void UGDMTextBlock::SetText(FText InText)
 	Super::SetText(InText);
 }
 
+void UGDMTextBlock::SetWrapTextAt(float InWrapTextAt)
+{
+	WrapTextAt = InWrapTextAt;
+	if( MyTextBlock.IsValid() )
+	{
+		MyTextBlock->SetWrapTextAt(InWrapTextAt);
+	}
+}
+
 #if WITH_EDITOR
 
 const FText UGDMTextBlock::GetPaletteCategory()
 {
 	return LOCTEXT("GDM", "GDM");
+}
+
+bool UGDMTextBlock::CanEditChange(const FProperty* InProperty) const
+{
+	return Super::CanEditChange(InProperty);
 }
 
 #endif

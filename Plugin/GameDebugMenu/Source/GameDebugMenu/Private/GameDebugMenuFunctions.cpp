@@ -703,9 +703,7 @@ TArray<FGDMMenuCategoryKey> UGameDebugMenuFunctions::GetOrderConsoleCommandCateg
 	const auto& TitleArray = UGameDebugMenuSettings::Get()->OrderConsoleCommandCategoryTitles;
 	for( int32 Index = 0;Index < TitleArray.Num();++Index )
 	{
-		FString Str;
-		GetDebugMenuString(WorldContextObject,TitleArray[Index].Title, Str);
-		ReturnValues.Add(FGDMMenuCategoryKey(TitleArray[Index].Index, Str));
+		ReturnValues.Add(FGDMMenuCategoryKey(TitleArray[Index].Index, TitleArray[Index].Title));
 	}
 
 	return ReturnValues;
@@ -717,9 +715,7 @@ TArray<FGDMMenuCategoryKey> UGameDebugMenuFunctions::GetOrderGameplayCategoryTit
 	const auto& TitleArray = UGameDebugMenuSettings::Get()->OrderGameplayCategoryTitles;
 	for( int32 Index = 0; Index < TitleArray.Num(); ++Index )
 	{
-		FString Str;
-		GetDebugMenuString(WorldContextObject,TitleArray[Index].Title, Str);
-		ReturnValues.Add(FGDMMenuCategoryKey(TitleArray[Index].Index, Str));
+		ReturnValues.Add(FGDMMenuCategoryKey(TitleArray[Index].Index, TitleArray[Index].Title));
 	}
 
 	return ReturnValues;
