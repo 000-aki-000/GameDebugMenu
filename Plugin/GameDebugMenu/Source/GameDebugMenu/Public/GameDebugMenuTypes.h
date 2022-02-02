@@ -306,6 +306,12 @@ struct GAMEDEBUGMENU_API FGDMActionMappingKey
 	/* 入力キー */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, config)
 	TArray<FKey> Keys;
+
+	FGDMActionMappingKey()
+		:bRepeat(false)
+		,Keys()
+	{
+	}
 };
 
 /**
@@ -323,6 +329,12 @@ struct GAMEDEBUGMENU_API FGDMAxisMappingKey
 	/** Keysと数が必ず一致してること */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, config)
 	TArray<float> Scale;
+
+	FGDMAxisMappingKey()
+		:Keys()
+		,Scale(1.0f)
+	{
+	}
 };
 
 /**
