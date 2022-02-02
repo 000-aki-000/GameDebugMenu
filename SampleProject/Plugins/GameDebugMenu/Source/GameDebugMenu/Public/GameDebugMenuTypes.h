@@ -332,7 +332,7 @@ struct GAMEDEBUGMENU_API FGDMAxisMappingKey
 
 	FGDMAxisMappingKey()
 		:Keys()
-		,Scale(1.0f)
+		,Scale()
 	{
 	}
 };
