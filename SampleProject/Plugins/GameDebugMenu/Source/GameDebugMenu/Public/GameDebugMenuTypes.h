@@ -690,7 +690,7 @@ struct GAMEDEBUGMENU_API FGDMOrderMenuCategoryTitle
 
 #if WITH_EDITORONLY_DATA
 
-	UPROPERTY(VisibleAnywhere,Transient)
+	UPROPERTY(VisibleAnywhere)
 	FString PreviewTitle;
 
 #endif

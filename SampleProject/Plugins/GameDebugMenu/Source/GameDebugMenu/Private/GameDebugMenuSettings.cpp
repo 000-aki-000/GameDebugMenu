@@ -365,6 +365,13 @@ void UGameDebugMenuSettings::SetupCategoryCamera()
 	Single.ConsoleCommandName = TEXT("ToggleDebugCamera");
 	ConsoleCommandNames.Add(Single);
 
+	Single.CommandNetType     = EGDMConsoleCommandNetType::ServerAll;
+	Single.Title              = FText::FromString(TEXT("Teleport Player controlled pawn"));
+	Single.Description        = FText::FromString(TEXT("プレイヤー操作ポーンをカメラの注視点にテレポートさせる"));
+	Single.ClickedEvent		  = EGDMConsoleCommandClickedEvent::Non;
+	Single.ConsoleCommandName = TEXT("Teleport");
+	ConsoleCommandNames.Add(Single);
+
 	FGDMConsoleCommandPair Pair;
 	Pair.CategoryIndex = 2; /* Camera */
 	Pair.CommandNetType = EGDMConsoleCommandNetType::LocalOnly;
@@ -1508,12 +1515,6 @@ void UGameDebugMenuSettings::SetupCategoryOther()
 	Single.Title              = FText::FromString(TEXT("Try Garbage Collection"));
 	Single.Description        = FText::FromString(TEXT("ガーベジコレクションを即時実行し、定期実行タイマーをリセットする"));
 	Single.ConsoleCommandName = TEXT("Obj trygc");
-	ConsoleCommandNames.Add(Single);
-
-	Single.CommandNetType	  = EGDMConsoleCommandNetType::ServerAll;
-	Single.Title              = FText::FromString(TEXT("Teleport Player controlled pawn"));
-	Single.Description        = FText::FromString(TEXT("プレイヤー操作ポーンをカメラの注視点にテレポートさせる"));
-	Single.ConsoleCommandName = TEXT("Teleport");
 	ConsoleCommandNames.Add(Single);
 
 	Single.CommandNetType     = EGDMConsoleCommandNetType::LocalOnly;
