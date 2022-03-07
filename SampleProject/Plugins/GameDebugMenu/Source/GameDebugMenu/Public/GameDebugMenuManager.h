@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2021 akihiko moroi
+* Copyright (c) 2022 akihiko moroi
 *
 * This software is released under the MIT License.
 * (See accompanying file LICENSE.txt or copy at http://opensource.org/licenses/MIT)
@@ -14,6 +14,7 @@
 
 class UGDMInputSystemComponent;
 class UGDMScreenshotRequesterComponent;
+class UGameDebugMenuWidgetDataAsset;
 class UGameDebugMenuRootWidget;
 class AGDMDebugCameraInput;
 class UGDMPlayerControllerProxyComponent;
@@ -36,6 +37,7 @@ class GAMEDEBUGMENU_API AGameDebugMenuManager : public AActor
 	UPROPERTY(VisibleAnywhere, Category = "GDM", meta = (AllowPrivateAccess = "true"))
 	UGDMScreenshotRequesterComponent* ScreenshotRequesterComponent;
 
+	/** DebugMenuの各イベント検知コンポーネント */
 	UPROPERTY(Transient)
 	UGDMListenerComponent* ListenerComponent;
 
@@ -61,36 +63,24 @@ protected:
 	/** 登録済み関数群 */
 	TArray<TSharedPtr<FGDMObjectFunctionInfo>> ObjectFunctions;
 
-	/** メインとなるデバックメニューのWidget */
-	UPROPERTY(EditAnywhere, Category = "GDM|Config|Menu")
-	TSubclassOf<UGameDebugMenuRootWidget> DebugMenuRootWidgetClass;
+	/** デバックメニュー用UIアセット */
+	UPROPERTY(EditAnywhere, Category = "GDM|Config")
+	UGameDebugMenuWidgetDataAsset* WidgetDataAsset;
 
 	/** Viewport上に追加されてるメインWidget */
 	UPROPERTY(Transient)
 	UGameDebugMenuRootWidget* DebugMenuRootWidget;
 
-	/** 各メニューのUI登録順 */
-	UPROPERTY(EditAnywhere, Category = "GDM|Config|Menu")
-	TArray<FString> DebugMenuRegistrationOrder;
-
-	/** 各メニューのWidget郡 */
-	UPROPERTY(EditAnywhere, Category = "GDM|Config|Menu")
-	TMap<FString, TSubclassOf<UGameDebugMenuWidget> > DebugMenuClasses;
-
 	/** 生成した各メニューWidgetのインスタンス */
 	UPROPERTY(Transient,BlueprintReadOnly, Category = "GDM")
 	TMap<FString, UGameDebugMenuWidget* > DebugMenuInstances;
-
-	/** RootのDebugWidgetのZオーダー値 */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GDM|Config")
-	int32 WidgetZOrder;
 
 	/** True : デバックメニュー操作中ポーズする */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GDM|Config")
 	bool bGamePause;
 
 	/** デバックカメラ用のインプットアクター */
-	UPROPERTY(EditAnywhere, Category = "GDM|Config|Class")
+	UPROPERTY(EditAnywhere, Category = "GDM|Config")
 	TSubclassOf<AGDMDebugCameraInput> DebugCameraInputClass;
 
 	/** デバックカメラ用のインプットアクターのインスタンス */
@@ -98,12 +88,8 @@ protected:
 	AGDMDebugCameraInput* DebugCameraInput;
 
 	/** PlayerControllerに自動追加されるプロキシコンポーネント */
-	UPROPERTY(EditAnywhere, Category = "GDM|Config|Class")
+	UPROPERTY(EditAnywhere, Category = "GDM|Config")
 	TSubclassOf<UGDMPlayerControllerProxyComponent> DebugMenuPCProxyComponentClass;
-
-	/** レポート処理クラス */
-	UPROPERTY(EditAnywhere,Category = "GDM|Config|Class")
-	TMap<EGDMProjectManagementTool, TSubclassOf<AGDMDebugReportRequester>> DebugReportRequesterClass;
 
 	/** DebugMenuのログデバイス（レポート送信用） */
 	TSharedPtr<FGDMOutputDevice> OutputLog;
@@ -143,15 +129,15 @@ public:
 
 protected:
 	/**
+	* UIのルートWidgetの生成
+	*/
+	virtual void CreateDebugMenuRootWidget();
+
+	/**
 	* Navigation(無)有効（Menu開く前の状態にする）
 	*/
 	virtual void EnabledNavigationConfigs();
 	virtual void DisabledNavigationConfigs();
-
-	/**
-	* UIのルートWidgetの生成
-	*/
-	virtual void CreateDebugMenuRootWidget();
 	
 	/**
 	* DebugCamera用入力アクターの生成
@@ -203,11 +189,6 @@ public:
 	* メインとなるWidget取得
 	*/
 	virtual UGameDebugMenuRootWidget* GetDebugMenuRootWidget();
-
-	/**
-	 * レポート送信処理をするクラスを取得
-	 */
-	virtual TSubclassOf<AGDMDebugReportRequester>* GetDebugReportRequesterClass();
 
 	/**
 	* 各Debug画面となるWidgetクラスのキーリストを取得

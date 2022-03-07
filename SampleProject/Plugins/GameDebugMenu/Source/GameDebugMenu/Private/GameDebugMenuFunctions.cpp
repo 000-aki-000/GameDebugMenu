@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2021 akihiko moroi
+* Copyright (c) 2022 akihiko moroi
 *
 * This software is released under the MIT License.
 * (See accompanying file LICENSE.txt or copy at http://opensource.org/licenses/MIT)
@@ -882,7 +882,7 @@ void UGameDebugMenuFunctions::PrintLogScreen(UObject* WorldContextObject, const 
 #endif
 }
 
-void UGameDebugMenuFunctions::DynamicallyChangeBlockInput(UObject* WorldContextObject, bool bBlockFlag)
+void UGameDebugMenuFunctions::DynamicallyChangeGameDebugMenuManagerBlockInput(UObject* WorldContextObject, bool bBlockFlag)
 {
 	if(AGameDebugMenuManager* Manager = GetGameDebugMenuManager(WorldContextObject))
 	{

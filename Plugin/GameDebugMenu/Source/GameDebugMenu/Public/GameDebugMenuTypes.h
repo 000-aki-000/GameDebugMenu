@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2021 akihiko moroi
+* Copyright (c) 2022 akihiko moroi
 *
 * This software is released under the MIT License.
 * (See accompanying file LICENSE.txt or copy at http://opensource.org/licenses/MIT)
@@ -332,7 +332,7 @@ struct GAMEDEBUGMENU_API FGDMAxisMappingKey
 
 	FGDMAxisMappingKey()
 		:Keys()
-		,Scale(1.0f)
+		,Scale()
 	{
 	}
 };
@@ -690,7 +690,7 @@ struct GAMEDEBUGMENU_API FGDMOrderMenuCategoryTitle
 
 #if WITH_EDITORONLY_DATA
 
-	UPROPERTY(VisibleAnywhere,Transient)
+	UPROPERTY(VisibleAnywhere)
 	FString PreviewTitle;
 
 #endif

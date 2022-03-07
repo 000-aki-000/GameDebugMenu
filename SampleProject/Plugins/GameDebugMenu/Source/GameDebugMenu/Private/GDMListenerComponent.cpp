@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2021 akihiko moroi
+* Copyright (c) 2022 akihiko moroi
 *
 * This software is released under the MIT License.
 * (See accompanying file LICENSE.txt or copy at http://opensource.org/licenses/MIT)
@@ -8,7 +8,7 @@
 #include "GDMListenerComponent.h"
 #include <Engine/World.h>
 
-TMap<UWorld*, TArray<TWeakObjectPtr<UGDMListenerComponent>>> UGDMListenerComponent::CacheListenerComponents;
+static TMap<UWorld*, TArray<TWeakObjectPtr<UGDMListenerComponent>>> GlobalListenerComponents;
 
 UGDMListenerComponent::UGDMListenerComponent()
 {
@@ -51,13 +51,13 @@ void UGDMListenerComponent::AllUnbindDispatchers()
 
 int32 UGDMListenerComponent::PushListenerComponent(UWorld* TargetWorld, UGDMListenerComponent* Listener)
 {
-	TArray<TWeakObjectPtr<UGDMListenerComponent>>& ListenerComponents = CacheListenerComponents.FindOrAdd(TargetWorld);
+	TArray<TWeakObjectPtr<UGDMListenerComponent>>& ListenerComponents = GlobalListenerComponents.FindOrAdd(TargetWorld);
 	return ListenerComponents.AddUnique(Listener);
 }
 
 int32 UGDMListenerComponent::PopListenerComponent(UWorld* TargetWorld, UGDMListenerComponent* Listener)
 {
-	TArray<TWeakObjectPtr<UGDMListenerComponent>>& ListenerComponents = CacheListenerComponents.FindOrAdd(TargetWorld);
+	TArray<TWeakObjectPtr<UGDMListenerComponent>>& ListenerComponents = GlobalListenerComponents.FindOrAdd(TargetWorld);
 	return ListenerComponents.Remove(Listener);
 }
 
@@ -65,7 +65,7 @@ void UGDMListenerComponent::GetAllListenerComponents(UWorld* TargetWorld, TArray
 {
 	if( IsValid(TargetWorld) )
 	{
-		TArray<TWeakObjectPtr<UGDMListenerComponent>>& ListenerComponents = CacheListenerComponents.FindOrAdd(TargetWorld);
+		TArray<TWeakObjectPtr<UGDMListenerComponent>>& ListenerComponents = GlobalListenerComponents.FindOrAdd(TargetWorld);
 		OutListenerComponents.Reserve(ListenerComponents.Num());
 
 		for( int32 Index = ListenerComponents.Num() - 1; Index >= 0; --Index )
@@ -82,7 +82,7 @@ void UGDMListenerComponent::GetAllListenerComponents(UWorld* TargetWorld, TArray
 
 		if( ListenerComponents.Num() <= 0 )
 		{
-			CacheListenerComponents.Remove(TargetWorld);
+			GlobalListenerComponents.Remove(TargetWorld);
 		}
 	}
 }

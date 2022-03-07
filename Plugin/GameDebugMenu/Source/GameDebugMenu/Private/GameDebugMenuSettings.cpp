@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2021 akihiko moroi
+* Copyright (c) 2022 akihiko moroi
 *
 * This software is released under the MIT License.
 * (See accompanying file LICENSE.txt or copy at http://opensource.org/licenses/MIT)
@@ -77,6 +77,9 @@ UGameDebugMenuSettings::UGameDebugMenuSettings()
 
 	bGameDebugMenuDirectStringKey = false;
 
+	DebugReportRequesterClass.Add(EGDMProjectManagementTool::Trello, AGDMRequesterTrello::StaticClass());
+	DebugReportRequesterClass.Add(EGDMProjectManagementTool::Redmine, AGDMRequesterRedmine::StaticClass());
+	DebugReportRequesterClass.Add(EGDMProjectManagementTool::Jira, AGDMRequesterJira::StaticClass());
 }
 
 #if WITH_EDITOR
@@ -289,6 +292,11 @@ int32 UGameDebugMenuSettings::GetGameplayCategoryIndex(const int32& ArrayIndex)
 	return 0;
 }
 
+TSubclassOf<AGDMDebugReportRequester>* UGameDebugMenuSettings::GetDebugReportRequesterClass()
+{
+	return DebugReportRequesterClass.Find(ProjectManagementToolType);
+}
+
 void UGameDebugMenuSettings::SetupCategoryResets()
 {
 	FGDMConsoleCommandSingle Single;
@@ -363,6 +371,13 @@ void UGameDebugMenuSettings::SetupCategoryCamera()
 	Single.Description        = FText::FromString(TEXT("ゲーム中のカメラを離れ、デバッグ用の別カメラに切り替える\n同時に注視点のアセットの情報を画面に表示します"));
 	Single.ClickedEvent       = EGDMConsoleCommandClickedEvent::MenuClose;
 	Single.ConsoleCommandName = TEXT("ToggleDebugCamera");
+	ConsoleCommandNames.Add(Single);
+
+	Single.CommandNetType     = EGDMConsoleCommandNetType::ServerAll;
+	Single.Title              = FText::FromString(TEXT("Teleport Player controlled pawn"));
+	Single.Description        = FText::FromString(TEXT("プレイヤー操作ポーンをカメラの注視点にテレポートさせる"));
+	Single.ClickedEvent		  = EGDMConsoleCommandClickedEvent::Non;
+	Single.ConsoleCommandName = TEXT("Teleport");
 	ConsoleCommandNames.Add(Single);
 
 	FGDMConsoleCommandPair Pair;
@@ -1508,12 +1523,6 @@ void UGameDebugMenuSettings::SetupCategoryOther()
 	Single.Title              = FText::FromString(TEXT("Try Garbage Collection"));
 	Single.Description        = FText::FromString(TEXT("ガーベジコレクションを即時実行し、定期実行タイマーをリセットする"));
 	Single.ConsoleCommandName = TEXT("Obj trygc");
-	ConsoleCommandNames.Add(Single);
-
-	Single.CommandNetType	  = EGDMConsoleCommandNetType::ServerAll;
-	Single.Title              = FText::FromString(TEXT("Teleport Player controlled pawn"));
-	Single.Description        = FText::FromString(TEXT("プレイヤー操作ポーンをカメラの注視点にテレポートさせる"));
-	Single.ConsoleCommandName = TEXT("Teleport");
 	ConsoleCommandNames.Add(Single);
 
 	Single.CommandNetType     = EGDMConsoleCommandNetType::LocalOnly;

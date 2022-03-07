@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2021 akihiko moroi
+* Copyright (c) 2022 akihiko moroi
 *
 * This software is released under the MIT License.
 * (See accompanying file LICENSE.txt or copy at http://opensource.org/licenses/MIT)
@@ -47,16 +47,12 @@ AGameDebugMenuManager::AGameDebugMenuManager(const FObjectInitializer& ObjectIni
 	, CachedNavigationConfigs()
 	, ObjectProperties()
 	, ObjectFunctions()
-	, DebugMenuRootWidgetClass(nullptr)
 	, DebugMenuRootWidget(nullptr)
-	, DebugMenuClasses()
 	, DebugMenuInstances()
-	, WidgetZOrder(999)
 	, bGamePause(false)
 	, DebugCameraInputClass()
 	, DebugCameraInput(nullptr)
 	, DebugMenuPCProxyComponentClass()
-	, DebugReportRequesterClass()
 	, OutputLog(nullptr)
 	, DebugMenuStrings()
 	, CurrentDebugMenuLanguage()
@@ -81,9 +77,6 @@ AGameDebugMenuManager::AGameDebugMenuManager(const FObjectInitializer& ObjectIni
 
 	DebugCameraInputClass          = AGDMDebugCameraInput::StaticClass();
 	DebugMenuPCProxyComponentClass = UGDMPlayerControllerProxyComponent::StaticClass();
-	DebugReportRequesterClass.Add(EGDMProjectManagementTool::Trello, AGDMRequesterTrello::StaticClass());
-	DebugReportRequesterClass.Add(EGDMProjectManagementTool::Redmine,AGDMRequesterRedmine::StaticClass());
-	DebugReportRequesterClass.Add(EGDMProjectManagementTool::Jira, AGDMRequesterJira::StaticClass());	
 }
 
 void AGameDebugMenuManager::BeginPlay()
@@ -222,9 +215,29 @@ UGDMListenerComponent* AGameDebugMenuManager::GetListenerComponent()
 	return ListenerComponent;
 }
 
+void AGameDebugMenuManager::CreateDebugMenuRootWidget()
+{
+	if( !IsValid(WidgetDataAsset) )
+	{
+		UE_LOG(LogGDM, Warning, TEXT("CreateDebugMenuRootWidget: Not found WidgetDataAsset"));
+		return;
+	}
+
+	if( IsValid(DebugMenuRootWidget) )
+	{
+		DebugMenuRootWidget->RemoveFromParent();
+	}
+
+	DebugMenuRootWidget = Cast<UGameDebugMenuRootWidget>(UWidgetBlueprintLibrary::Create(this, WidgetDataAsset->DebugMenuRootWidgetClass, nullptr));
+	DebugMenuRootWidget->DebugMenuManager = this;
+	DebugMenuRootWidget->AddToViewport(WidgetDataAsset->WidgetZOrder);
+	DebugMenuRootWidget->SetVisibility(ESlateVisibility::Collapsed);
+	DebugMenuRootWidget->InitializeRootWidget();
+}
+
 void AGameDebugMenuManager::EnabledNavigationConfigs()
 {
-	if (CachedNavigationConfigs.Num() > 0)
+	if( CachedNavigationConfigs.Num() > 0 )
 	{
 		/* Navigationを戻す */
 		FSlateApplication::Get().SetNavigationConfig(CachedNavigationConfigs[0]);
@@ -238,20 +251,6 @@ void AGameDebugMenuManager::DisabledNavigationConfigs()
 	CachedNavigationConfigs.Empty();
 	CachedNavigationConfigs.Add(FSlateApplication::Get().GetNavigationConfig());
 	FSlateApplication::Get().SetNavigationConfig(MakeShared<FGDMNavigationConfig>());
-}
-
-void AGameDebugMenuManager::CreateDebugMenuRootWidget()
-{
-	if( DebugMenuRootWidgetClass == nullptr)
-	{
-		return;
-	}
-
-	DebugMenuRootWidget = Cast<UGameDebugMenuRootWidget>(UWidgetBlueprintLibrary::Create(this, DebugMenuRootWidgetClass, nullptr));
-	DebugMenuRootWidget->DebugMenuManager = this;
-	DebugMenuRootWidget->AddToViewport(WidgetZOrder);
-	DebugMenuRootWidget->SetVisibility(ESlateVisibility::Collapsed);
-	DebugMenuRootWidget->InitializeRootWidget();
 }
 
 void AGameDebugMenuManager::CreateDebugCameraInputClass()
@@ -467,7 +466,7 @@ bool AGameDebugMenuManager::ShowDebugMenu(bool bWaitToCaptureBeforeOpeningMenuFl
 	}
 	else
 	{
-		TArray<UGameDebugMenuWidget*> DebugMenuWidgets = AGameDebugMenuManager::GetViewportDebugMenuWidgets();
+		TArray<UGameDebugMenuWidget*> DebugMenuWidgets = GetViewportDebugMenuWidgets();
 		for ( auto ViewportWidget : DebugMenuWidgets )
 		{
 			if( ViewportWidget->IsActivateDebugMenu() )
@@ -527,7 +526,7 @@ void AGameDebugMenuManager::HideDebugMenu()
 
 	DebugMenuInputSystemComponent->CallReleasedButtons();
 
-	TArray<UGameDebugMenuWidget*> DebugMenuWidgets = AGameDebugMenuManager::GetViewportDebugMenuWidgets();
+	TArray<UGameDebugMenuWidget*> DebugMenuWidgets = GetViewportDebugMenuWidgets();
 	for( auto ViewportWidget : DebugMenuWidgets )
 	{
 		if( ViewportWidget->IsActivateDebugMenu() )
@@ -551,26 +550,35 @@ UGameDebugMenuRootWidget* AGameDebugMenuManager::GetDebugMenuRootWidget()
 	return DebugMenuRootWidget;
 }
 
-TSubclassOf<AGDMDebugReportRequester>* AGameDebugMenuManager::GetDebugReportRequesterClass()
-{
-	EGDMProjectManagementTool ProjectManagementTool = UGameDebugMenuSettings::Get()->ProjectManagementToolType;
-	return DebugReportRequesterClass.Find(ProjectManagementTool);
-}
-
 int32 AGameDebugMenuManager::GetAllDebugMenuKeys(TArray<FString>& OutKeys)
 {
-	OutKeys = DebugMenuRegistrationOrder;
+	if( IsValid(WidgetDataAsset) )
+	{
+		OutKeys = WidgetDataAsset->DebugMenuRegistrationOrder;
+	}
+	else
+	{
+		UE_LOG(LogGDM, Warning, TEXT("GetAllDebugMenuKeys: Not found WidgetDataAsset"));
+	}
+
 	return OutKeys.Num();
 }
 
 TSubclassOf<UGameDebugMenuWidget> AGameDebugMenuManager::GetDebugMenuWidgetClass(const FString& Key)
 {
-	TSubclassOf<UGameDebugMenuWidget>* WidgetClass = DebugMenuClasses.Find(Key);
-	if( WidgetClass == nullptr )
+	if( IsValid(WidgetDataAsset) )
 	{
-		return nullptr;
+		if( TSubclassOf<UGameDebugMenuWidget>* WidgetClass = WidgetDataAsset->DebugMenuClasses.Find(Key) )
+		{
+			return (*WidgetClass);
+		}
 	}
-	return (*WidgetClass);
+	else
+	{
+		UE_LOG(LogGDM, Warning, TEXT("GetAllDebugMenuKeys: Not found WidgetDataAsset"));
+	}
+
+	return nullptr;
 }
 
 bool AGameDebugMenuManager::GetDebugMenuWidgetInstances(TArray<UGameDebugMenuWidget*>& OutInstances)

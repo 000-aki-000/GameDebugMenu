@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2021 akihiko moroi
+* Copyright (c) 2022 akihiko moroi
 *
 * This software is released under the MIT License.
 * (See accompanying file LICENSE.txt or copy at http://opensource.org/licenses/MIT)
@@ -30,7 +30,7 @@ void UGDMDebugReportWidget::SendDebugReport(const FString& Subject, const FStrin
 	AGameDebugMenuManager* DebugMenuManager = UGameDebugMenuFunctions::GetGameDebugMenuManager(this);
 	check(DebugMenuManager != nullptr);
 
-	TSubclassOf<AGDMDebugReportRequester>* RequesterClass = DebugMenuManager->GetDebugReportRequesterClass();
+	TSubclassOf<AGDMDebugReportRequester>* RequesterClass = UGameDebugMenuSettings::Get()->GetDebugReportRequesterClass();
 	if( RequesterClass == nullptr )
 	{
 		OnReceivedReportDispatcher.Broadcast(false);

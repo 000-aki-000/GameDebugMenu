@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2021 akihiko moroi
+* Copyright (c) 2022 akihiko moroi
 *
 * This software is released under the MIT License.
 * (See accompanying file LICENSE.txt or copy at http://opensource.org/licenses/MIT)
@@ -77,6 +77,9 @@ UGameDebugMenuSettings::UGameDebugMenuSettings()
 
 	bGameDebugMenuDirectStringKey = false;
 
+	DebugReportRequesterClass.Add(EGDMProjectManagementTool::Trello, AGDMRequesterTrello::StaticClass());
+	DebugReportRequesterClass.Add(EGDMProjectManagementTool::Redmine, AGDMRequesterRedmine::StaticClass());
+	DebugReportRequesterClass.Add(EGDMProjectManagementTool::Jira, AGDMRequesterJira::StaticClass());
 }
 
 #if WITH_EDITOR
@@ -287,6 +290,11 @@ int32 UGameDebugMenuSettings::GetGameplayCategoryIndex(const int32& ArrayIndex)
 	}
 
 	return 0;
+}
+
+TSubclassOf<AGDMDebugReportRequester>* UGameDebugMenuSettings::GetDebugReportRequesterClass()
+{
+	return DebugReportRequesterClass.Find(ProjectManagementToolType);
 }
 
 void UGameDebugMenuSettings::SetupCategoryResets()

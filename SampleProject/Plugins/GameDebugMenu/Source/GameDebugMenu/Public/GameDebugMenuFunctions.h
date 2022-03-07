@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2021 akihiko moroi
+* Copyright (c) 2022 akihiko moroi
 *
 * This software is released under the MIT License.
 * (See accompanying file LICENSE.txt or copy at http://opensource.org/licenses/MIT)
@@ -314,7 +314,7 @@ public:
 	* マネージャーのInputComponentのbBlockInputを動的に変更する
 	*/
 	UFUNCTION(BlueprintCallable, Category = "GDM|Functions", meta = (Keywords = "DebugMenu GDM", WorldContext = "WorldContextObject"))
-	static void DynamicallyChangeBlockInput(UObject* WorldContextObject, bool bBlockFlag);
+	static void DynamicallyChangeGameDebugMenuManagerBlockInput(UObject* WorldContextObject, bool bBlockFlag);
 
 	/**
 	* DebugMenu用のStringTableから文字列を取得する

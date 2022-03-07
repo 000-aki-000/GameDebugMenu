@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2021 akihiko moroi
+* Copyright (c) 2022 akihiko moroi
 *
 * This software is released under the MIT License.
 * (See accompanying file LICENSE.txt or copy at http://opensource.org/licenses/MIT)
@@ -105,6 +105,10 @@ public:
 	UPROPERTY(EditAnywhere, config, Category = "ReportSettings")
 	FGDMJiraSettings JiraSettings;
 
+	/** バグレポート処理クラス */
+	UPROPERTY(EditAnywhere, Category = "ReportSettings")
+	TMap<EGDMProjectManagementTool, TSubclassOf<AGDMDebugReportRequester>> DebugReportRequesterClass;
+
 	/** DebugMenuから指定できるCultureのリスト */
 	UPROPERTY(EditAnywhere, config, Category = "Localization")
 	TArray<FString> CultureList;
@@ -143,6 +147,7 @@ public:
 	FString GetDebugMenuString(const FName& LanguageKey, const FString& StringKey);
 	FString GetGameplayCategoryTitle(const int32& ArrayIndex);
 	int32 GetGameplayCategoryIndex(const int32& ArrayIndex);
+	TSubclassOf<AGDMDebugReportRequester>* GetDebugReportRequesterClass();
 
 private:
 	void SetupCategoryResets();

@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2021 akihiko moroi
+* Copyright (c) 2022 akihiko moroi
 *
 * This software is released under the MIT License.
 * (See accompanying file LICENSE.txt or copy at http://opensource.org/licenses/MIT)
@@ -30,8 +30,6 @@ UCLASS(Blueprintable, ClassGroup = (GameDebugMenu), hidecategories = Object, met
 class GAMEDEBUGMENU_API UGDMListenerComponent : public UActorComponent
 {
 	GENERATED_BODY()
-
-	static TMap<UWorld*, TArray<TWeakObjectPtr<UGDMListenerComponent>>> CacheListenerComponents;
 
 public:
 	/** DebugMenuが表示されたとき呼ばれるイベント */
