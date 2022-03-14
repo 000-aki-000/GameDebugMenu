@@ -454,24 +454,37 @@ bool AGameDebugMenuManager::ShowDebugMenu(bool bWaitToCaptureBeforeOpeningMenuFl
 	EnableShowMouseCursorFlag(PC);
 	TryEnableGamePause();
 
-	GetScreenshotRequesterComponent()->RequestScreenshot();
+	bool bShow = true;
 
-	if(bWaitToCaptureBeforeOpeningMenuFlag)
+	if( !UGameDebugMenuSettings::Get()->bDisableScreenCaptureProcessingWhenOpeningDebugMenu )
 	{
-		bWaitToCaptureBeforeOpeningDebugReportMenu = true;
+		GetScreenshotRequesterComponent()->RequestScreenshot();
 
-		/* 画面キャプチャ後UIを開くまで入力を無視するように */
-		SetIgnoreInput(true);
-		GetListenerComponent()->OnScreenshotRequestProcessedDispatcher.AddDynamic(this, &AGameDebugMenuManager::OnScreenshotRequestProcessed);
+		if( bWaitToCaptureBeforeOpeningMenuFlag )
+		{
+			/* 画面キャプチャ後UIを出す必要がある */
+
+			/* このフレームではメニューを開かない */
+			bShow = false;
+
+			/* キャプチャ後メニューを開けるようにするための識別フラグをたてる */
+			bWaitToCaptureBeforeOpeningDebugReportMenu = true;
+
+			/* 開くまで入力を無視するようにする */
+			SetIgnoreInput(true);
+
+			GetListenerComponent()->OnScreenshotRequestProcessedDispatcher.AddDynamic(this, &AGameDebugMenuManager::OnScreenshotRequestProcessed);
+		}
 	}
-	else
+
+	if( bShow )
 	{
 		TArray<UGameDebugMenuWidget*> DebugMenuWidgets = GetViewportDebugMenuWidgets();
-		for ( auto ViewportWidget : DebugMenuWidgets )
+		for( auto ViewportWidget : DebugMenuWidgets )
 		{
 			if( ViewportWidget->IsActivateDebugMenu() )
 			{
-				ViewportWidget->OnShowingMenu();
+				ViewportWidget->OnShowingMenu(/* bRequestDebugMenuManager */true);
 			}
 		}
 	}
@@ -531,7 +544,7 @@ void AGameDebugMenuManager::HideDebugMenu()
 	{
 		if( ViewportWidget->IsActivateDebugMenu() )
 		{
-			ViewportWidget->OnHidingMenu();
+			ViewportWidget->OnHidingMenu(/* bRequestDebugMenuManager */true);
 		}
 	}
 
@@ -601,6 +614,8 @@ EGDMPropertyType AGameDebugMenuManager::GetPropertyType(FProperty* TargetPropert
 {
 	if(TargetProperty != nullptr)
 	{
+		/* メニューで対応できるプロパティかチェック */
+
 		if(TargetProperty->IsA(FBoolProperty::StaticClass()))
 		{
 			return EGDMPropertyType::GDM_Bool;
@@ -624,6 +639,22 @@ EGDMPropertyType AGameDebugMenuManager::GetPropertyType(FProperty* TargetPropert
 		else if(TargetProperty->IsA(FStrProperty::StaticClass()))
 		{
 			return EGDMPropertyType::GDM_String;
+		}
+		else if( TargetProperty->IsA(FStructProperty::StaticClass()) )
+		{
+			FStructProperty* StructProp = CastFieldChecked<FStructProperty>(TargetProperty);
+			if( StructProp->Struct->GetFName() == NAME_Vector2D )
+			{
+				return EGDMPropertyType::GDM_Vector2D;
+			}
+			else if( StructProp->Struct->GetFName() == NAME_Vector )
+			{
+				return EGDMPropertyType::GDM_Vector;
+			}
+			else if( StructProp->Struct->GetFName() == NAME_Rotator )
+			{
+				return EGDMPropertyType::GDM_Rotator;
+			}
 		}
 	}
 
@@ -665,6 +696,8 @@ bool AGameDebugMenuManager::RegisterObjectProperty(UObject* TargetObject,FName P
 	const FEnumProperty* EnumProp = CastField<FEnumProperty>(Property);/* C++定義だとこっち */
 	const FByteProperty* ByteProp = CastField<FByteProperty>(Property);/* BP定義だとこっちみたい… */
 
+	const FStructProperty* StructProp = CastField<FStructProperty>(Property);
+
 	if(EnumProp != nullptr)
 	{
 		PropertyInfo->EnumType = EnumProp->GetEnum();
@@ -672,6 +705,10 @@ bool AGameDebugMenuManager::RegisterObjectProperty(UObject* TargetObject,FName P
 	else if(ByteProp != nullptr)
 	{
 		PropertyInfo->EnumType = ByteProp->Enum;
+	}
+	else if( StructProp != nullptr )
+	{
+		PropertyInfo->Struct = StructProp->Struct;
 	}
 
 	ObjectProperties.Add(PropertyInfo);
@@ -1099,6 +1136,39 @@ void AGameDebugMenuManager::CallChangePropertyStringDispatcher(const FName& Prop
 	for(auto& Compoent : ListenerComponents)
 	{
 		Compoent->OnChangePropertyStringDispatcher.Broadcast(PropertyName, PropertyOwnerObject, New, Old);
+	}
+}
+
+void AGameDebugMenuManager::CallChangePropertyVectorDispatcher(const FName& PropertyName, UObject* PropertyOwnerObject, FVector New, FVector Old)
+{
+	TArray<UGDMListenerComponent*> ListenerComponents;
+	UGDMListenerComponent::GetAllListenerComponents(GetWorld(), ListenerComponents);
+
+	for( auto& Compoent : ListenerComponents )
+	{
+		Compoent->OnChangePropertyVectorDispatcher.Broadcast(PropertyName, PropertyOwnerObject, New, Old);
+	}
+}
+
+void AGameDebugMenuManager::CallChangePropertyVector2DDispatcher(const FName& PropertyName, UObject* PropertyOwnerObject, FVector2D New, FVector2D Old)
+{
+	TArray<UGDMListenerComponent*> ListenerComponents;
+	UGDMListenerComponent::GetAllListenerComponents(GetWorld(), ListenerComponents);
+
+	for( auto& Compoent : ListenerComponents )
+	{
+		Compoent->OnChangePropertyVector2DDispatcher.Broadcast(PropertyName, PropertyOwnerObject, New, Old);
+	}
+}
+
+void AGameDebugMenuManager::CallChangePropertyRotatorDispatcher(const FName& PropertyName, UObject* PropertyOwnerObject, FRotator New, FRotator Old)
+{
+	TArray<UGDMListenerComponent*> ListenerComponents;
+	UGDMListenerComponent::GetAllListenerComponents(GetWorld(), ListenerComponents);
+
+	for( auto& Compoent : ListenerComponents )
+	{
+		Compoent->OnChangePropertyRotatorDispatcher.Broadcast(PropertyName, PropertyOwnerObject, New, Old);
 	}
 }
 

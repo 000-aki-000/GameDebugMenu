@@ -72,6 +72,9 @@ enum class EGDMPropertyType : uint8
 	GDM_Enum,
 	GDM_Byte,
 	GDM_String,
+	GDM_Vector,
+	GDM_Vector2D,
+	GDM_Rotator,
 };
 
 /**
@@ -390,6 +393,7 @@ public:
 	TWeakObjectPtr<UEnum> EnumType;
 	FGDMPropertyUIConfigInfo ConfigInfo;
 	int32 DisplayPriority;
+	UScriptStruct* Struct;
 
 	FGDMObjectPropertyInfo()
 		: CategoryKey()
@@ -401,6 +405,7 @@ public:
 		, EnumType(nullptr)
 		, ConfigInfo()
 		, DisplayPriority(0)
+		, Struct(nullptr)
 	{
 	}
 };

@@ -333,3 +333,231 @@ void UGDMPropertyWidget::SetPropertyValue_String(FString NewValue, bool& bHasPro
 		UGameDebugMenuFunctions::GetGameDebugMenuManager(this)->CallChangePropertyStringDispatcher(PropertyName, TargetObject, NewValue, OldValue);
 	}
 }
+
+FVector UGDMPropertyWidget::GetPropertyValue_Vector(bool& bHasProperty)
+{
+	bHasProperty = false;
+
+	if( !IsValid(TargetObject) )
+	{
+		return FVector::ZeroVector;
+	}
+
+	const FStructProperty* StructProp = CastField<const FStructProperty>(TargetObject->GetClass()->FindPropertyByName(PropertyName));
+	if( StructProp == nullptr )
+	{
+		return FVector::ZeroVector;
+	}
+
+	const UStruct* Struct = StructProp->Struct;
+	if( Struct == nullptr )
+	{
+		return FVector::ZeroVector;
+	}
+
+	if( Struct->IsChildOf(TBaseStructure<FVector>::Get()) )
+	{
+		if( FVector* Value = StructProp->ContainerPtrToValuePtr<FVector>(TargetObject) )
+		{
+			bHasProperty = true;
+			return (*Value);
+		}
+	}
+
+	return FVector::ZeroVector;
+}
+
+void UGDMPropertyWidget::SetPropertyValue_Vector(FVector NewValue, bool& bHasProperty)
+{
+	bHasProperty = false;
+
+	if( !IsValid(TargetObject) )
+	{
+		return;
+	}
+
+	const FStructProperty* StructProp = CastField<const FStructProperty>(TargetObject->GetClass()->FindPropertyByName(PropertyName));
+	if( StructProp == nullptr )
+	{
+		return;
+	}
+ 
+	const UStruct* Struct = StructProp->Struct;
+	if( Struct == nullptr )
+	{
+		return;
+	}
+
+	if( Struct->IsChildOf(TBaseStructure<FVector>::Get()) )
+	{
+		if( FVector* Value = StructProp->ContainerPtrToValuePtr<FVector>(TargetObject) )
+		{
+			FVector OldValue = *Value;
+
+			bHasProperty = true;
+
+			if( NewValue != OldValue )
+			{
+				*Value = NewValue;
+				UGameDebugMenuFunctions::GetGameDebugMenuManager(this)->CallChangePropertyVectorDispatcher(PropertyName, TargetObject, NewValue, OldValue);
+			}
+		}
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+FVector2D UGDMPropertyWidget::GetPropertyValue_Vector2D(bool& bHasProperty)
+{
+	bHasProperty = false;
+
+	if( !IsValid(TargetObject) )
+	{
+		return FVector2D::ZeroVector;
+	}
+
+	const FStructProperty* StructProp = CastField<const FStructProperty>(TargetObject->GetClass()->FindPropertyByName(PropertyName));
+	if( StructProp == nullptr )
+	{
+		return FVector2D::ZeroVector;
+	}
+
+	const UStruct* Struct = StructProp->Struct;
+	if( Struct == nullptr )
+	{
+		return FVector2D::ZeroVector;
+	}
+
+	if( Struct->IsChildOf(TBaseStructure<FVector2D>::Get()) )
+	{
+		if( FVector2D* Value = StructProp->ContainerPtrToValuePtr<FVector2D>(TargetObject) )
+		{
+			bHasProperty = true;
+			return (*Value);
+		}
+	}
+
+	return FVector2D::ZeroVector;
+}
+
+void UGDMPropertyWidget::SetPropertyValue_Vector2D(FVector2D NewValue, bool& bHasProperty)
+{
+	bHasProperty = false;
+
+	if( !IsValid(TargetObject) )
+	{
+		return;
+	}
+
+	const FStructProperty* StructProp = CastField<const FStructProperty>(TargetObject->GetClass()->FindPropertyByName(PropertyName));
+	if( StructProp == nullptr )
+	{
+		return;
+	}
+
+	const UStruct* Struct = StructProp->Struct;
+	if( Struct == nullptr )
+	{
+		return;
+	}
+
+	if( Struct->IsChildOf(TBaseStructure<FVector2D>::Get()) )
+	{
+		if( FVector2D* Value = StructProp->ContainerPtrToValuePtr<FVector2D>(TargetObject) )
+		{
+			FVector2D OldValue = *Value;
+
+			bHasProperty = true;
+
+			if( NewValue != OldValue )
+			{
+				*Value = NewValue;
+				UGameDebugMenuFunctions::GetGameDebugMenuManager(this)->CallChangePropertyVector2DDispatcher(PropertyName, TargetObject, NewValue, OldValue);
+			}
+		}
+	}
+}
+
+FRotator UGDMPropertyWidget::GetPropertyValue_Rotator(bool& bHasProperty)
+{
+	bHasProperty = false;
+
+	if( !IsValid(TargetObject) )
+	{
+		return FRotator::ZeroRotator;
+	}
+
+	const FStructProperty* StructProp = CastField<const FStructProperty>(TargetObject->GetClass()->FindPropertyByName(PropertyName));
+	if( StructProp == nullptr )
+	{
+		return FRotator::ZeroRotator;
+	}
+
+	const UStruct* Struct = StructProp->Struct;
+	if( Struct == nullptr )
+	{
+		return FRotator::ZeroRotator;
+	}
+
+	if( Struct->IsChildOf(TBaseStructure<FRotator>::Get()) )
+	{
+		if( FRotator* Value = StructProp->ContainerPtrToValuePtr<FRotator>(TargetObject) )
+		{
+			bHasProperty = true;
+			return (*Value);
+		}
+	}
+
+	return FRotator::ZeroRotator;
+}
+
+void UGDMPropertyWidget::SetPropertyValue_Rotator(FRotator NewValue, bool& bHasProperty)
+{
+	bHasProperty = false;
+
+	if( !IsValid(TargetObject) )
+	{
+		return;
+	}
+
+	const FStructProperty* StructProp = CastField<const FStructProperty>(TargetObject->GetClass()->FindPropertyByName(PropertyName));
+	if( StructProp == nullptr )
+	{
+		return;
+	}
+
+	const UStruct* Struct = StructProp->Struct;
+	if( Struct == nullptr )
+	{
+		return;
+	}
+
+	if( Struct->IsChildOf(TBaseStructure<FRotator>::Get()) )
+	{
+		if( FRotator* Value = StructProp->ContainerPtrToValuePtr<FRotator>(TargetObject) )
+		{
+			FRotator OldValue = *Value;
+
+			bHasProperty = true;
+
+			if( NewValue != OldValue )
+			{
+				*Value = NewValue;
+				UGameDebugMenuFunctions::GetGameDebugMenuManager(this)->CallChangePropertyRotatorDispatcher(PropertyName, TargetObject, NewValue, OldValue);
+			}
+		}
+	}
+}

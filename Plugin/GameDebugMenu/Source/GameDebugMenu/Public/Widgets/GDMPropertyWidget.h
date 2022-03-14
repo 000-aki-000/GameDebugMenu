@@ -96,4 +96,22 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "GDM|Properties")
 	void SetPropertyValue_String(FString NewValue, bool& bHasProperty);
 
+	UFUNCTION(BlueprintCallable, Category = "GDM|Properties")
+	FVector GetPropertyValue_Vector(bool& bHasProperty);
+
+	UFUNCTION(BlueprintCallable, Category = "GDM|Properties")
+	void SetPropertyValue_Vector(FVector NewValue, bool& bHasProperty);
+
+	UFUNCTION(BlueprintCallable, Category = "GDM|Properties")
+	FVector2D GetPropertyValue_Vector2D(bool& bHasProperty);
+
+	UFUNCTION(BlueprintCallable, Category = "GDM|Properties")
+	void SetPropertyValue_Vector2D(FVector2D NewValue, bool& bHasProperty);
+
+	UFUNCTION(BlueprintCallable, Category = "GDM|Properties")
+	FRotator GetPropertyValue_Rotator(bool& bHasProperty);
+
+	UFUNCTION(BlueprintCallable, Category = "GDM|Properties")
+	void SetPropertyValue_Rotator(FRotator NewValue, bool& bHasProperty);
+
 };

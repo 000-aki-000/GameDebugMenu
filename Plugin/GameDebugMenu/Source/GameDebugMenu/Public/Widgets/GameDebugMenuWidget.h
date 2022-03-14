@@ -61,20 +61,25 @@ public:
 
 	/**
 	* UIを表示するときのイベント
+	*
+	* @param bRequestDebugMenuManager - マネージャーから呼び出された場合trueになる。
 	* @memo 呼ばれるのはActivateされてるときのみ
 	*/
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category = "GDM|Event")
-	void OnShowingMenu();
+	void OnShowingMenu(bool bRequestDebugMenuManager);
 
 	/**
 	* UIを非表示にするときのイベント
+	* 
+	* @param bRequestDebugMenuManager - マネージャーから呼び出された場合trueになる。
 	* @memo 呼ばれるのはActivateされてるときのみ
 	*/
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category = "GDM|Event")
-	void OnHidingMenu();
+	void OnHidingMenu(bool bRequestDebugMenuManager);
 
 	/**
 	* アクティベート化をするときに呼ばれるイベント
+	* 
 	* @memo ここで表示したり、操作できる状態に移行する
 	*/	
 	UFUNCTION(BlueprintImplementableEvent, Category = "GDM|Event")
@@ -82,6 +87,7 @@ public:
 
 	/**
 	* ディアクティベート化をするときに呼ばれるイベント
+	* 
 	* @memo ここで非表示にしたり、メニューの終了処理を行う
 	*/
 	UFUNCTION(BlueprintImplementableEvent, Category = "GDM|Event")
@@ -95,7 +101,8 @@ public:
 
 	/**
 	* UIのアクティベート化をする(表示、操作できる状態になる)
-	* @param 基本Activate済みの場合無視するので必ず処理させる場合Trueにする
+	* 
+	* @param bAlwaysExecute - 基本Activate済みの場合無視するので必ず処理させる場合Trueにする
 	*/
 	UFUNCTION(BlueprintCallable, Category = "GDM|Event")
 	virtual void ActivateDebugMenu(bool bAlwaysExecute);
@@ -123,6 +130,7 @@ public:
 
 	/**
 	* 指定クラスの子供Widgetをすべて取得する
+	* 
 	* @param WidgetClass         - 対象のクラス
 	* @param OutChildWidgets     - 取得できたWidget
 	* @param bEndSearchAsYouFind - 最初に見つけた時点で終了する

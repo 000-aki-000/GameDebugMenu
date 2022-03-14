@@ -19,6 +19,10 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FGDMOnChangePropertyIntDelegate, c
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FGDMOnChangePropertyFloatDelegate, const FName&, PropertyName, UObject*, PropertyOwnerObject, float, New, float, Old);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FGDMOnChangePropertyByteDelegate, const FName&, PropertyName, UObject*, PropertyOwnerObject, uint8, New, uint8, Old);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FGDMOnChangePropertyStringDelegate, const FName&, PropertyName, UObject*, PropertyOwnerObject, FString, New, FString, Old);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FGDMOnChangePropertyVectorDelegate, const FName&, PropertyName, UObject*, PropertyOwnerObject, FVector, New, FVector, Old);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FGDMOnChangePropertyVector2DDelegate, const FName&, PropertyName, UObject*, PropertyOwnerObject, FVector2D, New, FVector2D, Old);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FGDMOnChangePropertyRotatorDelegate, const FName&, PropertyName, UObject*, PropertyOwnerObject, FRotator, New, FRotator, Old);
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGDMOnInputSystemDelegate, UObject*, TargetInputObject);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FGDMOnInputSystemChangeInputObjectDelegate, UObject*, NewInputObject, UObject*, OldInputObject);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FGDMOnChangeDebugMenuLanguageDelegate, const FName&, NewLanguageKey, const FName&, OldLanguageKey);
@@ -67,6 +71,18 @@ public:
 	/** DebugMenuに登録されたプロパティ（String）が変更されたとき呼ばれるイベント */
 	UPROPERTY(BlueprintAssignable, Category = "GDM|Dispatcher")
 	FGDMOnChangePropertyStringDelegate OnChangePropertyStringDispatcher;
+
+	/** DebugMenuに登録されたプロパティ（Vector）が変更されたとき呼ばれるイベント */
+	UPROPERTY(BlueprintAssignable, Category = "GDM|Dispatcher")
+	FGDMOnChangePropertyVectorDelegate OnChangePropertyVectorDispatcher;
+
+	/** DebugMenuに登録されたプロパティ（Vector2D）が変更されたとき呼ばれるイベント */
+	UPROPERTY(BlueprintAssignable, Category = "GDM|Dispatcher")
+	FGDMOnChangePropertyVector2DDelegate OnChangePropertyVector2DDispatcher;
+
+	/** DebugMenuに登録されたプロパティ（Rotator）が変更されたとき呼ばれるイベント */
+	UPROPERTY(BlueprintAssignable, Category = "GDM|Dispatcher")
+	FGDMOnChangePropertyRotatorDelegate OnChangePropertyRotatorDispatcher;
 
 	/** インプットシステムに登録されたときに呼ばれるイベント */
 	UPROPERTY(BlueprintAssignable, Category = "GDM|Dispatcher")

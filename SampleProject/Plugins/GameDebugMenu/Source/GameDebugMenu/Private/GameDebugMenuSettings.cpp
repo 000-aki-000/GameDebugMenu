@@ -80,6 +80,8 @@ UGameDebugMenuSettings::UGameDebugMenuSettings()
 	DebugReportRequesterClass.Add(EGDMProjectManagementTool::Trello, AGDMRequesterTrello::StaticClass());
 	DebugReportRequesterClass.Add(EGDMProjectManagementTool::Redmine, AGDMRequesterRedmine::StaticClass());
 	DebugReportRequesterClass.Add(EGDMProjectManagementTool::Jira, AGDMRequesterJira::StaticClass());
+
+	bDisableScreenCaptureProcessingWhenOpeningDebugMenu = false;
 }
 
 #if WITH_EDITOR

@@ -109,6 +109,10 @@ public:
 	UPROPERTY(EditAnywhere, Category = "ReportSettings")
 	TMap<EGDMProjectManagementTool, TSubclassOf<AGDMDebugReportRequester>> DebugReportRequesterClass;
 
+	/** バグレポート用の画面キャプチャ処理を無効化する */
+	UPROPERTY(EditAnywhere, Category = "ReportSettings")
+	bool bDisableScreenCaptureProcessingWhenOpeningDebugMenu;
+
 	/** DebugMenuから指定できるCultureのリスト */
 	UPROPERTY(EditAnywhere, config, Category = "Localization")
 	TArray<FString> CultureList;
