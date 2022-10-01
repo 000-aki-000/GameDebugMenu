@@ -48,7 +48,7 @@ protected:
 
 	virtual void FailedRequest();
 
-	AGameDebugMenuManager* GetOwnerDebugMenuManager();
+	AGameDebugMenuManager* GetOwnerDebugMenuManager() const;
 
 	FString GetSubject();
 

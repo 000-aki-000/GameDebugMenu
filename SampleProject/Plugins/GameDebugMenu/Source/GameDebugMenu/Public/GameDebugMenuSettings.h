@@ -12,6 +12,8 @@
 #include "GameDebugMenuTypes.h"
 #include "GameDebugMenuSettings.generated.h"
 
+class AGDMDebugReportRequester;
+
 /**
 * DebugMenu用設定クラス
 */

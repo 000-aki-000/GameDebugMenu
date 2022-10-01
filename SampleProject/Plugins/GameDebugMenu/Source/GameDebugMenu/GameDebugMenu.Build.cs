@@ -31,7 +31,7 @@ public class GameDebugMenu : ModuleRules
                 "InputCore",
                 "Slate",
                 "SlateCore",
-                "Http",
+                "HTTP",
                 "Json",
                 "JsonUtilities",
                 "ImageDownload",

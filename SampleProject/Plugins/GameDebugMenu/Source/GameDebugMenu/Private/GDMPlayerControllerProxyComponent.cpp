@@ -28,14 +28,14 @@ void UGDMPlayerControllerProxyComponent::EndPlay(const EEndPlayReason::Type EndP
 	UE_LOG(LogGDM, Log, TEXT("Call EndPlay Destroyed GDMPlayerControllerProxyComponent"));
 }
 
-APlayerController* UGDMPlayerControllerProxyComponent::GetOwnerPlayerController()
+APlayerController* UGDMPlayerControllerProxyComponent::GetOwnerPlayerController() const
 {
 	return Cast<APlayerController>(GetOwner());
 }
 
-APawn* UGDMPlayerControllerProxyComponent::GetOwnerPlayerPawn()
+APawn* UGDMPlayerControllerProxyComponent::GetOwnerPlayerPawn() const
 {
-	APlayerController* PlayerController = GetOwnerPlayerController();
+	const APlayerController* PlayerController = GetOwnerPlayerController();
 	if (!IsValid(PlayerController))
 	{
 		return nullptr;
@@ -44,9 +44,9 @@ APawn* UGDMPlayerControllerProxyComponent::GetOwnerPlayerPawn()
 	return PlayerController->GetPawn();
 }
 
-ACharacter* UGDMPlayerControllerProxyComponent::GetOwnerPlayerCharacter()
+ACharacter* UGDMPlayerControllerProxyComponent::GetOwnerPlayerCharacter() const
 {
-	APlayerController* PlayerController = GetOwnerPlayerController();
+	const APlayerController* PlayerController = GetOwnerPlayerController();
 	if (IsValid(PlayerController))
 	{
 		return nullptr;

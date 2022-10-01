@@ -11,7 +11,7 @@
 DEFINE_LOG_CATEGORY(LogGDM)
 
 /************************************************************************/
-/* FGDMJiraSettings														*/
+/* FGDMJiraSettings												*/
 /************************************************************************/
 
 FString FGDMJiraSettings::GetAssigneeAccountIdByListIndex(int32 ListIndex) const
@@ -37,7 +37,7 @@ FText FGDMJiraSettings::GetAssigneeTextByListIndex(int32 ListIndex) const
 }
 
 /************************************************************************/
-/* FGDMMenuCategoryKey													*/
+/* FGDMMenuCategoryKey												*/
 /************************************************************************/
 
 FGDMMenuCategoryKey::FGDMMenuCategoryKey(uint8 InIndex, FString InKeyName)
@@ -78,7 +78,7 @@ bool FGDMMenuCategoryKey::operator>(FGDMMenuCategoryKey& InOther)
 }
 
 /************************************************************************/
-/* FGDMGameplayCategoryKey												*/
+/* FGDMGameplayCategoryKey											*/
 /************************************************************************/
 
 FGDMGameplayCategoryKey::FGDMGameplayCategoryKey(uint8 InKey, FString InKeyName)

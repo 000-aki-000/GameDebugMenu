@@ -29,13 +29,13 @@ public:
 public:
 
 	UFUNCTION(BlueprintPure)
-	APlayerController* GetOwnerPlayerController();
+	APlayerController* GetOwnerPlayerController() const;
 
 	UFUNCTION(BlueprintPure)
-	APawn* GetOwnerPlayerPawn();
+	APawn* GetOwnerPlayerPawn() const;
 
 	UFUNCTION(BlueprintPure)
-	ACharacter* GetOwnerPlayerCharacter();
+	ACharacter* GetOwnerPlayerCharacter() const;
 
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ROS_ExecuteConsoleCommand(const FString& Command,bool bAllClient);

@@ -7,8 +7,6 @@
 
 #pragma once
 
-#include "Modules/ModuleManager.h"
-
 class FGameDebugMenuModule : public IModuleInterface
 {
 public:

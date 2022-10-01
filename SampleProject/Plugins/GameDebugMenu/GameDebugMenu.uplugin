@@ -17,14 +17,12 @@
     {
       "Name": "GameDebugMenu",
       "Type": "RunTime",
-      "LoadingPhase": "Default",
-      "WhitelistPlatforms": [ "Win64", "PS4", "Switch" ]
+      "LoadingPhase": "Default"
     },
     {
       "Name": "GameDebugMenuEditor",
       "Type": "Editor",
-      "LoadingPhase": "PreLoadingScreen",
-      "WhitelistPlatforms": [ "Win64" ]
+      "LoadingPhase": "PreLoadingScreen"
     }
   ]
 }

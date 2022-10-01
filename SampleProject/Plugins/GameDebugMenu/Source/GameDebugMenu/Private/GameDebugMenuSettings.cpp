@@ -6,10 +6,13 @@
 */
 
 #include "GameDebugMenuSettings.h"
-#include "GameDebugMenuTypes.h"
 #include "Performance/EnginePerformanceTargets.h"
-#include "Input/GDMInputEventFunctions.h"
 #include <Internationalization/StringTableCore.h>
+#include "GameDebugMenuTypes.h"
+#include "Input/GDMInputEventFunctions.h"
+#include "Reports/GDMRequesterJira.h"
+#include "Reports/GDMRequesterRedmine.h"
+#include "Reports/GDMRequesterTrello.h"
 
 UGameDebugMenuSettings::UGameDebugMenuSettings()
 {

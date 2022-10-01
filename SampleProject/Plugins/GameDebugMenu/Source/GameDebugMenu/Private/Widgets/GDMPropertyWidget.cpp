@@ -100,7 +100,7 @@ void UGDMPropertyWidget::SetPropertyValue_Bool(bool bNewValue, bool& bHasPropert
 
 	bHasProperty = true;
 
-	bool bOldValue = BoolProp->GetPropertyValue(BoolProp->ContainerPtrToValuePtr<void*>(TargetObject));
+	const bool bOldValue = BoolProp->GetPropertyValue(BoolProp->ContainerPtrToValuePtr<void*>(TargetObject));
 	if (bNewValue != bOldValue)
 	{
 		BoolProp->SetPropertyValue(BoolProp->ContainerPtrToValuePtr<void*>(TargetObject), bNewValue);
@@ -143,7 +143,7 @@ void UGDMPropertyWidget::SetPropertyValue_Float(float NewValue, bool& bHasProper
 
 	bHasProperty = true;
 
-	float OldValue = FloatProp->GetPropertyValue(FloatProp->ContainerPtrToValuePtr<void*>(TargetObject));
+	const float OldValue = FloatProp->GetPropertyValue(FloatProp->ContainerPtrToValuePtr<void*>(TargetObject));
 	if (FMath::IsNearlyEqual(NewValue, OldValue) == false)
 	{
 		FloatProp->SetPropertyValue(FloatProp->ContainerPtrToValuePtr<void*>(TargetObject), NewValue);
@@ -186,7 +186,7 @@ void UGDMPropertyWidget::SetPropertyValue_Int(int32 NewValue, bool& bHasProperty
 
 	bHasProperty = true;
 
-	int32 OldValue = IntProp->GetPropertyValue(IntProp->ContainerPtrToValuePtr<void*>(TargetObject));
+	const int32 OldValue = IntProp->GetPropertyValue(IntProp->ContainerPtrToValuePtr<void*>(TargetObject));
 	if (NewValue != OldValue)
 	{
 		IntProp->SetPropertyValue(IntProp->ContainerPtrToValuePtr<void*>(TargetObject), NewValue);
@@ -214,7 +214,7 @@ uint8 UGDMPropertyWidget::GetPropertyValue_Byte(bool& bHasProperty)
 	{
 		bHasProperty = true;
 		const FNumericProperty* NumProp = EnumProp->GetUnderlyingProperty();
-		uint64 Value = NumProp->GetUnsignedIntPropertyValue(EnumProp->ContainerPtrToValuePtr<void*>(TargetObject));
+		const uint64 Value = NumProp->GetUnsignedIntPropertyValue(EnumProp->ContainerPtrToValuePtr<void*>(TargetObject));
 		return static_cast<uint8>( Value );
 	}
 
@@ -247,8 +247,8 @@ void UGDMPropertyWidget::SetPropertyValue_Byte(uint8 NewValue, bool& bHasPropert
 	{
 		bHasProperty = true;
 
-		FNumericProperty* NumProp = EnumProp->GetUnderlyingProperty();
-		uint8 OldValue = static_cast<uint8>( NumProp->GetUnsignedIntPropertyValue(EnumProp->ContainerPtrToValuePtr<void*>(TargetObject)) );
+		const FNumericProperty* NumProp = EnumProp->GetUnderlyingProperty();
+		const uint8 OldValue = static_cast<uint8>( NumProp->GetUnsignedIntPropertyValue(EnumProp->ContainerPtrToValuePtr<void*>(TargetObject)) );
 		if( NewValue != OldValue )
 		{
 			NumProp->SetIntPropertyValue(EnumProp->ContainerPtrToValuePtr<void*>(TargetObject),static_cast<uint64>( NewValue ));
@@ -262,7 +262,7 @@ void UGDMPropertyWidget::SetPropertyValue_Byte(uint8 NewValue, bool& bHasPropert
 	{
 		bHasProperty = true;
 
-		uint8 OldValue = ByteProp->GetPropertyValue(ByteProp->ContainerPtrToValuePtr<void*>(TargetObject));
+		const uint8 OldValue = ByteProp->GetPropertyValue(ByteProp->ContainerPtrToValuePtr<void*>(TargetObject));
 		if( NewValue != OldValue )
 		{
 			ByteProp->SetPropertyValue(ByteProp->ContainerPtrToValuePtr<void*>(TargetObject),NewValue);
@@ -326,7 +326,7 @@ void UGDMPropertyWidget::SetPropertyValue_String(FString NewValue, bool& bHasPro
 
 	bHasProperty = true;
 
-	FString OldValue = StrProp->GetPropertyValue(StrProp->ContainerPtrToValuePtr<void*>(TargetObject));
+	const FString OldValue = StrProp->GetPropertyValue(StrProp->ContainerPtrToValuePtr<void*>(TargetObject));
 	if (NewValue != OldValue)
 	{
 		StrProp->SetPropertyValue(StrProp->ContainerPtrToValuePtr<void*>(TargetObject), NewValue);
@@ -357,7 +357,7 @@ FVector UGDMPropertyWidget::GetPropertyValue_Vector(bool& bHasProperty)
 
 	if( Struct->IsChildOf(TBaseStructure<FVector>::Get()) )
 	{
-		if( FVector* Value = StructProp->ContainerPtrToValuePtr<FVector>(TargetObject) )
+		if(const FVector* Value = StructProp->ContainerPtrToValuePtr<FVector>(TargetObject) )
 		{
 			bHasProperty = true;
 			return (*Value);
@@ -392,7 +392,7 @@ void UGDMPropertyWidget::SetPropertyValue_Vector(FVector NewValue, bool& bHasPro
 	{
 		if( FVector* Value = StructProp->ContainerPtrToValuePtr<FVector>(TargetObject) )
 		{
-			FVector OldValue = *Value;
+			const FVector OldValue = *Value;
 
 			bHasProperty = true;
 
@@ -443,7 +443,7 @@ FVector2D UGDMPropertyWidget::GetPropertyValue_Vector2D(bool& bHasProperty)
 
 	if( Struct->IsChildOf(TBaseStructure<FVector2D>::Get()) )
 	{
-		if( FVector2D* Value = StructProp->ContainerPtrToValuePtr<FVector2D>(TargetObject) )
+		if(const FVector2D* Value = StructProp->ContainerPtrToValuePtr<FVector2D>(TargetObject) )
 		{
 			bHasProperty = true;
 			return (*Value);
@@ -478,7 +478,7 @@ void UGDMPropertyWidget::SetPropertyValue_Vector2D(FVector2D NewValue, bool& bHa
 	{
 		if( FVector2D* Value = StructProp->ContainerPtrToValuePtr<FVector2D>(TargetObject) )
 		{
-			FVector2D OldValue = *Value;
+			const FVector2D OldValue = *Value;
 
 			bHasProperty = true;
 
@@ -514,7 +514,7 @@ FRotator UGDMPropertyWidget::GetPropertyValue_Rotator(bool& bHasProperty)
 
 	if( Struct->IsChildOf(TBaseStructure<FRotator>::Get()) )
 	{
-		if( FRotator* Value = StructProp->ContainerPtrToValuePtr<FRotator>(TargetObject) )
+		if(const FRotator* Value = StructProp->ContainerPtrToValuePtr<FRotator>(TargetObject) )
 		{
 			bHasProperty = true;
 			return (*Value);
@@ -549,7 +549,7 @@ void UGDMPropertyWidget::SetPropertyValue_Rotator(FRotator NewValue, bool& bHasP
 	{
 		if( FRotator* Value = StructProp->ContainerPtrToValuePtr<FRotator>(TargetObject) )
 		{
-			FRotator OldValue = *Value;
+			const FRotator OldValue = *Value;
 
 			bHasProperty = true;
 
