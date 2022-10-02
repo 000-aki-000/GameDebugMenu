@@ -8,16 +8,14 @@
 #include "GDMGameplayCategoryKeyCustomization.h"
 #include "PropertyHandle.h"
 #include "DetailWidgetRow.h"
-#include "IPropertyUtilities.h"
 #include "Widgets/DeclarativeSyntaxSupport.h"
 #include "Widgets/Input/STextComboBox.h"
-#include "Widgets/Input/SCheckBox.h"
 #include "GameDebugMenuSettings.h"
 
 #define LOCTEXT_NAMESPACE "GDMGameplayCategoryKeyCustomization"
 
 /************************************************************************/
-/* FGOAPStateKeyCustomization											*/
+/* FGOAPStateKeyCustomization										*/
 /************************************************************************/
 
 TSharedRef<IPropertyTypeCustomization> FGDMGameplayCategoryKeyCustomization::MakeInstance()

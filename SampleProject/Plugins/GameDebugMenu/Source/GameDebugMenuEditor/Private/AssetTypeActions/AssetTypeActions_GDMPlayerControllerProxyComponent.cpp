@@ -6,7 +6,6 @@
 */
 
 #include "AssetTypeActions/AssetTypeActions_GDMPlayerControllerProxyComponent.h"
-#include "BlueprintEditorModule.h"
 #include "GDMPlayerControllerProxyComponent.h"
 #include "GameDebugMenuEditor.h"
 

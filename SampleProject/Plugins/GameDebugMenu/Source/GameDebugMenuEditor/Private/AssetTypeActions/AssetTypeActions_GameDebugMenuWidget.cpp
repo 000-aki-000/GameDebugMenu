@@ -6,7 +6,6 @@
 */
 
 #include "AssetTypeActions/AssetTypeActions_GameDebugMenuWidget.h"
-#include "BlueprintEditorModule.h"
 #include "GameDebugMenuEditor.h"
 #include "Widgets/GameDebugMenuWidget.h"
 
