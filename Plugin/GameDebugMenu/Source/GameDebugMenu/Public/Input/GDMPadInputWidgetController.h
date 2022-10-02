@@ -8,7 +8,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "UObject/NoExportTypes.h"
 #include "GDMPadInputWidgetController.generated.h"
 
 class UGDMListenerComponent;
@@ -36,7 +35,7 @@ public:
 	void InitializeListenerComponent(UObject* WorldContextObject);
 
 	UFUNCTION(BlueprintPure, Category = "GDM|ListenerComponent")
-	UGDMListenerComponent* GetListenerComponent();
+	UGDMListenerComponent* GetListenerComponent() const;
 
 
 private:

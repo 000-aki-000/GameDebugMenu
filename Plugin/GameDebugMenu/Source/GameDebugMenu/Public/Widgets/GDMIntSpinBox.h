@@ -8,7 +8,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "UObject/ObjectMacros.h"
 #include "Fonts/SlateFontInfo.h"
 #include "Styling/SlateColor.h"
 #include "Styling/SlateTypes.h"

@@ -9,7 +9,6 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "GDMListenerComponent.h"
 #include "GDMScreenshotRequesterComponent.generated.h"
 
 class AGameDebugMenuManager;

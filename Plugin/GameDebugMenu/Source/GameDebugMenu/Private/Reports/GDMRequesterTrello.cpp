@@ -7,11 +7,8 @@
 
 #include "Reports/GDMRequesterTrello.h"
 #include "HttpModule.h"
-#include "Serialization/JsonWriter.h"
 #include "Serialization/JsonSerializer.h"
 #include "GameDebugMenuSettings.h"
-#include "ImageUtils.h"
-#include "Misc/Base64.h"
 #include "Serialization/BufferArchive.h"
 #include <Kismet/KismetSystemLibrary.h>
 #include "GameDebugMenuManager.h"
@@ -31,12 +28,12 @@ void AGDMRequesterTrello::StartRequest()
 	URL += TEXT("&token=");
 	URL += TrelloSettings.AccessToken;
 
-	TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request = FHttpModule::Get().CreateRequest();
+	const TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request = FHttpModule::Get().CreateRequest();
 	Request->OnProcessRequestComplete().BindUObject(this, &AGDMRequesterTrello::OnResponseReceived);
 	Request->SetURL(URL);
 	Request->SetVerb(TEXT("POST"));
 
-	FString BoundaryKey = MakeBoundaryString();
+	const FString BoundaryKey = MakeBoundaryString();
 	Request->SetHeader(TEXT("Content-Type"), FString::Printf(TEXT("multipart/form-data; boundary=%s"), *BoundaryKey));
 
 	TArray<uint8> ContentData;
@@ -60,18 +57,18 @@ void AGDMRequesterTrello::RequestUploadScreenshotCapture()
 	URL += TEXT("&token=");
 	URL += TrelloSettings.AccessToken;
 
-	TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request = FHttpModule::Get().CreateRequest();
+	const TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request = FHttpModule::Get().CreateRequest();
 	Request->OnProcessRequestComplete().BindUObject(this, &AGDMRequesterTrello::OnResponseReceivedUploaded);
 	Request->SetURL(URL);
 	Request->SetVerb(TEXT("POST"));
 
-	FString BoundaryKey = MakeBoundaryString();
+	const FString BoundaryKey = MakeBoundaryString();
 	Request->SetHeader(TEXT("Content-Type"), FString::Printf(TEXT("multipart/form-data; boundary=%s"), *BoundaryKey));
 
 	TArray<uint8> ContentData;
 	
 	/* 画像データ */
-	FString DataName = FString::Printf(TEXT("name=\"file\";  filename=\"%s.jpg\""),*ScreenshotCapturedDateTime.ToString());
+	const FString DataName = FString::Printf(TEXT("name=\"file\";  filename=\"%s.jpg\""),*ScreenshotCapturedDateTime.ToString());
 	AddContent(BoundaryKey,DataName, TEXT("image/jpeg"), ScreenshotImageData, ContentData);
 	AddEndContentString(BoundaryKey, ContentData);
 
@@ -91,12 +88,12 @@ void AGDMRequesterTrello::RequestUploadLog()
 	URL += TEXT("&token=");
 	URL += TrelloSettings.AccessToken;
 
-	TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request = FHttpModule::Get().CreateRequest();
+	const TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request = FHttpModule::Get().CreateRequest();
 	Request->OnProcessRequestComplete().BindUObject(this, &AGDMRequesterTrello::OnResponseReceivedLog);
 	Request->SetURL(URL);
 	Request->SetVerb(TEXT("POST"));
 
-	FString BoundaryKey = MakeBoundaryString();
+	const FString BoundaryKey = MakeBoundaryString();
 	Request->SetHeader(TEXT("Content-Type"), FString::Printf(TEXT("multipart/form-data; boundary=%s"), *BoundaryKey));
 
 	TArray<uint8> ContentData;
@@ -104,7 +101,7 @@ void AGDMRequesterTrello::RequestUploadLog()
 	/* ゲーム内ログ */
 	FString GameLog;
 	GetOwnerDebugMenuManager()->GetOutputLogString(GameLog, LineBreak);
-	FString DataName = FString::Printf(TEXT("name=\"file\";  filename=\"%s.txt\""), *UKismetSystemLibrary::GetGameName());
+	const FString DataName = FString::Printf(TEXT("name=\"file\";  filename=\"%s.txt\""), *UKismetSystemLibrary::GetGameName());
 	AddContentString(BoundaryKey, DataName, TEXT("text/plain; charset=UTF-8"), GameLog, ContentData);
 
 	AddEndContentString(BoundaryKey, ContentData);
@@ -117,7 +114,7 @@ void AGDMRequesterTrello::OnResponseReceived(FHttpRequestPtr Request, FHttpRespo
 {
 	if (bWasSuccessful)
 	{
-		FString ContentAsString = Response->GetContentAsString();
+		const FString ContentAsString = Response->GetContentAsString();
 		UE_LOG(LogGDM, Log, TEXT("OnResponseReceived Success [%s] ResponseCode[%d]"), *ContentAsString, Response->GetResponseCode());
 
 		const auto JsonReader = TJsonReaderFactory<TCHAR>::Create(ContentAsString);
@@ -166,7 +163,7 @@ void AGDMRequesterTrello::OnResponseReceivedUploaded(FHttpRequestPtr Request, FH
 {
 	if (bWasSuccessful)
 	{
-		FString ContentAsString = Response->GetContentAsString();
+		const FString ContentAsString = Response->GetContentAsString();
 		UE_LOG(LogGDM, Log, TEXT("OnResponseReceivedUploaded: Success %s: ResponseCode %d"), *ContentAsString, Response->GetResponseCode());
 
 		const auto JsonReader = TJsonReaderFactory<TCHAR>::Create(ContentAsString);
@@ -201,7 +198,7 @@ void AGDMRequesterTrello::OnResponseReceivedLog(FHttpRequestPtr Request, FHttpRe
 {
 	if(bWasSuccessful)
 	{
-		FString ContentAsString = Response->GetContentAsString();
+		const FString ContentAsString = Response->GetContentAsString();
 		UE_LOG(LogGDM, Log, TEXT("OnResponseReceivedLog: Success %s: ResponseCode %d"), *ContentAsString, Response->GetResponseCode());
 		SuccessRequest();
 	}

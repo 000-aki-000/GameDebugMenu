@@ -12,6 +12,8 @@
 #include "GameDebugMenuTypes.h"
 #include "GameDebugMenuManager.generated.h"
 
+class UGDMListenerComponent;
+class UGameDebugMenuWidget;
 class UGDMInputSystemComponent;
 class UGDMScreenshotRequesterComponent;
 class UGameDebugMenuWidgetDataAsset;
@@ -125,7 +127,7 @@ public:
 	UGDMScreenshotRequesterComponent* GetScreenshotRequesterComponent() const;
 
 	UFUNCTION(BlueprintPure)
-	UGDMListenerComponent* GetListenerComponent();
+	UGDMListenerComponent* GetListenerComponent() const;
 
 protected:
 	/**
@@ -148,13 +150,13 @@ protected:
 	* マウスカーソルのオン・オフ（Menu開く前の状態にする）
 	*/
 	void EnableShowMouseCursorFlag(APlayerController* PlayerController);
-	void RestoreShowMouseCursorFlag(APlayerController* PlayerController);
+	void RestoreShowMouseCursorFlag(APlayerController* PlayerController) const;
 
 	/**
 	* メニュー操作時のゲームポーズのオン・オフ（処理するかは「bGamePause」で判断）
 	*/
 	void TryEnableGamePause();
-	void RestoreGamePause();
+	void RestoreGamePause() const;
 
 	/**
 	* スクショ処理終了後呼ばれる
@@ -224,8 +226,8 @@ public:
 	virtual void RemoveObjectProperty(const int32 Index);
 	virtual UObject* GetObjectFunction(const int32 Index, FGDMGameplayCategoryKey& OutCategoryKey, FText& OutDisplayFunctionName, FText& OutDescription, FName& OutFunctionName);
 	void RemoveObjectFunction(const int32 Index);
-	int32 GetNumObjectProperties();
-	int32 GetNumObjectFunctions();
+	int32 GetNumObjectProperties() const;
+	int32 GetNumObjectFunctions() const;
 
 	/**
 	* ProxyComponentを対象PlayerControllerに追加する

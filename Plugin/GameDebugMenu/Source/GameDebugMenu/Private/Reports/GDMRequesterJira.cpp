@@ -10,7 +10,6 @@
 #include <Misc/Base64.h>
 #include <GameDebugMenuManager.h>
 #include <Kismet/KismetSystemLibrary.h>
-#include <Kismet/KismetStringLibrary.h>
 #include <GameDebugMenuSettings.h>
 
 void AGDMRequesterJira::StartRequest()
@@ -95,11 +94,11 @@ void AGDMRequesterJira::StartRequest()
 
 		if(JiraSettings.IssueTypeList.IsValidIndex(IssueCategoryIndex))
 		{
-			TSharedRef<FJsonObject> JsonIssuetype = MakeShareable(new FJsonObject());
-			JsonFields->SetObjectField(TEXT("issuetype"), JsonIssuetype);
+			TSharedRef<FJsonObject> JsonIssueType = MakeShareable(new FJsonObject());
+			JsonFields->SetObjectField(TEXT("issuetype"), JsonIssueType);
 			{
 				FString TypeStr = JiraSettings.IssueTypeList[IssueCategoryIndex].ToString();
-				JsonIssuetype->SetStringField(TEXT("name"), TypeStr);
+				JsonIssueType->SetStringField(TEXT("name"), TypeStr);
 			}
 		}
 
@@ -156,7 +155,7 @@ void AGDMRequesterJira::RequestUploadContent(const FString& IssueKey)
 	const FString URL                    = TEXT("https://") + JiraSettings.HostName + TEXT("/rest/api/3/issue/") + IssueKey + TEXT("/attachments");
 	const FString BoundaryKey			 = MakeBoundaryString();
 
-	TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request = FHttpModule::Get().CreateRequest();
+	const TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request = FHttpModule::Get().CreateRequest();
 	Request->OnProcessRequestComplete().BindUObject(this, &AGDMRequesterJira::OnResponseReceivedUploaded);
 	Request->SetURL(URL);
 	Request->SetVerb(TEXT("POST"));
