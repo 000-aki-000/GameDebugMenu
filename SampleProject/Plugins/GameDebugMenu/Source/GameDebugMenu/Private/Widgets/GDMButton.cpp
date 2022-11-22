@@ -54,7 +54,7 @@ TSharedRef<SWidget> UGDMButton::RebuildWidget()
 
 FReply UGDMButton::GDMSlateHandleClicked()
 {
-	if(AGameDebugMenuManager* DebugMenuManager = UGameDebugMenuFunctions::GetGameDebugMenuManager(this))
+	if(const AGameDebugMenuManager* DebugMenuManager = UGameDebugMenuFunctions::GetGameDebugMenuManager(this))
 	{
 		if(DebugMenuManager->IsInputIgnored())
 		{
@@ -66,7 +66,7 @@ FReply UGDMButton::GDMSlateHandleClicked()
 
 void UGDMButton::GDMSlateHandlePressed()
 {
-	if(AGameDebugMenuManager* DebugMenuManager = UGameDebugMenuFunctions::GetGameDebugMenuManager(this))
+	if(const AGameDebugMenuManager* DebugMenuManager = UGameDebugMenuFunctions::GetGameDebugMenuManager(this))
 	{
 		if(DebugMenuManager->IsInputIgnored())
 		{
@@ -78,7 +78,7 @@ void UGDMButton::GDMSlateHandlePressed()
 
 void UGDMButton::GDMSlateHandleReleased()
 {
-	if(AGameDebugMenuManager* DebugMenuManager = UGameDebugMenuFunctions::GetGameDebugMenuManager(this))
+	if(const AGameDebugMenuManager* DebugMenuManager = UGameDebugMenuFunctions::GetGameDebugMenuManager(this))
 	{
 		if(DebugMenuManager->IsInputIgnored())
 		{
@@ -90,7 +90,7 @@ void UGDMButton::GDMSlateHandleReleased()
 
 void UGDMButton::GDMSlateHandleHovered()
 {
-	if(AGameDebugMenuManager* DebugMenuManager = UGameDebugMenuFunctions::GetGameDebugMenuManager(this))
+	if(const AGameDebugMenuManager* DebugMenuManager = UGameDebugMenuFunctions::GetGameDebugMenuManager(this))
 	{
 		if(DebugMenuManager->IsInputIgnored())
 		{
@@ -102,7 +102,7 @@ void UGDMButton::GDMSlateHandleHovered()
 
 void UGDMButton::GDMSlateHandleUnhovered()
 {
-	if(AGameDebugMenuManager* DebugMenuManager = UGameDebugMenuFunctions::GetGameDebugMenuManager(this))
+	if(const AGameDebugMenuManager* DebugMenuManager = UGameDebugMenuFunctions::GetGameDebugMenuManager(this))
 	{
 		if(DebugMenuManager->IsInputIgnored())
 		{

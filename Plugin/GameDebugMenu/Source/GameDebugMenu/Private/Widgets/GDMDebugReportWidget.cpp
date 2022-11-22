@@ -95,10 +95,10 @@ void UGDMDebugReportWidget::OnScreenshotCaptured(int32 Width, int32 Height, cons
 	NewTexture->SRGB = true;
 
 	/* テクスチャをコピーする */
-	void* TextureData = NewTexture->PlatformData->Mips[0].BulkData.Lock(LOCK_READ_WRITE);
+	void* TextureData = NewTexture->GetPlatformData()->Mips[0].BulkData.Lock(LOCK_READ_WRITE);
 	const int32 TextureDataSize = Bitmap.Num() * 4;
 	FMemory::Memcpy(TextureData, Bitmap.GetData(), TextureDataSize);
-	NewTexture->PlatformData->Mips[0].BulkData.Unlock();
+	NewTexture->GetPlatformData()->Mips[0].BulkData.Unlock();
 
 	/* 更新 */
 	NewTexture->UpdateResource();

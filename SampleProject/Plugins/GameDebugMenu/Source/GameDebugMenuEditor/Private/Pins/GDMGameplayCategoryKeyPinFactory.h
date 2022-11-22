@@ -9,7 +9,6 @@
 
 #include "SlateBasics.h"
 #include "EdGraph/EdGraphPin.h"
-#include "EdGraph/EdGraphSchema.h"
 #include "EdGraphSchema_K2.h"
 #include "EdGraphUtilities.h"
 #include "GDMGameplayCategoryKeyPin.h"

@@ -32,7 +32,7 @@ void UGDMPadInputWidgetController::InitializeListenerComponent(UObject* WorldCon
 	}
 }
 
-UGDMListenerComponent* UGDMPadInputWidgetController::GetListenerComponent()
+UGDMListenerComponent* UGDMPadInputWidgetController::GetListenerComponent() const
 {
 	return ListenerComponent;
 }

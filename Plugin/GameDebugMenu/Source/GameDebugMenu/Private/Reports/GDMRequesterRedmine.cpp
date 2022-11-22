@@ -10,7 +10,6 @@
 #include "Serialization/JsonWriter.h"
 #include "Serialization/JsonSerializer.h"
 #include "GameDebugMenuSettings.h"
-#include "ImageUtils.h"
 #include <Kismet/KismetSystemLibrary.h>
 #include "GameDebugMenuManager.h"
 
@@ -42,7 +41,7 @@ void AGDMRequesterRedmine::RequestUploadScreenshotCapture()
 	URL += TEXT("/redmine/uploads.json?key=");
 	URL += UGameDebugMenuSettings::Get()->RedmineSettings.AccessKey;
 
-	TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request = FHttpModule::Get().CreateRequest();
+	const TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request = FHttpModule::Get().CreateRequest();
 	Request->OnProcessRequestComplete().BindUObject(this, &AGDMRequesterRedmine::OnResponseReceivedUploaded);
 	Request->SetURL(URL);
 	Request->SetVerb(TEXT("POST"));
@@ -62,7 +61,7 @@ void AGDMRequesterRedmine::RequestUploadLog()
 	URL += TEXT("/redmine/uploads.json?key=");
 	URL += UGameDebugMenuSettings::Get()->RedmineSettings.AccessKey;
 
-	TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request = FHttpModule::Get().CreateRequest();
+	const TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request = FHttpModule::Get().CreateRequest();
 	Request->OnProcessRequestComplete().BindUObject(this, &AGDMRequesterRedmine::OnResponseReceivedLog);
 	Request->SetURL(URL);
 	Request->SetVerb(TEXT("POST"));
@@ -78,14 +77,14 @@ void AGDMRequesterRedmine::RequestIssues()
 	URL += TEXT("/redmine/issues.json?key=");
 	URL += UGameDebugMenuSettings::Get()->RedmineSettings.AccessKey;
 
-	TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request = FHttpModule::Get().CreateRequest();
+	const TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request = FHttpModule::Get().CreateRequest();
 	Request->OnProcessRequestComplete().BindUObject(this, &AGDMRequesterRedmine::OnResponseReceived);
 	Request->SetURL(URL);
 	Request->SetVerb(TEXT("POST"));
 	Request->SetHeader(TEXT("Content-Type"), TEXT("application/json"));
 
-	TSharedRef<FJsonObject> JsonRootObject = MakeShareable(new FJsonObject());
-	TSharedRef<FJsonObject> JsonIssueObject = MakeShareable(new FJsonObject());
+	const TSharedRef<FJsonObject> JsonRootObject = MakeShareable(new FJsonObject());
+	const TSharedRef<FJsonObject> JsonIssueObject = MakeShareable(new FJsonObject());
 	JsonRootObject->SetObjectField(TEXT("issue"), JsonIssueObject);
 	JsonIssueObject->SetStringField(TEXT("project_id"), FString::FromInt(UGameDebugMenuSettings::Get()->RedmineSettings.ProjectId));
 	JsonIssueObject->SetStringField(TEXT("tracker_id"), FString::FromInt(IssueCategoryIndex + 1));
@@ -94,8 +93,8 @@ void AGDMRequesterRedmine::RequestIssues()
 	JsonIssueObject->SetStringField(TEXT("description"), GetDescription());
 
 	TArray< TSharedPtr< FJsonValue > > UploadObjects;
-	TSharedRef<FJsonObject> JsonUploadObjectCapture = MakeShareable(new FJsonObject());
-	TSharedRef<FJsonObject> JsonUploadObjectLog     = MakeShareable(new FJsonObject());
+	const TSharedRef<FJsonObject> JsonUploadObjectCapture = MakeShareable(new FJsonObject());
+	const TSharedRef<FJsonObject> JsonUploadObjectLog     = MakeShareable(new FJsonObject());
 
 	bool bUploads = false;
 	if (!TokenScreenshotCapture.IsEmpty())
@@ -122,7 +121,7 @@ void AGDMRequesterRedmine::RequestIssues()
 	}
 
 	FString Content;
-	auto Writer = TJsonWriterFactory<>::Create(&Content);
+	const auto Writer = TJsonWriterFactory<>::Create(&Content);
 	FJsonSerializer::Serialize(JsonRootObject, Writer);
 	Request->SetContentAsString(Content);
 
@@ -133,7 +132,7 @@ void AGDMRequesterRedmine::OnResponseReceived(FHttpRequestPtr Request, FHttpResp
 {
 	if (bWasSuccessful != false)
 	{
-		FString ContentAsString = Response->GetContentAsString();
+		const FString ContentAsString = Response->GetContentAsString();
 		UE_LOG(LogGDM, Log, TEXT("OnResponseReceived: Success %s: ResponseCode %d"), *ContentAsString, Response->GetResponseCode());
 		SuccessRequest();
 	}
@@ -148,7 +147,7 @@ void AGDMRequesterRedmine::OnResponseReceivedUploaded(FHttpRequestPtr Request, F
 {
 	if (bWasSuccessful)
 	{
-		FString ContentAsString = Response->GetContentAsString();
+		const FString ContentAsString = Response->GetContentAsString();
 		UE_LOG(LogGDM, Log, TEXT("OnResponseReceivedUploaded: Success %s: ResponseCode %d"), *ContentAsString, Response->GetResponseCode());
 
 		const auto JsonReader = TJsonReaderFactory<TCHAR>::Create(ContentAsString);
@@ -156,7 +155,7 @@ void AGDMRequesterRedmine::OnResponseReceivedUploaded(FHttpRequestPtr Request, F
 
 		if (FJsonSerializer::Deserialize(JsonReader, JsonObject))
 		{
-			auto UploadObj = JsonObject->GetObjectField(TEXT("upload"));
+			const auto UploadObj = JsonObject->GetObjectField(TEXT("upload"));
 			TokenScreenshotCapture = UploadObj->GetStringField(TEXT("token"));
 			if(bSendLogs)
 			{
@@ -184,7 +183,7 @@ void AGDMRequesterRedmine::OnResponseReceivedLog(FHttpRequestPtr Request, FHttpR
 {
 	if(bWasSuccessful)
 	{
-		FString ContentAsString = Response->GetContentAsString();
+		const FString ContentAsString = Response->GetContentAsString();
 		UE_LOG(LogGDM, Log, TEXT("OnResponseReceivedLog: Success %s: ResponseCode %d"), *ContentAsString, Response->GetResponseCode());
 
 		const auto JsonReader = TJsonReaderFactory<TCHAR>::Create(ContentAsString);
@@ -192,7 +191,7 @@ void AGDMRequesterRedmine::OnResponseReceivedLog(FHttpRequestPtr Request, FHttpR
 
 		if(FJsonSerializer::Deserialize(JsonReader, JsonObject))
 		{
-			auto UploadObj = JsonObject->GetObjectField(TEXT("upload"));
+			const auto UploadObj = JsonObject->GetObjectField(TEXT("upload"));
 			TokenLog = UploadObj->GetStringField(TEXT("token"));
 			RequestIssues();
 		}

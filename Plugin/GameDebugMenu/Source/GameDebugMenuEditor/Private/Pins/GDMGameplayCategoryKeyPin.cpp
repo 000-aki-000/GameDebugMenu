@@ -8,11 +8,13 @@
 #include "GDMGameplayCategoryKeyPin.h"
 #include "EdGraph/EdGraphPin.h"
 #include "EdGraph/EdGraphSchema.h"
+#include "Widgets/Input/STextComboBox.h"
 #include "GameDebugMenuSettings.h"
 #include "GameDebugMenuTypes.h"
 
+
 /************************************************************************/
-/* SGoapStateKeyPin														*/
+/* SGoapStateKeyPin												*/
 /************************************************************************/
 
 void SGDMGameplayCategoryKeyPin::Construct(const FArguments& InArgs, UEdGraphPin* InGraphPinObj)
@@ -51,17 +53,17 @@ void SGDMGameplayCategoryKeyPin::MakeGameplayCategoryNames()
 	}
 }
 
-int32 SGDMGameplayCategoryKeyPin::GetCategoryNameArrayIndex()
+int32 SGDMGameplayCategoryKeyPin::GetCategoryNameArrayIndex() const
 {
 	int32 GraphPinValue = 0;
 
-	FString CurrentDefault = GraphPinObj->GetDefaultAsString();
+	const FString CurrentDefault = GraphPinObj->GetDefaultAsString();
 	if( CurrentDefault.Len() > 0 )
 	{
-		int32 StartIndex = 7;/* (Index= */
+		constexpr int32 StartIndex = 7;/* (Index= */
 		int32 EndIndex;
 		CurrentDefault.FindChar(',', EndIndex);
-		FString DefaultValString = CurrentDefault.Mid(StartIndex, EndIndex - StartIndex);
+		const FString DefaultValString = CurrentDefault.Mid(StartIndex, EndIndex - StartIndex);
 		GraphPinValue = FCString::Atoi(*DefaultValString);
 	}
 
@@ -79,14 +81,14 @@ int32 SGDMGameplayCategoryKeyPin::GetCategoryNameArrayIndex()
 	return 0;
 }
 
-void SGDMGameplayCategoryKeyPin::SetCategoryValue(const int32 InArrayIndex)
+void SGDMGameplayCategoryKeyPin::SetCategoryValue(const int32 InArrayIndex) const
 {
 	UGameDebugMenuSettings* Settings = GetMutableDefault<UGameDebugMenuSettings>();
 
 	FString StrKey;
 	StrKey.AppendInt(Settings->GetGameplayCategoryIndex(InArrayIndex));
 
-	FString NewValue = TEXT("(Index=") + StrKey + TEXT(",KeyName=)");
+	const FString NewValue = TEXT("(Index=") + StrKey + TEXT(",KeyName=)");
 
 	GraphPinObj->GetSchema()->TrySetDefaultValue(*GraphPinObj, NewValue);
 }

@@ -113,7 +113,7 @@ protected:
 	virtual void UpdateInputObject();
 
 	/************************************************************************/
-	/* 押された(離した)ときの入力											*/
+	/* 押された(離した)ときの入力										*/
 	/************************************************************************/
 protected:
 	virtual void CallInputPressedInterfaceEvent(FName EventName);
@@ -123,7 +123,7 @@ public:
 	virtual void CallReleasedButtons();
 
 	/************************************************************************/
-	/* Axis系イベント														*/
+	/* Axis系イベント													*/
 	/************************************************************************/
 protected:
 	virtual void OnAxisMoveForward(float Value);
@@ -132,7 +132,7 @@ protected:
 	virtual void OnAxisLookUp(float Value);
 
 	/************************************************************************/
-	/* リピートイベント													*/
+	/* リピートイベント												*/
 	/************************************************************************/
 protected:
 	virtual void OnInputRepeat(const FName& EventName);

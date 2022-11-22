@@ -23,9 +23,8 @@ public class GameDebugMenuEditor : ModuleRules
                 "GameDebugMenuEditor/Private/Pins",
             }
             );
-			
-		
-		PublicDependencyModuleNames.AddRange(
+        
+        PublicDependencyModuleNames.AddRange(
 			new string[]
 			{
 				"Core",

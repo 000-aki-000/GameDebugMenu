@@ -9,7 +9,6 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
-#include "GameDebugMenuTypes.h"
 #include "GDMInputInterface.generated.h"
 
 

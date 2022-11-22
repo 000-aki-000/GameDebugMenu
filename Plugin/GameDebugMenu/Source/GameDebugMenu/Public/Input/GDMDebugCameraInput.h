@@ -40,7 +40,7 @@ public:
 
 	virtual void UnbindSpawnDebugCameraController();
 
-	virtual void OnPressedTaggleMenu();
+	virtual void OnPressedToggleMenu();
 
 	virtual void OnPressedDebugReport();
 

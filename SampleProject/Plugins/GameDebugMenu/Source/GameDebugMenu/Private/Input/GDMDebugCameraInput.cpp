@@ -33,7 +33,7 @@ void AGDMDebugCameraInput::EnableInput(class APlayerController* PlayerController
 		bBindingsInputComponent = true;
 
 		/* メニュー開閉イベントをバインドしてDebugCamera操作中メニューを出せるように */
-		FInputActionBinding* InputActionBinding = &InputComponent->BindAction(GDMInputEventNames::MenuOpenAndClose, EInputEvent::IE_Pressed, this, &AGDMDebugCameraInput::OnPressedTaggleMenu);
+		FInputActionBinding* InputActionBinding = &InputComponent->BindAction(GDMInputEventNames::MenuOpenAndClose, EInputEvent::IE_Pressed, this, &AGDMDebugCameraInput::OnPressedToggleMenu);
 		InputActionBinding->bExecuteWhenPaused = true;
 		InputActionBinding = &InputComponent->BindAction(GDMInputEventNames::DebugReport, EInputEvent::IE_Pressed, this, &AGDMDebugCameraInput::OnPressedDebugReport);
 		InputActionBinding->bExecuteWhenPaused = true;
@@ -69,9 +69,9 @@ void AGDMDebugCameraInput::UnbindSpawnDebugCameraController()
 	GetWorld()->RemoveOnActorSpawnedHandler(ActorSpawnedDelegateHandle);
 }
 
-void AGDMDebugCameraInput::OnPressedTaggleMenu()
+void AGDMDebugCameraInput::OnPressedToggleMenu()
 {
-	UE_LOG(LogGDM, Log, TEXT("AGDMDebugCameraInput::OnPressedTaggleMenu Call"));
+	UE_LOG(LogGDM, Log, TEXT("AGDMDebugCameraInput::OnPressedToggleMenu Call"));
 
 	AGameDebugMenuManager* DebugMenuManager = GetOwnerGameDebugMenuManager();
 	if (!IsValid(DebugMenuManager))

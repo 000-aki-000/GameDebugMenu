@@ -8,8 +8,11 @@
 #include "GameDebugMenuManager.h"
 
 #include "Engine/DebugCameraController.h"
-#include "Kismet/KismetStringLibrary.h"
 #include "GameFramework/CheatManager.h"
+#include "Kismet/KismetStringLibrary.h"
+#include "Kismet/KismetSystemLibrary.h"
+#include "Kismet/GameplayStatics.h"
+#include <Internationalization/StringTableCore.h>
 #include "Blueprint/WidgetBlueprintLibrary.h"
 #include "GameDebugMenuSettings.h"
 #include "GameDebugMenuFunctions.h"
@@ -17,22 +20,15 @@
 #include "GDMPlayerControllerProxyComponent.h"
 #include "GDMScreenshotRequesterComponent.h"
 #include "GDMOutputDevice.h"
-#include "Input/GDMInputInterface.h"
-#include "Input/GDMInputEventFunctions.h"
 #include "Input/GDMDebugCameraInput.h"
 #include "Input/GDMInputSystemComponent.h"
 #include "Widgets/GameDebugMenuRootWidget.h"
-#include "Reports/GDMRequesterRedmine.h"
-#include "Reports/GDMRequesterTrello.h"
-#include "Reports/GDMRequesterJira.h"
-#include "Kismet/KismetSystemLibrary.h"
-#include "Kismet/GameplayStatics.h"
-#include <Internationalization/StringTableCore.h>
 #include "Widgets/GDMTextBlock.h"
+#include "Data/GameDebugMenuWidgetDataAsset.h"
 
 
 /************************************************************************/
-/* AGameDebugMenuManager											    */
+/* AGameDebugMenuManager										    */
 /************************************************************************/
 
 AGameDebugMenuManager::AGameDebugMenuManager(const FObjectInitializer& ObjectInitializer)
@@ -58,6 +54,7 @@ AGameDebugMenuManager::AGameDebugMenuManager(const FObjectInitializer& ObjectIni
 	, CurrentDebugMenuLanguage()
 	, bCurrentDebugMenuDirectStringKey(false)
 {
+	RootComponent				  = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
 	DebugMenuInputSystemComponent = CreateDefaultSubobject<UGDMInputSystemComponent>(TEXT("DebugMenuInputSystemComponent"));
 	ScreenshotRequesterComponent  = CreateDefaultSubobject<UGDMScreenshotRequesterComponent>(TEXT("ScreenshotRequesterComponent"));
 	ListenerComponent             = CreateDefaultSubobject<UGDMListenerComponent>(TEXT("ListenerComponent"));
@@ -210,7 +207,7 @@ UGDMScreenshotRequesterComponent* AGameDebugMenuManager::GetScreenshotRequesterC
 	return ScreenshotRequesterComponent;
 }
 
-UGDMListenerComponent* AGameDebugMenuManager::GetListenerComponent()
+UGDMListenerComponent* AGameDebugMenuManager::GetListenerComponent() const
 {
 	return ListenerComponent;
 }
@@ -303,7 +300,7 @@ void AGameDebugMenuManager::EnableShowMouseCursorFlag(APlayerController* PlayerC
 	PlayerController->CheatManager->DebugCameraControllerRef->bShowMouseCursor = true;
 }
 
-void AGameDebugMenuManager::RestoreShowMouseCursorFlag(APlayerController* PlayerController)
+void AGameDebugMenuManager::RestoreShowMouseCursorFlag(APlayerController* PlayerController) const
 {
 	PlayerController->bShowMouseCursor = bCachedShowMouseCursor;
 
@@ -330,7 +327,7 @@ void AGameDebugMenuManager::TryEnableGamePause()
 	}
 }
 
-void AGameDebugMenuManager::RestoreGamePause()
+void AGameDebugMenuManager::RestoreGamePause() const
 {
 	if(bGamePause)
 	{
@@ -357,7 +354,7 @@ void AGameDebugMenuManager::SyncLoadDebugMenuStringTables(FName TargetDebugMenuL
 
 		for( auto& StrTablePtr : StringTableList->StringTables )
 		{
-			if( UStringTable* StringTable = StrTablePtr.LoadSynchronous() )
+			if(const UStringTable* StringTable = StrTablePtr.LoadSynchronous() )
 			{
 				StringTable->GetStringTable()->EnumerateSourceStrings([&](const FString& InKey, const FString& InSourceString) -> bool
 				{
@@ -388,7 +385,7 @@ void AGameDebugMenuManager::ExecuteConsoleCommand(const FString& Command, APlaye
 		return;
 	}
 
-	UWorld* World = GetWorld();
+	const UWorld* World = GetWorld();
 	if(!IsValid(World))
 	{
 		return;
@@ -428,7 +425,7 @@ bool AGameDebugMenuManager::ShowDebugMenu(bool bWaitToCaptureBeforeOpeningMenuFl
 		return false;
 	}
 
-	UWorld* World = GetWorld();
+	const UWorld* World = GetWorld();
 	if(!IsValid(World))
 	{
 		UGameDebugMenuFunctions::PrintLogScreen(this, TEXT("ShowDebugMenu: Not found World"), 4.0f);
@@ -480,7 +477,7 @@ bool AGameDebugMenuManager::ShowDebugMenu(bool bWaitToCaptureBeforeOpeningMenuFl
 	if( bShow )
 	{
 		TArray<UGameDebugMenuWidget*> DebugMenuWidgets = GetViewportDebugMenuWidgets();
-		for( auto ViewportWidget : DebugMenuWidgets )
+		for(const auto ViewportWidget : DebugMenuWidgets )
 		{
 			if( ViewportWidget->IsActivateDebugMenu() )
 			{
@@ -510,7 +507,7 @@ void AGameDebugMenuManager::HideDebugMenu()
 		return;
 	}
 
-	UWorld* World = GetWorld();
+	const UWorld* World = GetWorld();
 	if(!IsValid(World))
 	{
 		UGameDebugMenuFunctions::PrintLogScreen(this, TEXT("HideDebugMenu: Not found World"), 4.0f);
@@ -540,7 +537,7 @@ void AGameDebugMenuManager::HideDebugMenu()
 	DebugMenuInputSystemComponent->CallReleasedButtons();
 
 	TArray<UGameDebugMenuWidget*> DebugMenuWidgets = GetViewportDebugMenuWidgets();
-	for( auto ViewportWidget : DebugMenuWidgets )
+	for(const auto ViewportWidget : DebugMenuWidgets )
 	{
 		if( ViewportWidget->IsActivateDebugMenu() )
 		{
@@ -581,7 +578,7 @@ TSubclassOf<UGameDebugMenuWidget> AGameDebugMenuManager::GetDebugMenuWidgetClass
 {
 	if( IsValid(WidgetDataAsset) )
 	{
-		if( TSubclassOf<UGameDebugMenuWidget>* WidgetClass = WidgetDataAsset->DebugMenuClasses.Find(Key) )
+		if(const TSubclassOf<UGameDebugMenuWidget>* WidgetClass = WidgetDataAsset->DebugMenuClasses.Find(Key) )
 		{
 			return (*WidgetClass);
 		}
@@ -642,7 +639,7 @@ EGDMPropertyType AGameDebugMenuManager::GetPropertyType(FProperty* TargetPropert
 		}
 		else if( TargetProperty->IsA(FStructProperty::StaticClass()) )
 		{
-			FStructProperty* StructProp = CastFieldChecked<FStructProperty>(TargetProperty);
+			const FStructProperty* StructProp = CastFieldChecked<FStructProperty>(TargetProperty);
 			if( StructProp->Struct->GetFName() == NAME_Vector2D )
 			{
 				return EGDMPropertyType::GDM_Vector2D;
@@ -682,7 +679,7 @@ bool AGameDebugMenuManager::RegisterObjectProperty(UObject* TargetObject,FName P
 		return false;
 	}
 
-	TSharedPtr<FGDMObjectPropertyInfo> PropertyInfo = MakeShareable(new FGDMObjectPropertyInfo);
+	const TSharedPtr<FGDMObjectPropertyInfo> PropertyInfo = MakeShareable(new FGDMObjectPropertyInfo);
 	PropertyInfo->CategoryKey                       = CategoryKey;
 	PropertyInfo->Name                              = (DisplayPropertyName.IsEmpty() != false) ? FText::FromName(PropertyName) : DisplayPropertyName;
 	PropertyInfo->TargetObject                      = TargetObject;
@@ -742,14 +739,14 @@ bool AGameDebugMenuManager::RegisterObjectFunction(UObject* TargetObject,FName F
 		return false;
 	}
 
-	TSharedPtr<FGDMObjectFunctionInfo> FunctionInfo = MakeShareable(new FGDMObjectFunctionInfo);
-	FunctionInfo->CategoryKey                       = CategoryKey;
-	FunctionInfo->Name                              = (DisplayFunctionName.IsEmpty() != false) ? FText::FromName(FunctionName) : DisplayFunctionName;
-	FunctionInfo->TargetObject                      = TargetObject;
-	FunctionInfo->FunctionName                      = FunctionName;
-	FunctionInfo->TargetFunction                    = Function;
-	FunctionInfo->Description						= Description;
-	FunctionInfo->DisplayPriority					= DisplayPriority;
+	const TSharedPtr<FGDMObjectFunctionInfo> FunctionInfo  = MakeShareable(new FGDMObjectFunctionInfo);
+	FunctionInfo->CategoryKey                              = CategoryKey;
+	FunctionInfo->Name                                     = (DisplayFunctionName.IsEmpty() != false) ? FText::FromName(FunctionName) : DisplayFunctionName;
+	FunctionInfo->TargetObject                             = TargetObject;
+	FunctionInfo->FunctionName                             = FunctionName;
+	FunctionInfo->TargetFunction                           = Function;
+	FunctionInfo->Description						       = Description;
+	FunctionInfo->DisplayPriority					       = DisplayPriority;
 
 	ObjectFunctions.Add(FunctionInfo);
 
@@ -849,12 +846,12 @@ void AGameDebugMenuManager::RemoveObjectFunction(const int32 Index)
 	ObjectFunctions.RemoveAt(Index);
 }
 
-int32 AGameDebugMenuManager::GetNumObjectProperties()
+int32 AGameDebugMenuManager::GetNumObjectProperties() const
 {
 	return ObjectProperties.Num();
 }
 
-int32 AGameDebugMenuManager::GetNumObjectFunctions()
+int32 AGameDebugMenuManager::GetNumObjectFunctions() const
 {
 	return ObjectFunctions.Num();
 }
@@ -938,13 +935,13 @@ void AGameDebugMenuManager::ChangeDebugMenuLanguage(FName LanguageKey, bool bFor
 	SyncLoadDebugMenuStringTables(CurrentDebugMenuLanguage);
 
 	TArray<UWidget*> ChildWidgets;
-	for( auto ViewportWidget : ViewportDebugMenuWidgets )
+	for(const auto ViewportWidget : ViewportDebugMenuWidgets )
 	{
 		/* Viewportに追加 Widget 内にあるすべてのTextBlockとDebugMenuWidgetを更新 */
 		{
 			ViewportWidget->GetWidgetChildrenOfClass(UGDMTextBlock::StaticClass(), ChildWidgets, false);
 
-			for( auto ChildWidget : ChildWidgets )
+			for(const auto ChildWidget : ChildWidgets )
 			{
 				if( UGDMTextBlock* TextBlock = Cast<UGDMTextBlock>(ChildWidget) )
 				{
@@ -957,7 +954,7 @@ void AGameDebugMenuManager::ChangeDebugMenuLanguage(FName LanguageKey, bool bFor
 
 			ViewportWidget->GetWidgetChildrenOfClass(UGameDebugMenuWidget::StaticClass(), ChildWidgets, false);
 
-			for( auto ChildWidget : ChildWidgets )
+			for(const auto ChildWidget : ChildWidgets )
 			{
 				if( UGameDebugMenuWidget* DebugMenuWidget = Cast<UGameDebugMenuWidget>(ChildWidget) )
 				{
@@ -1023,9 +1020,9 @@ void AGameDebugMenuManager::CallExecuteConsoleCommandDispatcher(const FString& C
 	TArray<UGDMListenerComponent*> ListenerComponents;
 	UGDMListenerComponent::GetAllListenerComponents(GetWorld(), ListenerComponents);
 
-	for(auto& Compoent : ListenerComponents)
+	for(const auto& Component : ListenerComponents)
 	{
-		Compoent->OnExecuteConsoleCommandDispatcher.Broadcast(Command);
+		Component->OnExecuteConsoleCommandDispatcher.Broadcast(Command);
 	}
 }
 
@@ -1034,9 +1031,9 @@ void AGameDebugMenuManager::CallShowDispatcher()
 	TArray<UGDMListenerComponent*> ListenerComponents;
 	UGDMListenerComponent::GetAllListenerComponents(GetWorld(), ListenerComponents);
 
-	for(auto& Compoent : ListenerComponents)
+	for(const auto& Component : ListenerComponents)
 	{
-		Compoent->OnShowDispatcher.Broadcast();
+		Component->OnShowDispatcher.Broadcast();
 	}
 }
 
@@ -1045,9 +1042,9 @@ void AGameDebugMenuManager::CallHideDispatcher()
 	TArray<UGDMListenerComponent*> ListenerComponents;
 	UGDMListenerComponent::GetAllListenerComponents(GetWorld(), ListenerComponents);
 
-	for(auto& Compoent : ListenerComponents)
+	for(const auto& Component : ListenerComponents)
 	{
-		Compoent->OnHideDispatcher.Broadcast();
+		Component->OnHideDispatcher.Broadcast();
 	}
 }
 
@@ -1056,9 +1053,9 @@ void AGameDebugMenuManager::CallRegisterInputSystemEventDispatcher(UObject* Targ
 	TArray<UGDMListenerComponent*> ListenerComponents;
 	UGDMListenerComponent::GetAllListenerComponents(GetWorld(), ListenerComponents);
 
-	for( auto& Compoent : ListenerComponents )
+	for(const auto& Component : ListenerComponents )
 	{
-		Compoent->OnRegisterInputSystemDispatcher.Broadcast(TargetObject);
+		Component->OnRegisterInputSystemDispatcher.Broadcast(TargetObject);
 	}
 }
 
@@ -1067,9 +1064,9 @@ void AGameDebugMenuManager::CallUnregisterInputSystemEventDispatcher(UObject* Ta
 	TArray<UGDMListenerComponent*> ListenerComponents;
 	UGDMListenerComponent::GetAllListenerComponents(GetWorld(), ListenerComponents);
 
-	for( auto& Compoent : ListenerComponents )
+	for(const auto& Component : ListenerComponents )
 	{
-		Compoent->OnUnregisterInputSystemDispatcher.Broadcast(TargetObject);
+		Component->OnUnregisterInputSystemDispatcher.Broadcast(TargetObject);
 	}
 }
 
@@ -1078,9 +1075,9 @@ void AGameDebugMenuManager::CallExecuteProcessEventDispatcher(const FName& Funct
 	TArray<UGDMListenerComponent*> ListenerComponents;
 	UGDMListenerComponent::GetAllListenerComponents(GetWorld(), ListenerComponents);
 
-	for(auto& Compoent : ListenerComponents)
+	for(const auto& Component : ListenerComponents)
 	{
-		Compoent->OnExecuteProcessEventDispatcher.Broadcast(FunctionName, TargetObject);
+		Component->OnExecuteProcessEventDispatcher.Broadcast(FunctionName, TargetObject);
 	}
 }
 
@@ -1089,9 +1086,9 @@ void AGameDebugMenuManager::CallChangePropertyBoolDispatcher(const FName& Proper
 	TArray<UGDMListenerComponent*> ListenerComponents;
 	UGDMListenerComponent::GetAllListenerComponents(GetWorld(), ListenerComponents);
 
-	for(auto& Compoent : ListenerComponents)
+	for(const auto& Component : ListenerComponents)
 	{
-		Compoent->OnChangePropertyBoolDispatcher.Broadcast(PropertyName, PropertyOwnerObject, New, Old);
+		Component->OnChangePropertyBoolDispatcher.Broadcast(PropertyName, PropertyOwnerObject, New, Old);
 	}
 }
 
@@ -1100,9 +1097,9 @@ void AGameDebugMenuManager::CallChangePropertyIntDispatcher(const FName& Propert
 	TArray<UGDMListenerComponent*> ListenerComponents;
 	UGDMListenerComponent::GetAllListenerComponents(GetWorld(), ListenerComponents);
 
-	for(auto& Compoent : ListenerComponents)
+	for(const auto& Component : ListenerComponents)
 	{
-		Compoent->OnChangePropertyIntDispatcher.Broadcast(PropertyName, PropertyOwnerObject, New, Old);
+		Component->OnChangePropertyIntDispatcher.Broadcast(PropertyName, PropertyOwnerObject, New, Old);
 	}
 }
 
@@ -1111,9 +1108,9 @@ void AGameDebugMenuManager::CallChangePropertyFloatDispatcher(const FName& Prope
 	TArray<UGDMListenerComponent*> ListenerComponents;
 	UGDMListenerComponent::GetAllListenerComponents(GetWorld(), ListenerComponents);
 
-	for(auto& Compoent : ListenerComponents)
+	for(const auto& Component : ListenerComponents)
 	{
-		Compoent->OnChangePropertyFloatDispatcher.Broadcast(PropertyName, PropertyOwnerObject, New, Old);
+		Component->OnChangePropertyFloatDispatcher.Broadcast(PropertyName, PropertyOwnerObject, New, Old);
 	}
 }
 
@@ -1122,9 +1119,9 @@ void AGameDebugMenuManager::CallChangePropertyByteDispatcher(const FName& Proper
 	TArray<UGDMListenerComponent*> ListenerComponents;
 	UGDMListenerComponent::GetAllListenerComponents(GetWorld(), ListenerComponents);
 
-	for(auto& Compoent : ListenerComponents)
+	for(const auto& Component : ListenerComponents)
 	{
-		Compoent->OnChangePropertyByteDispatcher.Broadcast(PropertyName, PropertyOwnerObject, New, Old);
+		Component->OnChangePropertyByteDispatcher.Broadcast(PropertyName, PropertyOwnerObject, New, Old);
 	}
 }
 
@@ -1133,9 +1130,9 @@ void AGameDebugMenuManager::CallChangePropertyStringDispatcher(const FName& Prop
 	TArray<UGDMListenerComponent*> ListenerComponents;
 	UGDMListenerComponent::GetAllListenerComponents(GetWorld(), ListenerComponents);
 
-	for(auto& Compoent : ListenerComponents)
+	for(const auto& Component : ListenerComponents)
 	{
-		Compoent->OnChangePropertyStringDispatcher.Broadcast(PropertyName, PropertyOwnerObject, New, Old);
+		Component->OnChangePropertyStringDispatcher.Broadcast(PropertyName, PropertyOwnerObject, New, Old);
 	}
 }
 
@@ -1144,9 +1141,9 @@ void AGameDebugMenuManager::CallChangePropertyVectorDispatcher(const FName& Prop
 	TArray<UGDMListenerComponent*> ListenerComponents;
 	UGDMListenerComponent::GetAllListenerComponents(GetWorld(), ListenerComponents);
 
-	for( auto& Compoent : ListenerComponents )
+	for(const auto& Component : ListenerComponents )
 	{
-		Compoent->OnChangePropertyVectorDispatcher.Broadcast(PropertyName, PropertyOwnerObject, New, Old);
+		Component->OnChangePropertyVectorDispatcher.Broadcast(PropertyName, PropertyOwnerObject, New, Old);
 	}
 }
 
@@ -1155,9 +1152,9 @@ void AGameDebugMenuManager::CallChangePropertyVector2DDispatcher(const FName& Pr
 	TArray<UGDMListenerComponent*> ListenerComponents;
 	UGDMListenerComponent::GetAllListenerComponents(GetWorld(), ListenerComponents);
 
-	for( auto& Compoent : ListenerComponents )
+	for(const auto& Component : ListenerComponents )
 	{
-		Compoent->OnChangePropertyVector2DDispatcher.Broadcast(PropertyName, PropertyOwnerObject, New, Old);
+		Component->OnChangePropertyVector2DDispatcher.Broadcast(PropertyName, PropertyOwnerObject, New, Old);
 	}
 }
 
@@ -1166,9 +1163,9 @@ void AGameDebugMenuManager::CallChangePropertyRotatorDispatcher(const FName& Pro
 	TArray<UGDMListenerComponent*> ListenerComponents;
 	UGDMListenerComponent::GetAllListenerComponents(GetWorld(), ListenerComponents);
 
-	for( auto& Compoent : ListenerComponents )
+	for(const auto& Component : ListenerComponents )
 	{
-		Compoent->OnChangePropertyRotatorDispatcher.Broadcast(PropertyName, PropertyOwnerObject, New, Old);
+		Component->OnChangePropertyRotatorDispatcher.Broadcast(PropertyName, PropertyOwnerObject, New, Old);
 	}
 }
 
@@ -1177,9 +1174,9 @@ void AGameDebugMenuManager::CallChangeActiveInputObjectDispatcher(UObject* NewTa
 	TArray<UGDMListenerComponent*> ListenerComponents;
 	UGDMListenerComponent::GetAllListenerComponents(GetWorld(), ListenerComponents);
 
-	for( auto& Compoent : ListenerComponents )
+	for(const auto& Component : ListenerComponents )
 	{
-		Compoent->OnChangeActiveInputObjectDispatcher.Broadcast(NewTargetObject, OldTargetObject);
+		Component->OnChangeActiveInputObjectDispatcher.Broadcast(NewTargetObject, OldTargetObject);
 	}
 }
 
@@ -1188,9 +1185,9 @@ void AGameDebugMenuManager::CallChangeDebugMenuLanguageDispatcher(const FName& N
 	TArray<UGDMListenerComponent*> ListenerComponents;
 	UGDMListenerComponent::GetAllListenerComponents(GetWorld(), ListenerComponents);
 
-	for( auto& Compoent : ListenerComponents )
+	for(const auto& Component : ListenerComponents )
 	{
-		Compoent->OnChangeDebugMenuLanguageDispatcher.Broadcast(NewLanguageKey, OldLanguageKey);
+		Component->OnChangeDebugMenuLanguageDispatcher.Broadcast(NewLanguageKey, OldLanguageKey);
 	}
 }
 
@@ -1199,9 +1196,9 @@ void AGameDebugMenuManager::CallStartScreenshotRequestDispatcher()
 	TArray<UGDMListenerComponent*> ListenerComponents;
 	UGDMListenerComponent::GetAllListenerComponents(GetWorld(), ListenerComponents);
 
-	for( auto& Compoent : ListenerComponents )
+	for(const auto& Component : ListenerComponents )
 	{
-		Compoent->OnStartScreenshotRequestDispatcher.Broadcast();
+		Component->OnStartScreenshotRequestDispatcher.Broadcast();
 	}
 
 }
@@ -1211,9 +1208,8 @@ void AGameDebugMenuManager::CallScreenshotRequestProcessedDispatcher()
 	TArray<UGDMListenerComponent*> ListenerComponents;
 	UGDMListenerComponent::GetAllListenerComponents(GetWorld(), ListenerComponents);
 
-	for( auto& Compoent : ListenerComponents )
+	for(const auto& Component : ListenerComponents )
 	{
-		Compoent->OnScreenshotRequestProcessedDispatcher.Broadcast();
+		Component->OnScreenshotRequestProcessedDispatcher.Broadcast();
 	}
-
 }

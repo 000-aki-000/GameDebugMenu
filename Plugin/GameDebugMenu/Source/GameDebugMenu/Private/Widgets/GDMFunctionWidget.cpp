@@ -40,7 +40,7 @@ bool UGDMFunctionWidget::GDMProcessEvent(FName EventName, void* Parms)
 		return false;
 	}
 
-	TargetObject->ProcessEvent(TargetFunction, NULL);
+	TargetObject->ProcessEvent(TargetFunction, nullptr);
 
 	UGameDebugMenuFunctions::GetGameDebugMenuManager(this)->CallExecuteProcessEventDispatcher(EventName, TargetObject);
 	return true;

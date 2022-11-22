@@ -11,12 +11,12 @@
 #include "SGraphPin.h"
 
 /************************************************************************/
-/* SGDMGameplayCategoryKeyPin											*/
+/* SGDMGameplayCategoryKeyPin										*/
 /************************************************************************/
 
 class SGDMGameplayCategoryKeyPin : public SGraphPin
 {
-	int32 ArrayIndex;
+	int32 ArrayIndex = 0;
 	TArray<TSharedPtr<FString>> GameplayCategoryNames;
 	TSharedPtr<STextComboBox> TextComboBox;
 
@@ -30,8 +30,8 @@ public:
 
 private:
 	void MakeGameplayCategoryNames();
-	int32 GetCategoryNameArrayIndex();
-	void SetCategoryValue(const int32 InArrayIndex);
+	int32 GetCategoryNameArrayIndex() const;
+	void SetCategoryValue(const int32 InArrayIndex) const;
 	void OnSelectionChanged(TSharedPtr<FString> ItemSelected, ESelectInfo::Type SelectInfo);
 	EVisibility GetStateKeyVisibility() const;
 

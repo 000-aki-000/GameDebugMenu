@@ -10,7 +10,6 @@
 #include "CoreMinimal.h"
 #include "InputCoreTypes.h"
 #include "Framework/Application/NavigationConfig.h"
-#include "Launch/Resources/Version.h"
 #include <Internationalization/StringTable.h>
 #include "GameDebugMenuTypes.generated.h"
 

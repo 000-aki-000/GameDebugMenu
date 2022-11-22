@@ -46,7 +46,7 @@ void AGDMDebugReportRequester::FailedRequest()
 	Destroy();
 }
 
-AGameDebugMenuManager* AGDMDebugReportRequester::GetOwnerDebugMenuManager()
+AGameDebugMenuManager* AGDMDebugReportRequester::GetOwnerDebugMenuManager() const
 {
 	return Cast<AGameDebugMenuManager>(GetOwner());
 }
@@ -91,10 +91,10 @@ int32 AGDMDebugReportRequester::GetUTF8StringSize(const FString& Text)
 {
 	int32 Size = 0;
 
-	for(TCHAR Char : Text)
+	for(const TCHAR Char : Text)
 	{
 		const char* Temp = TCHAR_TO_UTF8(*FString::Chr(Char));
-		uint8 Code = static_cast<uint8>(*Temp);
+		const uint8 Code = static_cast<uint8>(*Temp);
 
 		if((Code >= 0x00) && (Code <= 0x7f))
 		{
@@ -132,9 +132,7 @@ FString AGDMDebugReportRequester::MakeBoundaryString()
 
 void AGDMDebugReportRequester::AddContentString(const FString& BoundaryKey, const FString& DataName, const FString& ContentType, const FString& SourceData, TArray<uint8>& OutSendData)
 {
-	FString WorkStr;
-
-	WorkStr = LineBreak + TEXT("--") + BoundaryKey + LineBreak;
+	FString WorkStr = LineBreak + TEXT("--") + BoundaryKey + LineBreak;
 	OutSendData.Append((uint8*)TCHAR_TO_UTF8(*WorkStr), GetUTF8StringSize(WorkStr));
 
 	WorkStr = TEXT("Content-Disposition: form-data; ") + DataName + LineBreak;
@@ -148,9 +146,7 @@ void AGDMDebugReportRequester::AddContentString(const FString& BoundaryKey, cons
 
 void AGDMDebugReportRequester::AddContent(const FString& BoundaryKey, const FString& DataName, const FString& ContentType, const TArray<uint8>& SourceData, TArray<uint8>& OutSendData)
 {
-	FString WorkStr;
-
-	WorkStr = LineBreak + TEXT("--") + BoundaryKey + LineBreak;
+	FString WorkStr = LineBreak + TEXT("--") + BoundaryKey + LineBreak;
 	OutSendData.Append((uint8*)TCHAR_TO_UTF8(*WorkStr), GetUTF8StringSize(WorkStr));
 
 	WorkStr = TEXT("Content-Disposition: form-data; ") + DataName + LineBreak;
@@ -164,7 +160,6 @@ void AGDMDebugReportRequester::AddContent(const FString& BoundaryKey, const FStr
 
 void AGDMDebugReportRequester::AddEndContentString(const FString& BoundaryKey, TArray<uint8>& OutSendData)
 {
-	FString WorkStr;
-	WorkStr = LineBreak + TEXT("--") + BoundaryKey + TEXT("--") + LineBreak;
+	FString WorkStr = LineBreak + TEXT("--") + BoundaryKey + TEXT("--") + LineBreak;
 	OutSendData.Append((uint8*)TCHAR_TO_UTF8(*WorkStr), GetUTF8StringSize(WorkStr));
 }

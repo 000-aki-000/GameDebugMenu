@@ -14,6 +14,8 @@
 #include "AssetTypeActions/AssetTypeActions_GameDebugMenuWidget.h"
 #include <PropertyEditorModule.h>
 #include <EdGraphUtilities.h>
+
+#include "GDMGameplayCategoryKeyCustomization.h"
 #include "Pins/GDMGameplayCategoryKeyPinFactory.h"
 
 

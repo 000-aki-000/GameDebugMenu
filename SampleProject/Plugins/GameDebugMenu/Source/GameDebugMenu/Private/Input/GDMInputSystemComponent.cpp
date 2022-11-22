@@ -7,6 +7,8 @@
 
 #include "Input/GDMInputSystemComponent.h"
 #include <Engine/World.h>
+
+#include "GameDebugMenuFunctions.h"
 #include "Components/InputComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "GameFramework/PlayerInput.h"
@@ -16,7 +18,7 @@
 #include "GameDebugMenuManager.h"
 
 /************************************************************************/
-/* RepeatButtonInfo													    */
+/* RepeatButtonInfo											   */
 /************************************************************************/
 
 UGDMInputSystemComponent::RepeatButtonInfo::RepeatButtonInfo()
@@ -88,7 +90,7 @@ void UGDMInputSystemComponent::RepeatButtonInfo::Stop()
 }
 
 /************************************************************************/
-/* UGDMInputSystemComponent												*/
+/* UGDMInputSystemComponent										*/
 /************************************************************************/
 
 UGDMInputSystemComponent::UGDMInputSystemComponent()
@@ -124,7 +126,7 @@ void UGDMInputSystemComponent::BeginPlay()
 
 void UGDMInputSystemComponent::TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
-	/* Slomoなど時間操作に影響受けないようにする */
+	/* Slomo など時間操作に影響受けないようにする */
 	DeltaTime /= GetOwner()->GetWorldSettings()->GetEffectiveTimeDilation();
 
 	TickRepeatButtons(DeltaTime);
@@ -393,7 +395,7 @@ void UGDMInputSystemComponent::CallInputPressedInterfaceEvent(FName EventName)
 		return;
 	}
 
-	TWeakObjectPtr<UObject> Obj = GetCurrentInputObject();
+	const TWeakObjectPtr<UObject> Obj = GetCurrentInputObject();
 	if(Obj.IsValid())
 	{
 		CachePressedInputObjects.Add(EventName, Obj);
@@ -411,7 +413,7 @@ void UGDMInputSystemComponent::CallInputPressedInterfaceEvent(FName EventName)
 
 void UGDMInputSystemComponent::CallInputReleasedInterfaceEvent(FName EventName)
 {
-	if(TWeakObjectPtr<UObject>* Obj = CachePressedInputObjects.Find(EventName))
+	if(const TWeakObjectPtr<UObject>* Obj = CachePressedInputObjects.Find(EventName))
 	{
 		CachePressedInputObjects.Remove(EventName);
 
@@ -472,7 +474,7 @@ void UGDMInputSystemComponent::OnAxisLookUp(float Value)
 
 void UGDMInputSystemComponent::OnInputRepeat(const FName& EventName)
 {
-	if(TWeakObjectPtr<UObject>* Obj = CachePressedInputObjects.Find(EventName))
+	if(const TWeakObjectPtr<UObject>* Obj = CachePressedInputObjects.Find(EventName))
 	{
 		if(!Obj->IsValid())
 		{
