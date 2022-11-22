@@ -54,6 +54,7 @@ AGameDebugMenuManager::AGameDebugMenuManager(const FObjectInitializer& ObjectIni
 	, CurrentDebugMenuLanguage()
 	, bCurrentDebugMenuDirectStringKey(false)
 {
+	RootComponent				  = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
 	DebugMenuInputSystemComponent = CreateDefaultSubobject<UGDMInputSystemComponent>(TEXT("DebugMenuInputSystemComponent"));
 	ScreenshotRequesterComponent  = CreateDefaultSubobject<UGDMScreenshotRequesterComponent>(TEXT("ScreenshotRequesterComponent"));
 	ListenerComponent             = CreateDefaultSubobject<UGDMListenerComponent>(TEXT("ListenerComponent"));

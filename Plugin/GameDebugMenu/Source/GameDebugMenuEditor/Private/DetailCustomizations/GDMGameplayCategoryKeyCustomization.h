@@ -4,8 +4,8 @@
 * This software is released under the MIT License.
 * (See accompanying file LICENSE.txt or copy at http://opensource.org/licenses/MIT)
 */
+#pragma once
 
-#include "DetailCustomizations.h"
 #include "IPropertyTypeCustomization.h"
 #include <Widgets/Input/STextComboBox.h>
 
@@ -15,7 +15,7 @@ protected:
 	TArray<TSharedPtr<FString>> GameplayCategoryNames;
 	TSharedPtr<IPropertyHandle> IndexHandle;
 	TSharedPtr<STextComboBox> TextComboBox;
-	int32 ArrayIndex;
+	int32 ArrayIndex = 0;
 
 public:
 	static TSharedRef<IPropertyTypeCustomization> MakeInstance();
