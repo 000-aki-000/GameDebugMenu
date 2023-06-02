@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2022 akihiko moroi
+* Copyright (c) 2023 akihiko moroi
 *
 * This software is released under the MIT License.
 * (See accompanying file LICENSE.txt or copy at http://opensource.org/licenses/MIT)
@@ -9,9 +9,11 @@
 
 #include "Engine/DebugCameraController.h"
 #include "GameFramework/CheatManager.h"
+#include "GameFramework/WorldSettings.h"
 #include "Kismet/KismetStringLibrary.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Kismet/GameplayStatics.h"
+#include "TimerManager.h"
 #include <Internationalization/StringTableCore.h>
 #include "Blueprint/WidgetBlueprintLibrary.h"
 #include "GameDebugMenuSettings.h"
@@ -25,6 +27,7 @@
 #include "Widgets/GameDebugMenuRootWidget.h"
 #include "Widgets/GDMTextBlock.h"
 #include "Data/GameDebugMenuWidgetDataAsset.h"
+#include "Framework/Application/SlateApplication.h"
 
 
 /************************************************************************/
@@ -54,7 +57,6 @@ AGameDebugMenuManager::AGameDebugMenuManager(const FObjectInitializer& ObjectIni
 	, CurrentDebugMenuLanguage()
 	, bCurrentDebugMenuDirectStringKey(false)
 {
-	RootComponent				  = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
 	DebugMenuInputSystemComponent = CreateDefaultSubobject<UGDMInputSystemComponent>(TEXT("DebugMenuInputSystemComponent"));
 	ScreenshotRequesterComponent  = CreateDefaultSubobject<UGDMScreenshotRequesterComponent>(TEXT("ScreenshotRequesterComponent"));
 	ListenerComponent             = CreateDefaultSubobject<UGDMListenerComponent>(TEXT("ListenerComponent"));
@@ -622,6 +624,10 @@ EGDMPropertyType AGameDebugMenuManager::GetPropertyType(FProperty* TargetPropert
 			return EGDMPropertyType::GDM_Int;
 		}
 		else if(TargetProperty->IsA(FFloatProperty::StaticClass()))
+		{
+			return EGDMPropertyType::GDM_Float;
+		}
+		else if(TargetProperty->IsA(FDoubleProperty::StaticClass()))
 		{
 			return EGDMPropertyType::GDM_Float;
 		}

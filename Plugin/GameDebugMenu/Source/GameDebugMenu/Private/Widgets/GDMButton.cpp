@@ -1,15 +1,16 @@
 /**
-* Copyright (c) 2022 akihiko moroi
+* Copyright (c) 2023 akihiko moroi
 *
 * This software is released under the MIT License.
 * (See accompanying file LICENSE.txt or copy at http://opensource.org/licenses/MIT)
 */
 
 #include "Widgets/GDMButton.h"
-#include <GameDebugMenuFunctions.h>
-#include <GameDebugMenuManager.h>
+#include "Widgets/Input/SButton.h"
 #include <Components/ButtonSlot.h>
 #include <Components/Button.h>
+#include <GameDebugMenuFunctions.h>
+#include <GameDebugMenuManager.h>
 
 #define LOCTEXT_NAMESPACE "UMG"
 

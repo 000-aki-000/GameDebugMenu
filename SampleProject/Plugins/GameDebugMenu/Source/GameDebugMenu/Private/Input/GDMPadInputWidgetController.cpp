@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2022 akihiko moroi
+* Copyright (c) 2023 akihiko moroi
 *
 * This software is released under the MIT License.
 * (See accompanying file LICENSE.txt or copy at http://opensource.org/licenses/MIT)
@@ -8,6 +8,8 @@
 #include "Input/GDMPadInputWidgetController.h"
 #include <Widgets/GameDebugMenuWidget.h>
 #include <GDMListenerComponent.h>
+
+#include "Engine/Engine.h"
 
 UWorld* UGDMPadInputWidgetController::GetWorld() const
 {

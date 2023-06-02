@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2022 akihiko moroi
+* Copyright (c) 2023 akihiko moroi
 *
 * This software is released under the MIT License.
 * (See accompanying file LICENSE.txt or copy at http://opensource.org/licenses/MIT)
@@ -43,7 +43,8 @@ public:
 	FString GameDebugMenuName;
 
 public:
-	virtual void AddToScreen(ULocalPlayer* LocalPlayer, int32 ZOrder) override;
+//	virtual void AddToScreen(ULocalPlayer* LocalPlayer, int32 ZOrder) override;
+	virtual void NativeConstruct() override;
 	virtual void RemoveFromParent() override;
 
 public:

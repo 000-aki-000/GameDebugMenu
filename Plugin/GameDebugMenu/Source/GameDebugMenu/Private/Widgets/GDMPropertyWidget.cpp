@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2022 akihiko moroi
+* Copyright (c) 2023 akihiko moroi
 *
 * This software is released under the MIT License.
 * (See accompanying file LICENSE.txt or copy at http://opensource.org/licenses/MIT)
@@ -119,6 +119,13 @@ float UGDMPropertyWidget::GetPropertyValue_Float(bool& bHasProperty)
 	const FFloatProperty* FloatProp = CastField<const FFloatProperty>(TargetObject->GetClass()->FindPropertyByName(PropertyName));
 	if(FloatProp == nullptr)
 	{
+		if(const FDoubleProperty* DoubleProp = CastField<const FDoubleProperty>(TargetObject->GetClass()->FindPropertyByName(PropertyName)))
+		{
+			bHasProperty = true;
+
+			return DoubleProp->GetPropertyValue(DoubleProp->ContainerPtrToValuePtr<void*>(TargetObject));
+		}
+		
 		return 0.0f;
 	}
 
@@ -138,6 +145,17 @@ void UGDMPropertyWidget::SetPropertyValue_Float(float NewValue, bool& bHasProper
 	const FFloatProperty* FloatProp = CastField<const FFloatProperty>(TargetObject->GetClass()->FindPropertyByName(PropertyName));
 	if(FloatProp == nullptr)
 	{
+		if(const FDoubleProperty* DoubleProp = CastField<const FDoubleProperty>(TargetObject->GetClass()->FindPropertyByName(PropertyName)))
+		{
+			bHasProperty = true;
+
+			const float OldValue = DoubleProp->GetPropertyValue(DoubleProp->ContainerPtrToValuePtr<void*>(TargetObject));
+			if (FMath::IsNearlyEqual(NewValue, OldValue) == false)
+			{
+				DoubleProp->SetPropertyValue(DoubleProp->ContainerPtrToValuePtr<void*>(TargetObject), NewValue);
+				UGameDebugMenuFunctions::GetGameDebugMenuManager(this)->CallChangePropertyFloatDispatcher(PropertyName, TargetObject, NewValue, OldValue);
+			}
+		}
 		return;
 	}
 
@@ -275,7 +293,7 @@ TArray<FText> UGDMPropertyWidget::GetEnumDisplayNames(bool& bHasProperty)
 {
 	TArray<FText> Result;
 
-	const UEnum* Enum = FindObject<UEnum>(ANY_PACKAGE, *EnumName.ToString());
+	const UEnum* Enum = FindObject<UEnum>(nullptr, *EnumName.ToString());
 	if(IsValid(Enum) == false)
 	{
 		return Result;

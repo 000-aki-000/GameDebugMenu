@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2022 akihiko moroi
+* Copyright (c) 2023 akihiko moroi
 *
 * This software is released under the MIT License.
 * (See accompanying file LICENSE.txt or copy at http://opensource.org/licenses/MIT)
@@ -9,6 +9,7 @@
 
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
+#include "Templates/SubclassOf.h"
 #include "GameDebugMenuTypes.h"
 #include "GameDebugMenuSettings.generated.h"
 
@@ -161,8 +162,8 @@ private:
 	void SetupCategoryCamera();
 	void SetupCategoryProfiler();
 	void SetupCategoryDisplay();
-	void SetupCategoryViewMode();
 	void SetupCategoryShowDebug();
+	void SetupCategoryViewMode();
 	void SetupCategoryScalability();
 	void SetupCategoryFreeze();
 	void SetupCategoryDumpLogs();

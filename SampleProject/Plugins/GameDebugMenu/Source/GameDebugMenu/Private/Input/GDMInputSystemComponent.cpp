@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2022 akihiko moroi
+* Copyright (c) 2023 akihiko moroi
 *
 * This software is released under the MIT License.
 * (See accompanying file LICENSE.txt or copy at http://opensource.org/licenses/MIT)
@@ -12,6 +12,7 @@
 #include "Components/InputComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "GameFramework/PlayerInput.h"
+#include "GameFramework/WorldSettings.h"
 #include "Input/GDMInputEventFunctions.h"
 #include "Input/GDMInputInterface.h"
 #include "GameDebugMenuSettings.h"
