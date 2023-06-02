@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2022 akihiko moroi
+* Copyright (c) 2023 akihiko moroi
 *
 * This software is released under the MIT License.
 * (See accompanying file LICENSE.txt or copy at http://opensource.org/licenses/MIT)
@@ -14,6 +14,8 @@
 #include "CoreGlobals.h"
 #include "Misc/ConfigCacheIni.h"
 #include <GeneralProjectSettings.h>
+
+#include "GameFramework/WorldSettings.h"
 #include "Input/GDMInputSystemComponent.h"
 
 TArray< TWeakObjectPtr<AGameDebugMenuManager> > GGameDebugMenuManagers;

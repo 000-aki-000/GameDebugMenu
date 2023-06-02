@@ -1,15 +1,17 @@
 /**
-* Copyright (c) 2022 akihiko moroi
+* Copyright (c) 2023 akihiko moroi
 *
 * This software is released under the MIT License.
 * (See accompanying file LICENSE.txt or copy at http://opensource.org/licenses/MIT)
 */
 
 #include "Widgets/GDMTextBlock.h"
-#include <Kismet/KismetTextLibrary.h>
+#include "GameDebugMenuFunctions.h"
 #include "GameDebugMenuSettings.h"
 #include "GameDebugMenuManager.h"
+#include "Engine/Engine.h"
 #include "Widgets/GameDebugMenuRootWidget.h"
+#include "Widgets/Text/STextBlock.h"
 
 #define LOCTEXT_NAMESPACE "UMG"
 
@@ -22,7 +24,7 @@ UGDMTextBlock::UGDMTextBlock(const FObjectInitializer& ObjectInitializer)
 {
 	if( !IsRunningDedicatedServer() )
 	{
-		Font = FSlateFontInfo(UGameDebugMenuSettings::Get()->GetGDMFont(), 24, FName("Bold"));
+		SetFont(FSlateFontInfo(UGameDebugMenuSettings::Get()->GetGDMFont(), 24, FName("Bold")));
 	}
 }
 

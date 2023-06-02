@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2022 akihiko moroi
+* Copyright (c) 2023 akihiko moroi
 *
 * This software is released under the MIT License.
 * (See accompanying file LICENSE.txt or copy at http://opensource.org/licenses/MIT)
@@ -12,6 +12,10 @@
 #include <Kismet/KismetSystemLibrary.h>
 #include <GameDebugMenuSettings.h>
 
+#include "Dom/JsonObject.h"
+#include "Serialization/JsonSerializer.h"
+#include "Serialization/JsonWriter.h"
+
 void AGDMRequesterJira::StartRequest()
 {
 	bWasRequestSuccessful = false;
@@ -19,8 +23,8 @@ void AGDMRequesterJira::StartRequest()
 	const FGDMJiraSettings& JiraSettings = UGameDebugMenuSettings::Get()->JiraSettings;
 	const FString BasicAuthData          = TEXT("Basic ") + FBase64::Encode(JiraSettings.UserName + TEXT(":") + JiraSettings.AccessKey);
 	const FString URL                    = TEXT("https://") + JiraSettings.HostName + TEXT("/rest/api/3/issue");
- 
-	TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request = FHttpModule::Get().CreateRequest();
+
+	const TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request = FHttpModule::Get().CreateRequest();
  	Request->OnProcessRequestComplete().BindUObject(this, &AGDMRequesterJira::OnResponseReceived);
  	Request->SetURL(URL);
  	Request->SetVerb(TEXT("POST"));
@@ -60,11 +64,11 @@ void AGDMRequesterJira::StartRequest()
 	}
 	*/
  	TSharedRef<FJsonObject> JsonRoot   = MakeShareable(new FJsonObject());
- 	TSharedRef<FJsonObject> JsonFields = MakeShareable(new FJsonObject());
+	const TSharedRef<FJsonObject> JsonFields = MakeShareable(new FJsonObject());
 
 	JsonRoot->SetObjectField(TEXT("fields"), JsonFields);
 	{
-		TSharedRef<FJsonObject> JsonProject = MakeShareable(new FJsonObject());
+		const TSharedRef<FJsonObject> JsonProject = MakeShareable(new FJsonObject());
 		JsonFields->SetObjectField(TEXT("project"), JsonProject);
 		{
 			JsonProject->SetStringField(TEXT("key"), JiraSettings.ProjectKeyName);
@@ -72,10 +76,10 @@ void AGDMRequesterJira::StartRequest()
 
 		if(JiraSettings.PriorityNameList.IsValidIndex(PriorityIndex))
 		{
-			TSharedRef<FJsonObject> JsonPriority = MakeShareable(new FJsonObject());
+			const TSharedRef<FJsonObject> JsonPriority = MakeShareable(new FJsonObject());
 			JsonFields->SetObjectField(TEXT("priority"), JsonPriority);
 			{
-				FString PriorityStr = JiraSettings.PriorityNameList[PriorityIndex].ToString();
+				const FString PriorityStr = JiraSettings.PriorityNameList[PriorityIndex].ToString();
 				JsonPriority->SetStringField(TEXT("name"), PriorityStr);
 			}
 		}
@@ -83,7 +87,7 @@ void AGDMRequesterJira::StartRequest()
 		const FString AccountId = JiraSettings.GetAssigneeAccountIdByListIndex(AssigneeIndex);
 		if(!AccountId.IsEmpty())
 		{
-			TSharedRef<FJsonObject> JsonAssignee = MakeShareable(new FJsonObject());
+			const TSharedRef<FJsonObject> JsonAssignee = MakeShareable(new FJsonObject());
 			JsonFields->SetObjectField(TEXT("assignee"), JsonAssignee);
 			{
 				JsonAssignee->SetStringField(TEXT("accountId"), AccountId);
@@ -94,10 +98,10 @@ void AGDMRequesterJira::StartRequest()
 
 		if(JiraSettings.IssueTypeList.IsValidIndex(IssueCategoryIndex))
 		{
-			TSharedRef<FJsonObject> JsonIssueType = MakeShareable(new FJsonObject());
+			const TSharedRef<FJsonObject> JsonIssueType = MakeShareable(new FJsonObject());
 			JsonFields->SetObjectField(TEXT("issuetype"), JsonIssueType);
 			{
-				FString TypeStr = JiraSettings.IssueTypeList[IssueCategoryIndex].ToString();
+				const FString TypeStr = JiraSettings.IssueTypeList[IssueCategoryIndex].ToString();
 				JsonIssueType->SetStringField(TEXT("name"), TypeStr);
 			}
 		}
@@ -112,13 +116,13 @@ void AGDMRequesterJira::StartRequest()
 			JsonFields->SetArrayField(TEXT("labels"),JsonLabelArray);
 		}
 
-		TSharedRef<FJsonObject> JsonDescription = MakeShareable(new FJsonObject());
+		const TSharedRef<FJsonObject> JsonDescription = MakeShareable(new FJsonObject());
 		JsonFields->SetObjectField(TEXT("description"), JsonDescription);
 		{
 			JsonDescription->SetStringField(TEXT("type"), TEXT("doc"));
 			JsonDescription->SetNumberField(TEXT("version"), 1);
 
-			TSharedRef<FJsonObject> JsonContent = MakeShareable(new FJsonObject());
+			const TSharedRef<FJsonObject> JsonContent = MakeShareable(new FJsonObject());
 			TArray< TSharedPtr< FJsonValue > > Contents;
 			Contents.Reserve(1);
 			Contents.Emplace(MakeShareable(new FJsonValueObject(JsonContent)));
@@ -127,7 +131,7 @@ void AGDMRequesterJira::StartRequest()
 			{
 				JsonContent->SetStringField(TEXT("type"), TEXT("paragraph"));
 
-				TSharedRef<FJsonObject> JsonContent_2 = MakeShareable(new FJsonObject());
+				const TSharedRef<FJsonObject> JsonContent_2 = MakeShareable(new FJsonObject());
 				TArray< TSharedPtr< FJsonValue > > Contents_2;
 				Contents_2.Reserve(1);
 				Contents_2.Emplace(MakeShareable(new FJsonValueObject(JsonContent_2)));

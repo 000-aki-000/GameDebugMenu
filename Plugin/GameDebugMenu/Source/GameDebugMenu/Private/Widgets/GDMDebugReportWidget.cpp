@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2022 akihiko moroi
+* Copyright (c) 2023 akihiko moroi
 *
 * This software is released under the MIT License.
 * (See accompanying file LICENSE.txt or copy at http://opensource.org/licenses/MIT)
@@ -12,6 +12,7 @@
 #include "GameDebugMenuManager.h"
 #include "GameDebugMenuFunctions.h"
 #include "ImageUtils.h"
+#include "Engine/Texture2D.h"
 
 UGDMDebugReportWidget::UGDMDebugReportWidget()
 	: Super()
@@ -87,8 +88,8 @@ void UGDMDebugReportWidget::OnScreenshotCaptured(int32 Width, int32 Height, cons
 {
 	/* Debugレポートようにキャッシュ */
 	ScreenshotImageData.Reset();
-	TArray<FColor> BitmapCopy(Bitmap);
-	FImageUtils::CompressImageArray(Width, Height, BitmapCopy, ScreenshotImageData);
+	const TArray<FColor> BitmapCopy(Bitmap);
+	FImageUtils::ThumbnailCompressImageArray(Width, Height, BitmapCopy, ScreenshotImageData);
 
 	/* テクスチャを生成 */
 	UTexture2D* NewTexture = UTexture2D::CreateTransient(Width, Height, EPixelFormat::PF_B8G8R8A8);

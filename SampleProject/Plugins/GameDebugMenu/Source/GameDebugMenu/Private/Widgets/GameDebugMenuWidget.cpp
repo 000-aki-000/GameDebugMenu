@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2022 akihiko moroi
+* Copyright (c) 2023 akihiko moroi
 *
 * This software is released under the MIT License.
 * (See accompanying file LICENSE.txt or copy at http://opensource.org/licenses/MIT)
@@ -8,45 +8,75 @@
 #include "Widgets/GameDebugMenuWidget.h"
 #include <Blueprint/WidgetTree.h>
 #include <Kismet/GameplayStatics.h>
+#include "TimerManager.h"
 #include "GameDebugMenuManager.h"
 #include "GameDebugMenuFunctions.h"
 #include <GDMPlayerControllerProxyComponent.h>
 
-void UGameDebugMenuWidget::AddToScreen(ULocalPlayer* LocalPlayer, int32 ZOrder)
+
+// void UGameDebugMenuWidget::AddToScreen(ULocalPlayer* LocalPlayer, int32 ZOrder)
+// {
+// 	Super::AddToScreen(LocalPlayer, ZOrder);
+//
+// 	if( AGameDebugMenuManager* DebugMenuManager = UGameDebugMenuFunctions::GetGameDebugMenuManager(this) )
+// 	{
+// 		DebugMenuManager->RegisterViewportDebugMenuWidget(this);
+// 	}
+// 	else
+// 	{
+// 		check(GetWorld() != nullptr);
+//
+// 		GetWorld()->GetTimerManager().SetTimer(WaitDebugMenuManagerTimerHandle, FTimerDelegate::CreateWeakLambda(this, [this]()
+// 		{
+// 			if( AGameDebugMenuManager* DebugMenuManager = UGameDebugMenuFunctions::GetGameDebugMenuManager(this) )
+// 			{
+// 				DebugMenuManager->RegisterViewportDebugMenuWidget(this);
+// 				GetWorld()->GetTimerManager().ClearTimer(WaitDebugMenuManagerTimerHandle);
+// 			}
+//
+// 		}), 0.016f, true);
+// 	}
+// }
+
+void UGameDebugMenuWidget::NativeConstruct()
 {
-	Super::AddToScreen(LocalPlayer, ZOrder);
+	Super::NativeConstruct();
 
-	if( AGameDebugMenuManager* DebugMenuManager = UGameDebugMenuFunctions::GetGameDebugMenuManager(this) )
+	/* todo ver5.2 で viewportに追加したときのイベントが取得できるのでバインドして行うようにするのでそれまでの暫定対応 */
 	{
-		DebugMenuManager->RegisterViewportDebugMenuWidget(this);
-	}
-	else
-	{
-		check(GetWorld() != nullptr);
-
-		GetWorld()->GetTimerManager().SetTimer(WaitDebugMenuManagerTimerHandle, FTimerDelegate::CreateWeakLambda(this, [this]()
+		if( AGameDebugMenuManager* DebugMenuManager = UGameDebugMenuFunctions::GetGameDebugMenuManager(this) )
 		{
-			if( AGameDebugMenuManager* DebugMenuManager = UGameDebugMenuFunctions::GetGameDebugMenuManager(this) )
+			DebugMenuManager->RegisterViewportDebugMenuWidget(this);
+		}
+		else
+		{
+			check(GetWorld() != nullptr);
+	
+			GetWorld()->GetTimerManager().SetTimer(WaitDebugMenuManagerTimerHandle, FTimerDelegate::CreateWeakLambda(this, [this]()
 			{
-				DebugMenuManager->RegisterViewportDebugMenuWidget(this);
-				GetWorld()->GetTimerManager().ClearTimer(WaitDebugMenuManagerTimerHandle);
-			}
-
-		}), 0.016f, true);
+				if( AGameDebugMenuManager* DebugMenuManager = UGameDebugMenuFunctions::GetGameDebugMenuManager(this) )
+				{
+					DebugMenuManager->RegisterViewportDebugMenuWidget(this);
+					GetWorld()->GetTimerManager().ClearTimer(WaitDebugMenuManagerTimerHandle);
+				}
+	
+			}), 0.016f, true);
+		}
 	}
 }
 
 void UGameDebugMenuWidget::RemoveFromParent()
 {
-	if( UWorld* World = GetWorld() )
-	{
-		World->GetTimerManager().ClearTimer(WaitDebugMenuManagerTimerHandle);
-
-		if( AGameDebugMenuManager* DebugMenuManager = UGameDebugMenuFunctions::GetGameDebugMenuManager(this) )
-		{
-			DebugMenuManager->UnregisterViewportDebugMenuWidget(this);
-		}
-	}
+	/* todo ver5.2 で viewportに追加したときのイベントが取得できるのでバインドして行うようにするのでそれまでの暫定対応 */
+	// if(const UWorld* World = GetWorld() )
+	// {
+	// 	World->GetTimerManager().ClearTimer(WaitDebugMenuManagerTimerHandle);
+	//
+	// 	if( AGameDebugMenuManager* DebugMenuManager = UGameDebugMenuFunctions::GetGameDebugMenuManager(this) )
+	// 	{
+	// 		DebugMenuManager->UnregisterViewportDebugMenuWidget(this);
+	// 	}
+	// }
 
 	Super::RemoveFromParent();
 }
@@ -131,7 +161,7 @@ bool UGameDebugMenuWidget::GetWidgetChildrenOfClass(TSubclassOf<UWidget> WidgetC
 
 		WorkWidgets.Reset();
 
-		if( UUserWidget* UserWidget = Cast<UUserWidget>(PossibleParent) )
+		if(const UUserWidget* UserWidget = Cast<UUserWidget>(PossibleParent) )
 		{
 			if( UserWidget->WidgetTree != nullptr )
 			{

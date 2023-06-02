@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2022 akihiko moroi
+* Copyright (c) 2023 akihiko moroi
 *
 * This software is released under the MIT License.
 * (See accompanying file LICENSE.txt or copy at http://opensource.org/licenses/MIT)
@@ -626,10 +626,140 @@ void UGameDebugMenuSettings::SetupCategoryDisplay()
 	Group.ConsoleCommandNames.Empty();
 }
 
+void UGameDebugMenuSettings::SetupCategoryShowDebug()
+{
+	FGDMConsoleCommandPair Pair;
+	Pair.CategoryIndex = 5; /* Show Debug */
+	Pair.CommandNetType = EGDMConsoleCommandNetType::LocalOnly;
+
+	Pair.Title                    = FText::FromString(TEXT("Toggle VisualizeMovement"));
+	Pair.Description              = FText::FromString(TEXT("キャラクターの加速度や移動モードを表示させる"));
+	Pair.ClickedEvent             = EGDMConsoleCommandClickedEvent::Non;
+	Pair.FirstConsoleCommandName  = TEXT("p.VisualizeMovement 1");
+	Pair.SecondConsoleCommandName = TEXT("p.VisualizeMovement 0");
+	ConsoleCommandPairs.Add(Pair);
+
+	Pair.Title                    = FText::FromString(TEXT("Toggle VisualizeLODs"));
+	Pair.Description              = FText::FromString(TEXT("SkinnedMeshComponentで適応してるLODの確認\nボーン数、頂点数などが確認可能(Shipping / Test以外のビルドで有効)\nLOD0:White LOD1:Green LOD2:Yellow LOD3:Red Other:Purple"));
+	Pair.ClickedEvent             = EGDMConsoleCommandClickedEvent::Non;
+	Pair.FirstConsoleCommandName  = TEXT("a.VisualizeLODs 1");
+	Pair.SecondConsoleCommandName = TEXT("a.VisualizeLODs 0");
+	ConsoleCommandPairs.Add(Pair);
+
+	Pair.Title                    = FText::FromString(TEXT("Toggle VisualizeOccludedPrimitives"));
+	Pair.Description              = FText::FromString(TEXT("オクルードされたアクタを視覚化する"));
+	Pair.ClickedEvent             = EGDMConsoleCommandClickedEvent::Non;
+	Pair.FirstConsoleCommandName  = TEXT("r.VisualizeOccludedPrimitives 1");
+	Pair.SecondConsoleCommandName = TEXT("r.VisualizeOccludedPrimitives 0");
+	ConsoleCommandPairs.Add(Pair);
+
+	Pair.Title                    = FText::FromString(TEXT("Toggle LODColoration"));
+	Pair.Description              = FText::FromString(TEXT("PrimitiveComponentのLODレベル毎の色で確認\nLOD0:White LOD1:Red LOD2:Green LOD3:Blue LOD4:Yellow LOD5:Fuchisia LOD6:Cyan LOD7:Purple"));
+	Pair.ClickedEvent             = EGDMConsoleCommandClickedEvent::Non;
+	Pair.FirstConsoleCommandName  = TEXT("ShowFlag.LODColoration 1");
+	Pair.SecondConsoleCommandName = TEXT("ShowFlag.LODColoration 0");
+	ConsoleCommandPairs.Add(Pair);
+
+	FGDMConsoleCommandSingle Single;
+	Single.CategoryIndex = 5; /* Show Debug */
+	Single.CommandNetType = EGDMConsoleCommandNetType::LocalOnly;
+	
+	Single.Title              = FText::FromString(TEXT("Toggle ShowDebug"));
+	Single.Description        = FText::FromString(TEXT("HUDを使用したデバック情報を画面に表示するかを切り替える"));
+	Single.ConsoleCommandName = TEXT("ShowDebug");
+	ConsoleCommandNames.Add(Single);
+
+	Single.Title              = FText::FromString(TEXT("ShowDebug NextDebugTarget"));
+	Single.Description        = FText::FromString(TEXT("デバック情報の表示対象アクターを切り替える（次へ進む）"));
+	Single.ConsoleCommandName = TEXT("NextDebugTarget");
+	ConsoleCommandNames.Add(Single);
+
+	Single.Title              = FText::FromString(TEXT("ShowDebug PreviousDebugTarget"));
+	Single.Description        = FText::FromString(TEXT("デバック情報の表示対象アクターを切り替える（戻る）"));
+	Single.ConsoleCommandName = TEXT("PreviousDebugTarget");
+	ConsoleCommandNames.Add(Single);
+
+	Single.Title              = FText::FromString(TEXT("ShowDebug Reset"));
+	Single.Description        = FText::FromString(TEXT("HUDを使用したデバック情報の表示項目をリセットする"));
+	Single.ConsoleCommandName = TEXT("ShowDebug Reset");
+	ConsoleCommandNames.Add(Single);
+
+	Single.Title              = FText::FromString(TEXT("ShowDebug Input"));
+	Single.Description        = FText::FromString(TEXT("入力情報を表示する"));
+	Single.ConsoleCommandName = TEXT("ShowDebug Input");
+	ConsoleCommandNames.Add(Single);
+
+	Single.Title              = FText::FromString(TEXT("ShowDebug Enhancedinput"));
+	Single.Description        = FText::FromString(TEXT("Enhancedinputの入力情報を表示する"));
+	Single.ConsoleCommandName = TEXT("Showdebug Enhancedinput");
+	ConsoleCommandNames.Add(Single);
+	
+	Single.Title              = FText::FromString(TEXT("ShowDebug Collision"));
+	Single.Description        = FText::FromString(TEXT("対象アクターのコリジョン情報を表示する"));
+	Single.ConsoleCommandName = TEXT("ShowDebug COLLISION");
+	ConsoleCommandNames.Add(Single);
+
+	Single.Title              = FText::FromString(TEXT("ShowDebug Physics"));
+	Single.Description        = FText::FromString(TEXT("対象アクターのPhysics関係の情報を表示する"));
+	Single.ConsoleCommandName = TEXT("ShowDebug PHYSICS");
+	ConsoleCommandNames.Add(Single);
+
+	Single.Title              = FText::FromString(TEXT("ShowDebug Forcefeedback"));
+	Single.Description        = FText::FromString(TEXT(""));
+	Single.ConsoleCommandName = TEXT("ShowDebug FORCEFEEDBACK");
+	ConsoleCommandNames.Add(Single);
+
+	Single.Title              = FText::FromString(TEXT("ShowDebug Camera"));
+	Single.Description        = FText::FromString(TEXT("アクティブなカメラの情報を表示する"));
+	Single.ConsoleCommandName = TEXT("ShowDebug CAMERA");
+	ConsoleCommandNames.Add(Single);
+	
+	Single.Title              = FText::FromString(TEXT("ShowDebug Animation"));
+	Single.Description        = FText::FromString(TEXT("対象アクターのSkeletalMeshのアニメーション情報を表示する"));
+	Single.ConsoleCommandName = TEXT("ShowDebug ANIMATION");
+	ConsoleCommandNames.Add(Single);
+	
+	Single.Title              = FText::FromString(TEXT("ShowDebug Animation Toggle Graph"));
+	Single.Description        = FText::FromString(TEXT("アニムグラフの内容を表示を切り替える"));
+	Single.ConsoleCommandName = TEXT("ShowDebugToggleSubCategory GRAPH");
+	ConsoleCommandNames.Add(Single);
+
+	Single.Title              = FText::FromString(TEXT("ShowDebug Animation Toggle FullGraph"));
+	Single.Description        = FText::FromString(TEXT("アニムグラフの内容をすべて表示するかを切り替える"));
+	Single.ConsoleCommandName = TEXT("ShowDebugToggleSubCategory FULLGRAPH");
+	ConsoleCommandNames.Add(Single);
+
+	Single.Title              = FText::FromString(TEXT("ShowDebug Animation Toggle Curves"));
+	Single.Description        = FText::FromString(TEXT("Curve情報を表示するか切り替える"));
+	Single.ConsoleCommandName = TEXT("ShowDebugToggleSubCategory CURVES");
+	ConsoleCommandNames.Add(Single);
+	
+	Single.Title              = FText::FromString(TEXT("ShowDebug Animation Toggle Montages"));
+	Single.Description        = FText::FromString(TEXT("モンタージュ情報を表示するか切り替える"));
+	Single.ConsoleCommandName = TEXT("ShowDebugToggleSubCategory MONTAGES");
+	ConsoleCommandNames.Add(Single);
+
+	Single.Title              = FText::FromString(TEXT("ShowDebug Animation Toggle Notifies"));
+	Single.Description        = FText::FromString(TEXT("アニメーション通知情報を表示するか切り替える"));
+	Single.ConsoleCommandName = TEXT("ShowDebugToggleSubCategory NOTIFIES");
+	ConsoleCommandNames.Add(Single);
+
+	Single.Title              = FText::FromString(TEXT("ShowDebug Animation Toggle SyncGroups"));
+	Single.Description        = FText::FromString(TEXT("SyncGroup情報を表示するか切り替える"));
+	Single.ConsoleCommandName = TEXT("ShowDebugToggleSubCategory SYNCGROUPS");
+	ConsoleCommandNames.Add(Single);
+
+	Single.Title              = FText::FromString(TEXT("ShowDebug Animation Toggle FullBlendSpaceDisplay"));
+	Single.Description        = FText::FromString(TEXT("ブレンドスペースの重み値の表示を切り替える（SYNCGROUPSが表示されるとき反映）"));
+	Single.ConsoleCommandName = TEXT("ShowDebugToggleSubCategory FULLBLENDSPACEDISPLAY");
+	ConsoleCommandNames.Add(Single);
+
+}
+
 void UGameDebugMenuSettings::SetupCategoryViewMode()
 {
 	FGDMConsoleCommandSingle Single;
-	Single.CategoryIndex = 5; /* ViewMode */
+	Single.CategoryIndex = 6; /* ViewMode */
 	Single.CommandNetType = EGDMConsoleCommandNetType::LocalOnly;
 
 	Single.Title              = FText::FromString(TEXT("Lit"));
@@ -644,7 +774,7 @@ void UGameDebugMenuSettings::SetupCategoryViewMode()
 
 	Single.Title              = FText::FromString(TEXT("Wireframe"));
 	Single.Description        = FText::FromString(TEXT("シーン内のすべてのポリゴンエッジを表示"));
-	Single.ConsoleCommandName = TEXT("show Wireframe");
+	Single.ConsoleCommandName = TEXT("viewmode Wireframe");
 	ConsoleCommandNames.Add(Single);
 
 	Single.Title              = FText::FromString(TEXT("Detaillighting"));
@@ -700,14 +830,6 @@ void UGameDebugMenuSettings::SetupCategoryViewMode()
 	EditorOnlyConsoleCommandNames.Add(Single);
 
 	/* EditorOnly */
-}
-
-void UGameDebugMenuSettings::SetupCategoryShowDebug()
-{
-	FGDMConsoleCommandSingle Single;
-	Single.CategoryIndex = 6; /* Show Debug */
-	Single.CommandNetType = EGDMConsoleCommandNetType::LocalOnly;
-
 
 	Single.Title              = FText::FromString(TEXT("Collision"));
 	Single.Description        = FText::FromString(TEXT("コリジョン（非）表示"));
@@ -892,39 +1014,6 @@ void UGameDebugMenuSettings::SetupCategoryShowDebug()
 	EditorOnlyConsoleCommandNames.Add(Single);
 
 	/* EditorOnly */
-
-	FGDMConsoleCommandPair Pair;
-	Pair.CategoryIndex = 6; /* Show Debug */
-	Pair.CommandNetType = EGDMConsoleCommandNetType::LocalOnly;
-
-	Pair.Title                    = FText::FromString(TEXT("Toggle VisualizeMovement"));
-	Pair.Description              = FText::FromString(TEXT("キャラクターの加速度や移動モードを表示させる"));
-	Pair.ClickedEvent             = EGDMConsoleCommandClickedEvent::Non;
-	Pair.FirstConsoleCommandName  = TEXT("p.VisualizeMovement 1");
-	Pair.SecondConsoleCommandName = TEXT("p.VisualizeMovement 0");
-	ConsoleCommandPairs.Add(Pair);
-
-	Pair.Title                    = FText::FromString(TEXT("Toggle VisualizeLODs"));
-	Pair.Description              = FText::FromString(TEXT("SkinnedMeshComponentで適応してるLODの確認\nボーン数、頂点数などが確認可能(Shipping / Test以外のビルドで有効)\nLOD0:White LOD1:Green LOD2:Yellow LOD3:Red Other:Purple"));
-	Pair.ClickedEvent             = EGDMConsoleCommandClickedEvent::Non;
-	Pair.FirstConsoleCommandName  = TEXT("a.VisualizeLODs 1");
-	Pair.SecondConsoleCommandName = TEXT("a.VisualizeLODs 0");
-	ConsoleCommandPairs.Add(Pair);
-
-	Pair.Title                    = FText::FromString(TEXT("Toggle VisualizeOccludedPrimitives"));
-	Pair.Description              = FText::FromString(TEXT("オクルードされたアクタを視覚化する"));
-	Pair.ClickedEvent             = EGDMConsoleCommandClickedEvent::Non;
-	Pair.FirstConsoleCommandName  = TEXT("r.VisualizeOccludedPrimitives 1");
-	Pair.SecondConsoleCommandName = TEXT("r.VisualizeOccludedPrimitives 0");
-	ConsoleCommandPairs.Add(Pair);
-
-	Pair.Title                    = FText::FromString(TEXT("Toggle LODColoration"));
-	Pair.Description              = FText::FromString(TEXT("PrimitiveComponentのLODレベル毎の色で確認\nLOD0:White LOD1:Red LOD2:Green LOD3:Blue LOD4:Yellow LOD5:Fuchisia LOD6:Cyan LOD7:Purple"));
-	Pair.ClickedEvent             = EGDMConsoleCommandClickedEvent::Non;
-	Pair.FirstConsoleCommandName  = TEXT("ShowFlag.LODColoration 1");
-	Pair.SecondConsoleCommandName = TEXT("ShowFlag.LODColoration 0");
-	ConsoleCommandPairs.Add(Pair);
-
 }
 
 void UGameDebugMenuSettings::SetupCategoryScalability()
@@ -1487,8 +1576,13 @@ void UGameDebugMenuSettings::SetupCategoryAbilitySystem()
 	Single.CommandNetType = EGDMConsoleCommandNetType::LocalOnly;
 
 	Single.Title              = FText::FromString(TEXT("Show abilitysystem"));
-	Single.Description        = FText::FromString(TEXT("GameplayAbilitySystemのデバック表示をする（ただ１度実行すると元の画面に戻せない…）"));
+	Single.Description        = FText::FromString(TEXT("GameplayAbilitySystemのデバック表示をする"));
 	Single.ConsoleCommandName = TEXT("showdebug abilitysystem");
+	ConsoleCommandNames.Add(Single);
+
+	Single.Title              = FText::FromString(TEXT("Close abilitysystem"));
+	Single.Description        = FText::FromString(TEXT("GameplayAbilitySystemの非表示"));
+	Single.ConsoleCommandName = TEXT("showdebug");
 	ConsoleCommandNames.Add(Single);
 
 	Single.Title              = FText::FromString(TEXT("AbilitySystem NextCategory"));

@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2022 akihiko moroi
+* Copyright (c) 2023 akihiko moroi
 *
 * This software is released under the MIT License.
 * (See accompanying file LICENSE.txt or copy at http://opensource.org/licenses/MIT)
@@ -12,9 +12,7 @@ public class GameDebugMenu : ModuleRules
 {
 	public GameDebugMenu(ReadOnlyTargetRules Target) : base(Target)
 	{
-		PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
-
-        PrivateIncludePaths.AddRange(
+		PrivateIncludePaths.AddRange(
 			new string[] 
             {
 				"GameDebugMenu/Private",
