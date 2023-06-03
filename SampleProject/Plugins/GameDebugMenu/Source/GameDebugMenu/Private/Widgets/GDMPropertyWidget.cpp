@@ -293,7 +293,7 @@ TArray<FText> UGDMPropertyWidget::GetEnumDisplayNames(bool& bHasProperty)
 {
 	TArray<FText> Result;
 
-	const UEnum* Enum = FindObject<UEnum>(nullptr, *EnumName.ToString());
+	const UEnum* Enum = FindObject<UEnum>(nullptr, *EnumName.ToString(),false);
 	if(IsValid(Enum) == false)
 	{
 		return Result;

@@ -797,7 +797,7 @@ UObject* AGameDebugMenuManager::GetObjectProperty(const int32 Index, FGDMGamepla
 
 	if(OutPropertyType == EGDMPropertyType::GDM_Enum)
 	{
-		OutEnumTypeName = ObjProp->EnumType->GetFName();
+		OutEnumTypeName = *ObjProp->EnumType->GetPathName();
 	}
 	else if(OutPropertyType == EGDMPropertyType::GDM_Byte)
 	{
@@ -805,7 +805,7 @@ UObject* AGameDebugMenuManager::GetObjectProperty(const int32 Index, FGDMGamepla
 		{
 			/* Enumならセット */
 			OutPropertyType = EGDMPropertyType::GDM_Enum;
-			OutEnumTypeName = ObjProp->EnumType->GetFName();
+			OutEnumTypeName = *ObjProp->EnumType->GetPathName();
 		}
 	}
 
