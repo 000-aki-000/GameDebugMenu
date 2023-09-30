@@ -25,10 +25,7 @@ class GAMEDEBUGMENU_API UGameDebugMenuWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
-	FTimerHandle WaitDebugMenuManagerTimerHandle;
-
 protected:
-	UPROPERTY()
 	bool bActivateMenu;
 
 public:
@@ -41,11 +38,6 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GDM|Config")
 	FString GameDebugMenuName;
-
-public:
-//	virtual void AddToScreen(ULocalPlayer* LocalPlayer, int32 ZOrder) override;
-	virtual void NativeConstruct() override;
-	virtual void RemoveFromParent() override;
 
 public:
 	/**
