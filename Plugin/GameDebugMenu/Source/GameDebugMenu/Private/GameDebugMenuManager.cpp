@@ -22,6 +22,7 @@
 #include "GDMPlayerControllerProxyComponent.h"
 #include "GDMScreenshotRequesterComponent.h"
 #include "GDMOutputDevice.h"
+#include "Blueprint/GameViewportSubsystem.h"
 #include "Input/GDMDebugCameraInput.h"
 #include "Input/GDMInputSystemComponent.h"
 #include "Widgets/GameDebugMenuRootWidget.h"
@@ -104,6 +105,21 @@ void AGameDebugMenuManager::BeginPlay()
 		{
 			CreateDebugMenuRootWidget();
 
+			TArray<UUserWidget*> FoundWidgets;
+			UWidgetBlueprintLibrary::GetAllWidgetsOfClass(this, FoundWidgets, UGameDebugMenuWidget::StaticClass(), false);
+						
+			UGameViewportSubsystem* GameViewportSubsystem = UGameViewportSubsystem::Get();
+			GameViewportSubsystem->OnWidgetAdded.AddUObject(this, &AGameDebugMenuManager::OnWidgetAdded);
+			GameViewportSubsystem->OnWidgetRemoved.AddUObject(this, &AGameDebugMenuManager::OnWidgetRemoved);
+
+			for(const auto W : FoundWidgets)
+			{
+				if(UGameDebugMenuWidget* DebugMenuWidget = Cast<UGameDebugMenuWidget>(W))
+				{
+					ViewportDebugMenuWidgets.AddUnique(DebugMenuWidget);
+				}
+			}
+			
 			if( APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0) )
 			{
 				const FGDMStartupConsoleCommandList* CommandList = UGameDebugMenuSettings::Get()->StartupConsoleCommands.Find(UGameDebugMenuSettings::Get()->StartupConsoleCommandKeyName);
@@ -1006,19 +1022,9 @@ TArray<FName> AGameDebugMenuManager::GetDebugMenuLanguageKeys()
 	return ReturnValues;
 }
 
-void AGameDebugMenuManager::RegisterViewportDebugMenuWidget(UGameDebugMenuWidget* TargetWidget)
-{
-	ViewportDebugMenuWidgets.AddUnique(TargetWidget);
-}
-
 TArray<UGameDebugMenuWidget*> AGameDebugMenuManager::GetViewportDebugMenuWidgets()
 {
 	return ViewportDebugMenuWidgets;
-}
-
-void AGameDebugMenuManager::UnregisterViewportDebugMenuWidget(UGameDebugMenuWidget* TargetWidget)
-{
-	ViewportDebugMenuWidgets.RemoveSingle(TargetWidget);
 }
 
 void AGameDebugMenuManager::CallExecuteConsoleCommandDispatcher(const FString& Command)
@@ -1073,6 +1079,22 @@ void AGameDebugMenuManager::CallUnregisterInputSystemEventDispatcher(UObject* Ta
 	for(const auto& Component : ListenerComponents )
 	{
 		Component->OnUnregisterInputSystemDispatcher.Broadcast(TargetObject);
+	}
+}
+
+void AGameDebugMenuManager::OnWidgetAdded(UWidget* AddWidget, ULocalPlayer* Player)
+{
+	if(UGameDebugMenuWidget* W = Cast<UGameDebugMenuWidget>(AddWidget))
+	{
+		ViewportDebugMenuWidgets.AddUnique(W);
+	}
+}
+
+void AGameDebugMenuManager::OnWidgetRemoved(UWidget* RemoveWidget)
+{
+	if(UGameDebugMenuWidget* W = Cast<UGameDebugMenuWidget>(RemoveWidget))
+	{
+		ViewportDebugMenuWidgets.RemoveSingle(W);
 	}
 }
 

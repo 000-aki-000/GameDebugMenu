@@ -6,7 +6,6 @@
 */
 
 #include "GameDebugMenuFunctions.h"
-#include "GameDebugMenu.h"
 #include "Engine/Engine.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameDebugMenuSettings.h"

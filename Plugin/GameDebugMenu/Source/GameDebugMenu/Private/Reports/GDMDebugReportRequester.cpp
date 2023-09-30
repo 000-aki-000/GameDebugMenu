@@ -93,8 +93,7 @@ int32 AGDMDebugReportRequester::GetUTF8StringSize(const FString& Text)
 
 	for(const TCHAR Char : Text)
 	{
-		const char* Temp = TCHAR_TO_UTF8(*FString::Chr(Char));
-		const uint8 Code = static_cast<uint8>(*Temp);
+		const uint8 Code = static_cast<uint8>(*TCHAR_TO_UTF8(*FString::Chr(Char)));
 
 		if((Code >= 0x00) && (Code <= 0x7f))
 		{
