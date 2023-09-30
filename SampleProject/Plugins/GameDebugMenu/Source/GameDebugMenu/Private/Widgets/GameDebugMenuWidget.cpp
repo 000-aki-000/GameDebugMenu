@@ -10,76 +10,7 @@
 #include <Kismet/GameplayStatics.h>
 #include "TimerManager.h"
 #include "GameDebugMenuManager.h"
-#include "GameDebugMenuFunctions.h"
 #include <GDMPlayerControllerProxyComponent.h>
-
-
-// void UGameDebugMenuWidget::AddToScreen(ULocalPlayer* LocalPlayer, int32 ZOrder)
-// {
-// 	Super::AddToScreen(LocalPlayer, ZOrder);
-//
-// 	if( AGameDebugMenuManager* DebugMenuManager = UGameDebugMenuFunctions::GetGameDebugMenuManager(this) )
-// 	{
-// 		DebugMenuManager->RegisterViewportDebugMenuWidget(this);
-// 	}
-// 	else
-// 	{
-// 		check(GetWorld() != nullptr);
-//
-// 		GetWorld()->GetTimerManager().SetTimer(WaitDebugMenuManagerTimerHandle, FTimerDelegate::CreateWeakLambda(this, [this]()
-// 		{
-// 			if( AGameDebugMenuManager* DebugMenuManager = UGameDebugMenuFunctions::GetGameDebugMenuManager(this) )
-// 			{
-// 				DebugMenuManager->RegisterViewportDebugMenuWidget(this);
-// 				GetWorld()->GetTimerManager().ClearTimer(WaitDebugMenuManagerTimerHandle);
-// 			}
-//
-// 		}), 0.016f, true);
-// 	}
-// }
-
-void UGameDebugMenuWidget::NativeConstruct()
-{
-	Super::NativeConstruct();
-
-	/* todo ver5.2 で viewportに追加したときのイベントが取得できるのでバインドして行うようにするのでそれまでの暫定対応 */
-	{
-		if( AGameDebugMenuManager* DebugMenuManager = UGameDebugMenuFunctions::GetGameDebugMenuManager(this) )
-		{
-			DebugMenuManager->RegisterViewportDebugMenuWidget(this);
-		}
-		else
-		{
-			check(GetWorld() != nullptr);
-	
-			GetWorld()->GetTimerManager().SetTimer(WaitDebugMenuManagerTimerHandle, FTimerDelegate::CreateWeakLambda(this, [this]()
-			{
-				if( AGameDebugMenuManager* DebugMenuManager = UGameDebugMenuFunctions::GetGameDebugMenuManager(this) )
-				{
-					DebugMenuManager->RegisterViewportDebugMenuWidget(this);
-					GetWorld()->GetTimerManager().ClearTimer(WaitDebugMenuManagerTimerHandle);
-				}
-	
-			}), 0.016f, true);
-		}
-	}
-}
-
-void UGameDebugMenuWidget::RemoveFromParent()
-{
-	/* todo ver5.2 で viewportに追加したときのイベントが取得できるのでバインドして行うようにするのでそれまでの暫定対応 */
-	// if(const UWorld* World = GetWorld() )
-	// {
-	// 	World->GetTimerManager().ClearTimer(WaitDebugMenuManagerTimerHandle);
-	//
-	// 	if( AGameDebugMenuManager* DebugMenuManager = UGameDebugMenuFunctions::GetGameDebugMenuManager(this) )
-	// 	{
-	// 		DebugMenuManager->UnregisterViewportDebugMenuWidget(this);
-	// 	}
-	// }
-
-	Super::RemoveFromParent();
-}
 
 void UGameDebugMenuWidget::SendSelfEvent(FName EventName)
 {

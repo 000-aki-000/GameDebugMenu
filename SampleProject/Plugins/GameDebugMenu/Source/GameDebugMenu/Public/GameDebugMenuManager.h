@@ -277,10 +277,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "GDM")
 	virtual TArray<FName> GetDebugMenuLanguageKeys();
-
-	void RegisterViewportDebugMenuWidget(UGameDebugMenuWidget* TargetWidget);
-	void UnregisterViewportDebugMenuWidget(UGameDebugMenuWidget* TargetWidget);
-
+	
 	UFUNCTION(BlueprintCallable, Category = "GDM")
 	TArray<UGameDebugMenuWidget*> GetViewportDebugMenuWidgets();
 
@@ -290,6 +287,12 @@ protected:
 	virtual void CallHideDispatcher();
 	virtual void CallRegisterInputSystemEventDispatcher(UObject* TargetObject);
 	virtual void CallUnregisterInputSystemEventDispatcher(UObject* TargetObject);
+
+	UFUNCTION()
+	virtual void OnWidgetAdded(UWidget* AddWidget, ULocalPlayer* Player);
+	
+	UFUNCTION()
+	virtual void OnWidgetRemoved(UWidget* RemoveWidget);
 
 public:
 	virtual void CallExecuteProcessEventDispatcher(const FName& FunctionName, UObject* TargetObject);
