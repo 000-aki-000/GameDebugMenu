@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2023 akihiko moroi
+* Copyright (c) 2024 akihiko moroi
 *
 * This software is released under the MIT License.
 * (See accompanying file LICENSE.txt or copy at http://opensource.org/licenses/MIT)
@@ -383,7 +383,7 @@ void AGameDebugMenuManager::SyncLoadDebugMenuStringTables(FName TargetDebugMenuL
 					}
 					else
 					{
-						UE_LOG(LogGDM, Error, TEXT("%s -> StringKey that is already in use!!"));
+						UE_LOG(LogGDM, Error, TEXT("%s -> StringKey that is already in use!!"), *InKey);
 					}
 					return true; /* すべて取得する */
 				});

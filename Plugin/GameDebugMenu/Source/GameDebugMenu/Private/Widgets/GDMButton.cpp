@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2023 akihiko moroi
+* Copyright (c) 2024 akihiko moroi
 *
 * This software is released under the MIT License.
 * (See accompanying file LICENSE.txt or copy at http://opensource.org/licenses/MIT)
@@ -19,7 +19,7 @@
 UGDMButton::UGDMButton(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
-	IsFocusable = false;
+	InitIsFocusable(false);
 }
 
 #if WITH_EDITOR
@@ -39,10 +39,10 @@ TSharedRef<SWidget> UGDMButton::RebuildWidget()
 		.OnReleased(BIND_UOBJECT_DELEGATE(FSimpleDelegate, GDMSlateHandleReleased))
 		.OnHovered_UObject(this, &ThisClass::GDMSlateHandleHovered)
 		.OnUnhovered_UObject(this, &ThisClass::GDMSlateHandleUnhovered)
-		.ButtonStyle(&WidgetStyle)
-		.ClickMethod(ClickMethod)
-		.TouchMethod(TouchMethod)
-		.IsFocusable(IsFocusable)
+		.ButtonStyle(&GetStyle())
+		.ClickMethod(GetClickMethod())
+		.TouchMethod(GetTouchMethod())
+		.IsFocusable(GetIsFocusable())
 		;
 
 	if(GetChildrenCount() > 0)

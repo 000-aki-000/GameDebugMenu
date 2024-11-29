@@ -1,13 +1,14 @@
 /**
-* Copyright (c) 2023 akihiko moroi
+* Copyright (c) 2024 akihiko moroi
 *
 * This software is released under the MIT License.
 * (See accompanying file LICENSE.txt or copy at http://opensource.org/licenses/MIT)
 */
 
 #include "Factory/GameDebugMenuWidgetFactory.h"
+
+#include "WidgetBlueprint.h"
 #include "Widgets/GameDebugMenuWidget.h"
-#include <UMGEditor/Public/WidgetBlueprint.h>
 #include "Kismet2/KismetEditorUtilities.h"
 
 #define LOCTEXT_NAMESPACE "UGameDebugMenu"

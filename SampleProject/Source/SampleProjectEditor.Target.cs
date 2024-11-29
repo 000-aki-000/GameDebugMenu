@@ -8,8 +8,9 @@ public class SampleProjectEditorTarget : TargetRules
 	public SampleProjectEditorTarget(TargetInfo Target) : base(Target)
 	{
 		Type = TargetType.Editor;
-		DefaultBuildSettings = BuildSettingsVersion.V2;
+		DefaultBuildSettings = BuildSettingsVersion.Latest;
+		IncludeOrderVersion = EngineIncludeOrderVersion.Latest;
 
-		ExtraModuleNames.AddRange( new string[] { "SampleProject" } );
+        ExtraModuleNames.AddRange( new string[] { "SampleProject" } );
 	}
 }

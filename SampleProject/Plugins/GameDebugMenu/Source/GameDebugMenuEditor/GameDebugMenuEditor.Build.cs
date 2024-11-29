@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2023 akihiko moroi
+* Copyright (c) 2024 akihiko moroi
 *
 * This software is released under the MIT License.
 * (See accompanying file LICENSE.txt or copy at http://opensource.org/licenses/MIT)
@@ -11,17 +11,6 @@ public class GameDebugMenuEditor : ModuleRules
 {
 	public GameDebugMenuEditor(ReadOnlyTargetRules Target) : base(Target)
 	{
-		if (System.Environment.GetEnvironmentVariable("UE_COVERITY_BUILD") == "1")
-		{
-			PCHUsage = PCHUsageMode.NoPCHs;
-			bUseUnity = false;
-		}
-		else
-		{
-			PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
-			bUseUnity = true;
-		}
-
         PrivateIncludePaths.AddRange(
 			new string[] 
             {
