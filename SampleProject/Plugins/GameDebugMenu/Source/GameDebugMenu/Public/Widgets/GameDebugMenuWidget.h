@@ -50,7 +50,7 @@ public:
 	* コマンドを実行する
 	*/
 	UFUNCTION(BlueprintCallable, Category = "GDM|Command")
-	void ExecuteGDMConsoleCommand(const FString Command, EGDMConsoleCommandNetType CommandNetType);
+	void ExecuteGDMConsoleCommand(const FString Command, const EGDMConsoleCommandNetType CommandNetType);
 
 	/**
 	* UIを表示するときのイベント

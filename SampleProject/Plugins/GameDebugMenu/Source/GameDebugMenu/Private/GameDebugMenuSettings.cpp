@@ -85,6 +85,8 @@ UGameDebugMenuSettings::UGameDebugMenuSettings()
 	DebugReportRequesterClass.Add(EGDMProjectManagementTool::Jira, AGDMRequesterJira::StaticClass());
 
 	bDisableScreenCaptureProcessingWhenOpeningDebugMenu = false;
+
+	LineBreakString = TEXT("\n");
 }
 
 #if WITH_EDITOR

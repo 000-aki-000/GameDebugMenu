@@ -17,9 +17,9 @@ void UGameDebugMenuWidget::SendSelfEvent(FName EventName)
 	OnSendWidgetEventDispatcher.Broadcast(this, EventName);
 }
 
-void UGameDebugMenuWidget::ExecuteGDMConsoleCommand(const FString Command, EGDMConsoleCommandNetType CommandNetType)
+void UGameDebugMenuWidget::ExecuteGDMConsoleCommand(const FString Command, const EGDMConsoleCommandNetType CommandNetType)
 {
-	if ( APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0) )
+	if (const APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0) )
 	{
 		if( UGDMPlayerControllerProxyComponent* DebugMenuPCProxyComponent = PC->FindComponentByClass<UGDMPlayerControllerProxyComponent>() )
 		{

@@ -289,12 +289,12 @@ void UGDMPropertyWidget::SetPropertyValue_Byte(uint8 NewValue, bool& bHasPropert
 	}
 }
 
-TArray<FText> UGDMPropertyWidget::GetEnumDisplayNames(bool& bHasProperty)
+TArray<FText> UGDMPropertyWidget::GetEnumDisplayNames(const FString& EnumPath, bool& bHasProperty)
 {
 	TArray<FText> Result;
 
-	const UEnum* Enum = FindObject<UEnum>(nullptr, *EnumName.ToString());
-	if(IsValid(Enum) == false)
+	const UEnum* Enum = FindObject<UEnum>(nullptr, *EnumPath);
+	if(!IsValid(Enum))
 	{
 		return Result;
 	}

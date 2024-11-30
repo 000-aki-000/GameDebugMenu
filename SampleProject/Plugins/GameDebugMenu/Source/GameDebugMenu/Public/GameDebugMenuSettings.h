@@ -132,6 +132,9 @@ public:
 	UPROPERTY(EditAnywhere, config, Category = "Localization")
 	bool bGameDebugMenuDirectStringKey;
 
+	UPROPERTY(EditAnywhere, config, Category = "Other")
+	FString LineBreakString;
+	
 public:
 	UGameDebugMenuSettings();
 

@@ -3,6 +3,21 @@
 
 #include "MyActor.h"
 
+static FAutoConsoleCommand TestCommand2 = FAutoConsoleCommand(
+	TEXT("Sample.Command"),
+	TEXT(""),
+	FConsoleCommandWithArgsDelegate::CreateLambda([](const TArray<FString>& Args)
+		{
+			UE_LOG(LogTemp, Log, TEXT("call Sample.Command"));
+
+			for (const FString& Arg : Args)
+			{
+				UE_LOG(LogTemp, Log, TEXT("arg : [%s]"), *Arg);
+			}
+		})
+);
+
+
 // Sets default values
 AMyActor::AMyActor()
 {
