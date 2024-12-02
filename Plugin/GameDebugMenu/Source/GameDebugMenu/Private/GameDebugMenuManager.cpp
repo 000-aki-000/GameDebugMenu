@@ -780,7 +780,7 @@ bool AGameDebugMenuManager::RegisterObjectFunction(UObject* TargetObject,FName F
 	return true;
 }
 
-UObject* AGameDebugMenuManager::GetObjectProperty(const int32 Index, FGDMGameplayCategoryKey& OutCategoryKey, FText& OutDisplayPropertyName, FText& OutDescription, FName& OutPropertyName, EGDMPropertyType& OutPropertyType, FName& OutEnumTypeName, FGDMPropertyUIConfigInfo& OutPropertyUIConfigInfo)
+UObject* AGameDebugMenuManager::GetObjectProperty(const int32 Index, FGDMGameplayCategoryKey& OutCategoryKey, FText& OutDisplayPropertyName, FText& OutDescription, FName& OutPropertyName, EGDMPropertyType& OutPropertyType, FString& OutEnumPathName, FGDMPropertyUIConfigInfo& OutPropertyUIConfigInfo)
 {
 	OutPropertyType = EGDMPropertyType::GDM_Null;
 
@@ -813,7 +813,7 @@ UObject* AGameDebugMenuManager::GetObjectProperty(const int32 Index, FGDMGamepla
 
 	if(OutPropertyType == EGDMPropertyType::GDM_Enum)
 	{
-		OutEnumTypeName = ObjProp->EnumType->GetFName();
+		OutEnumPathName = ObjProp->EnumType->GetPathName();
 	}
 	else if(OutPropertyType == EGDMPropertyType::GDM_Byte)
 	{
@@ -821,7 +821,7 @@ UObject* AGameDebugMenuManager::GetObjectProperty(const int32 Index, FGDMGamepla
 		{
 			/* Enumならセット */
 			OutPropertyType = EGDMPropertyType::GDM_Enum;
-			OutEnumTypeName = ObjProp->EnumType->GetFName();
+			OutEnumPathName = ObjProp->EnumType->GetPathName();
 		}
 	}
 

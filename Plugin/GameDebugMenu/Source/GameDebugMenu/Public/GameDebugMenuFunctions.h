@@ -134,7 +134,7 @@ public:
 	* 登録済みプロパティ情報を取得する
 	*/
 	UFUNCTION(BlueprintCallable, BlueprintCosmetic, Category = "GDM|Functions", meta = (Keywords = "DebugMenu GDM", WorldContext = "WorldContextObject"))
-	static UObject* GetGDMObjectProperty(UObject* WorldContextObject,const int32 Index, FGDMGameplayCategoryKey& OutCategoryKey, FText& OutDisplayPropertyName, FText& OutDescription, FName& OutPropertyName, EGDMPropertyType& OutPropertyType, FName& OutEnumTypeName, FGDMPropertyUIConfigInfo& PropertyUIConfigInfo);
+	static UObject* GetGDMObjectProperty(UObject* WorldContextObject,const int32 Index, FGDMGameplayCategoryKey& OutCategoryKey, FText& OutDisplayPropertyName, FText& OutDescription, FName& OutPropertyName, EGDMPropertyType& OutPropertyType, FString& OutEnumPathName, FGDMPropertyUIConfigInfo& PropertyUIConfigInfo);
 
 	/**
 	* 登録済み関数（カスタムイベント）を取得する
@@ -326,6 +326,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "GDM|Functions", meta = (Keywords = "DebugMenu GDM", WorldContext = "WorldContextObject"))
 	static bool GetDebugMenuString(UObject* WorldContextObject, const FString StringKey, FString& OutString);
 
+	/**
+	* デバッグメニューで使用する共通の改行判定文字を取得
+	*/
+	UFUNCTION(BlueprintPure, Category = "GDM|Functions", meta = (Keywords = "DebugMenu GDM"))
+	static FString GetDebugMenuLineBreakString();
+	
 public:
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "Equal (GDMMenuCategoryKey)", CompactNodeTitle = "=="), Category = "GDM|Functions")
 	static bool EqualEqual_GDMMenuCategoryKey(const FGDMMenuCategoryKey& A, const FGDMMenuCategoryKey& B);

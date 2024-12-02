@@ -423,12 +423,12 @@ void UGameDebugMenuFunctions::UnregisterGDMObject(UObject* TargetObject)
 	FText Description;
 	FName PropertyName;
 	EGDMPropertyType PropertyType;
-	FName EnumTypeName;
+	FString EnumPathName;
 	FGDMPropertyUIConfigInfo PropertyUIConfigInfo;
 
 	for(int32 Index = GDMManager->GetNumObjectProperties() - 1; Index >= 0; --Index)
 	{
-		UObject* RegisterObject = GDMManager->GetObjectProperty(Index, CategoryKey, DisplayPropertyName, Description, PropertyName, PropertyType, EnumTypeName, PropertyUIConfigInfo);
+		UObject* RegisterObject = GDMManager->GetObjectProperty(Index, CategoryKey, DisplayPropertyName, Description, PropertyName, PropertyType, EnumPathName, PropertyUIConfigInfo);
 		if(!IsValid(RegisterObject) || (TargetObject == RegisterObject))
 		{
 			GDMManager->RemoveObjectProperty(Index);
@@ -447,14 +447,14 @@ void UGameDebugMenuFunctions::UnregisterGDMObject(UObject* TargetObject)
 	}
 }
 
-UObject* UGameDebugMenuFunctions::GetGDMObjectProperty(UObject* WorldContextObject,const int32 Index, FGDMGameplayCategoryKey& OutCategoryKey, FText& OutDisplayPropertyName, FText& OutDescription, FName& OutPropertyName, EGDMPropertyType& OutPropertyType, FName& OutEnumTypeName, FGDMPropertyUIConfigInfo& PropertyUIConfigInfo)
+UObject* UGameDebugMenuFunctions::GetGDMObjectProperty(UObject* WorldContextObject,const int32 Index, FGDMGameplayCategoryKey& OutCategoryKey, FText& OutDisplayPropertyName, FText& OutDescription, FName& OutPropertyName, EGDMPropertyType& OutPropertyType, FString& OutEnumPathName, FGDMPropertyUIConfigInfo& PropertyUIConfigInfo)
 {
 	AGameDebugMenuManager* GDMManager = GetGameDebugMenuManager(WorldContextObject);
 	if(!IsValid(GDMManager))
 	{
 		return nullptr;
 	}
-	return GDMManager->GetObjectProperty(Index, OutCategoryKey, OutDisplayPropertyName, OutDescription, OutPropertyName, OutPropertyType, OutEnumTypeName, PropertyUIConfigInfo);
+	return GDMManager->GetObjectProperty(Index, OutCategoryKey, OutDisplayPropertyName, OutDescription, OutPropertyName, OutPropertyType, OutEnumPathName, PropertyUIConfigInfo);
 }
 
 UObject* UGameDebugMenuFunctions::GetGDMObjectFunction(UObject* WorldContextObject,const int32 Index, FGDMGameplayCategoryKey& OutCategoryKey, FText& OutDisplayFunctionName, FText& OutDescription, FName& OutFunctionName)
@@ -502,13 +502,13 @@ bool UGameDebugMenuFunctions::VerifyGDMNumObjectProperties(UObject* WorldContext
 	FText Description;
 	FName PropertyName;
 	EGDMPropertyType PropertyType;
-	FName EnumTypeName;
+	FString EnumPathName;
 	FGDMPropertyUIConfigInfo PropertyUIConfigInfo;
 	int32 RemoveCount = 0;
 
 	for(int32 Index = GetGDMNumObjectProperties(WorldContextObject) - 1; Index >= 0; --Index)
 	{
-		UObject* PropertyOwnerObj = GetGDMObjectProperty(WorldContextObject,Index, CategoryKey, DisplayPropertyName, Description, PropertyName, PropertyType, EnumTypeName, PropertyUIConfigInfo);
+		UObject* PropertyOwnerObj = GetGDMObjectProperty(WorldContextObject,Index, CategoryKey, DisplayPropertyName, Description, PropertyName, PropertyType, EnumPathName, PropertyUIConfigInfo);
 		if(!IsValid(PropertyOwnerObj))
 		{
 			GDMManager->RemoveObjectProperty(Index);
@@ -903,6 +903,11 @@ bool UGameDebugMenuFunctions::GetDebugMenuString(UObject* WorldContextObject, co
 
 	OutString = StringKey;
 	return false;
+}
+
+FString UGameDebugMenuFunctions::GetDebugMenuLineBreakString()
+{
+	return UGameDebugMenuSettings::Get()->LineBreakString;
 }
 
 bool UGameDebugMenuFunctions::EqualEqual_GDMMenuCategoryKey(const FGDMMenuCategoryKey& A, const FGDMMenuCategoryKey& B)

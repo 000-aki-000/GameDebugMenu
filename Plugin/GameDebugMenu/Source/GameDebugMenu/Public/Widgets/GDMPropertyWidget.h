@@ -34,10 +34,6 @@ public:
 	UPROPERTY(BlueprintReadWrite, Category = "GDM|Properties")
 	EGDMPropertyType PropertyType;
 
-	/** プロパティの種類がEnumだった場合の名前 */
-	UPROPERTY(BlueprintReadWrite, Category = "GDM|Properties")
-	FName EnumName;
-
 	/** UIの設定情報 */
 	UPROPERTY(BlueprintReadWrite, Category = "GDM|Properties")
 	FGDMPropertyUIConfigInfo PropertyConfigInfo;
@@ -88,7 +84,7 @@ public:
 	void SetPropertyValue_Byte(uint8 NewValue, bool& bHasProperty);
 
 	UFUNCTION(BlueprintCallable, Category = "GDM|Properties")
-	TArray<FText> GetEnumDisplayNames(bool& bHasProperty);
+	TArray<FText> GetEnumDisplayNames(const FString& EnumPath, bool& bHasProperty);
 
 	UFUNCTION(BlueprintCallable, Category = "GDM|Properties")
 	FString GetPropertyValue_String(bool& bHasProperty);
