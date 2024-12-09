@@ -7,8 +7,7 @@
 
 #include "Input/GDMPadInputWidgetController.h"
 #include <Widgets/GameDebugMenuWidget.h>
-#include <GDMListenerComponent.h>
-
+#include "Component/GDMListenerComponent.h"
 #include "Engine/Engine.h"
 
 UWorld* UGDMPadInputWidgetController::GetWorld() const

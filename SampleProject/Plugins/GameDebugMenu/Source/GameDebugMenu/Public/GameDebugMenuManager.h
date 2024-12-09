@@ -12,6 +12,8 @@
 #include "GameDebugMenuTypes.h"
 #include "GameDebugMenuManager.generated.h"
 
+class UGDMSaveSystemComponent;
+class UGDMPropertyJsonSystemComponent;
 class UGDMListenerComponent;
 class UGameDebugMenuWidget;
 class UGDMInputSystemComponent;
@@ -33,15 +35,21 @@ class GAMEDEBUGMENU_API AGameDebugMenuManager : public AActor
 
 	/** DebugMenuの入力操作を制御するコンポーネント */
 	UPROPERTY(VisibleAnywhere, Category = "GDM", meta = (AllowPrivateAccess = "true"))
-	UGDMInputSystemComponent* DebugMenuInputSystemComponent;
+	TObjectPtr<UGDMInputSystemComponent> DebugMenuInputSystemComponent;
 
 	/** DebugMenuで使用するスクリーンショットを制御するコンポーネント */
 	UPROPERTY(VisibleAnywhere, Category = "GDM", meta = (AllowPrivateAccess = "true"))
-	UGDMScreenshotRequesterComponent* ScreenshotRequesterComponent;
+	TObjectPtr<UGDMScreenshotRequesterComponent> ScreenshotRequesterComponent;
+	
+	UPROPERTY(VisibleAnywhere, Category = "GDM", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UGDMPropertyJsonSystemComponent> PropertyJsonSystemComponent;
 
+	UPROPERTY(VisibleAnywhere, Category = "GDM", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UGDMSaveSystemComponent> SaveSystemComponent;
+	
 	/** DebugMenuの各イベント検知コンポーネント */
 	UPROPERTY(Transient)
-	UGDMListenerComponent* ListenerComponent;
+	TObjectPtr<UGDMListenerComponent> ListenerComponent;
 
 protected:
 	/** True：UI表示中 */
@@ -67,15 +75,15 @@ protected:
 
 	/** デバックメニュー用UIアセット */
 	UPROPERTY(EditAnywhere, Category = "GDM|Config")
-	UGameDebugMenuWidgetDataAsset* WidgetDataAsset;
+	TObjectPtr<UGameDebugMenuWidgetDataAsset> WidgetDataAsset;
 
 	/** Viewport上に追加されてるメインWidget */
 	UPROPERTY(Transient)
-	UGameDebugMenuRootWidget* DebugMenuRootWidget;
+	TObjectPtr<UGameDebugMenuRootWidget> DebugMenuRootWidget;
 
 	/** 生成した各メニューWidgetのインスタンス */
 	UPROPERTY(Transient,BlueprintReadOnly, Category = "GDM")
-	TMap<FString, UGameDebugMenuWidget* > DebugMenuInstances;
+	TMap<FString, TObjectPtr<UGameDebugMenuWidget>> DebugMenuInstances;
 
 	/** True : デバックメニュー操作中ポーズする */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GDM|Config")
@@ -87,7 +95,7 @@ protected:
 
 	/** デバックカメラ用のインプットアクターのインスタンス */
 	UPROPERTY(Transient)
-	AGDMDebugCameraInput* DebugCameraInput;
+	TObjectPtr<AGDMDebugCameraInput> DebugCameraInput;
 
 	/** PlayerControllerに自動追加されるプロキシコンポーネント */
 	UPROPERTY(EditAnywhere, Category = "GDM|Config")
@@ -95,19 +103,17 @@ protected:
 
 	/** DebugMenuのログデバイス（レポート送信用） */
 	TSharedPtr<FGDMOutputDevice> OutputLog;
-
+	
 	UPROPERTY(Transient)
 	TMap<FString, FString> DebugMenuStrings;
+	
+	UPROPERTY(Transient)
+	TArray<TObjectPtr<UGameDebugMenuWidget>> ViewportDebugMenuWidgets;
 
-	UPROPERTY(BlueprintReadOnly, Category = "GDM")
-	FName CurrentDebugMenuLanguage;
-
+	/** True: デバックメニュー用の StringKey を指定してる箇所をそのまま表示する */
 	UPROPERTY(Transient)
 	bool bCurrentDebugMenuDirectStringKey;
-
-	UPROPERTY(Transient)
-	TArray<UGameDebugMenuWidget*> ViewportDebugMenuWidgets;
-
+	
 public:
 	AGameDebugMenuManager(const FObjectInitializer& ObjectInitializer);
 protected:
@@ -127,9 +133,20 @@ public:
 	UGDMScreenshotRequesterComponent* GetScreenshotRequesterComponent() const;
 
 	UFUNCTION(BlueprintPure)
+	UGDMPropertyJsonSystemComponent* GetPropertyJsonSystemComponent() const;
+
+	UFUNCTION(BlueprintPure)
+	UGDMSaveSystemComponent* GetSaveSystemComponent() const;
+	
+	UFUNCTION(BlueprintPure)
 	UGDMListenerComponent* GetListenerComponent() const;
 
 protected:
+	/**
+	* マネージャーの初期化
+	*/
+	virtual void OnInitializeManager();
+	
 	/**
 	* UIのルートWidgetの生成
 	*/
@@ -213,16 +230,20 @@ public:
 	/** 
 	* ゲーム内のログ取得
 	*/
-	virtual void GetOutputLogStrings(TArray<FString>& OutLogs);
 	virtual void GetOutputLogString(FString& OutLog, const FString& Separator);
+
+	/** 
+	* ゲーム中実行したコンソールコマンドの履歴を取得
+	*/
+	virtual void GetOutputCommandHistoryString(TArray<FString>& OutCommandHistory);
 
 	/** 
 	* プロパティ＆関数の登録、取得、イベントの通知
 	*/
 	virtual EGDMPropertyType GetPropertyType(FProperty* TargetProperty);
-	virtual bool RegisterObjectProperty(UObject* TargetObject, FName PropertyName, const FGDMGameplayCategoryKey& CategoryKey, const FText& DisplayPropertyName, const FText& Description, const FGDMPropertyUIConfigInfo& PropertyUIConfigInfo, const int32& DisplayPriority);
-	virtual bool RegisterObjectFunction(UObject* TargetObject, FName FunctionName, const FGDMGameplayCategoryKey& CategoryKey, const FText& DisplayFunctionName, const FText& Description, const int32& DisplayPriority);
-	virtual UObject* GetObjectProperty(const int32 Index, FGDMGameplayCategoryKey& OutCategoryKey, FText& OutDisplayPropertyName, FText& OutDescription, FName& OutPropertyName, EGDMPropertyType& OutPropertyType, FString& OutEnumPathName, FGDMPropertyUIConfigInfo& PropertyUIConfigInfo);
+	virtual bool RegisterObjectProperty(UObject* TargetObject, const FName PropertyName, const FGDMGameplayCategoryKey& CategoryKey, const FString& PropertySaveKey, const FText& DisplayPropertyName, const FText& Description, const FGDMPropertyUIConfigInfo& PropertyUIConfigInfo, const int32& DisplayPriority);
+	virtual bool RegisterObjectFunction(UObject* TargetObject, const FName FunctionName, const FGDMGameplayCategoryKey& CategoryKey, const FText& DisplayFunctionName, const FText& Description, const int32& DisplayPriority);
+	virtual UObject* GetObjectProperty(const int32 Index, FGDMGameplayCategoryKey& OutCategoryKey, FString& OutPropertySaveKey, FText& OutDisplayPropertyName, FText& OutDescription, FName& OutPropertyName, EGDMPropertyType& OutPropertyType, FString& OutEnumPathName, FGDMPropertyUIConfigInfo& PropertyUIConfigInfo);
 	virtual void RemoveObjectProperty(const int32 Index);
 	virtual UObject* GetObjectFunction(const int32 Index, FGDMGameplayCategoryKey& OutCategoryKey, FText& OutDisplayFunctionName, FText& OutDescription, FName& OutFunctionName);
 	void RemoveObjectFunction(const int32 Index);
@@ -281,6 +302,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "GDM")
 	TArray<UGameDebugMenuWidget*> GetViewportDebugMenuWidgets();
 
+	UFUNCTION(BlueprintPure)
+	FName GetCurrentDebugMenuLanguage() const;
+
 protected:
 	virtual void CallExecuteConsoleCommandDispatcher(const FString& Command);
 	virtual void CallShowDispatcher();
@@ -296,14 +320,14 @@ protected:
 
 public:
 	virtual void CallExecuteProcessEventDispatcher(const FName& FunctionName, UObject* TargetObject);
-	virtual void CallChangePropertyBoolDispatcher(const FName& PropertyName, UObject* PropertyOwnerObject, bool New, bool Old);
-	virtual void CallChangePropertyIntDispatcher(const FName& PropertyName, UObject* PropertyOwnerObject, int32 New, int32 Old);
-	virtual void CallChangePropertyFloatDispatcher(const FName& PropertyName, UObject* PropertyOwnerObject, float New, float Old);
-	virtual void CallChangePropertyByteDispatcher(const FName& PropertyName, UObject* PropertyOwnerObject, uint8 New, uint8 Old);
-	virtual void CallChangePropertyStringDispatcher(const FName& PropertyName, UObject* PropertyOwnerObject, FString New, FString Old);
-	virtual void CallChangePropertyVectorDispatcher(const FName& PropertyName, UObject* PropertyOwnerObject, FVector New, FVector Old);
-	virtual void CallChangePropertyVector2DDispatcher(const FName& PropertyName, UObject* PropertyOwnerObject, FVector2D New, FVector2D Old);
-	virtual void CallChangePropertyRotatorDispatcher(const FName& PropertyName, UObject* PropertyOwnerObject, FRotator New, FRotator Old);
+	virtual void CallChangePropertyBoolDispatcher(const FName& PropertyName, UObject* PropertyOwnerObject, bool New, bool Old, const FString& PropertySaveKey);
+	virtual void CallChangePropertyIntDispatcher(const FName& PropertyName, UObject* PropertyOwnerObject, int32 New, int32 Old, const FString& PropertySaveKey);
+	virtual void CallChangePropertyFloatDispatcher(const FName& PropertyName, UObject* PropertyOwnerObject, float New, float Old, const FString& PropertySaveKey);
+	virtual void CallChangePropertyByteDispatcher(const FName& PropertyName, UObject* PropertyOwnerObject, uint8 New, uint8 Old, const FString& PropertySaveKey);
+	virtual void CallChangePropertyStringDispatcher(const FName& PropertyName, UObject* PropertyOwnerObject, FString New, FString Old, const FString& PropertySaveKey);
+	virtual void CallChangePropertyVectorDispatcher(const FName& PropertyName, UObject* PropertyOwnerObject, FVector New, FVector Old, const FString& PropertySaveKey);
+	virtual void CallChangePropertyVector2DDispatcher(const FName& PropertyName, UObject* PropertyOwnerObject, FVector2D New, FVector2D Old, const FString& PropertySaveKey);
+	virtual void CallChangePropertyRotatorDispatcher(const FName& PropertyName, UObject* PropertyOwnerObject, FRotator New, FRotator Old, const FString& PropertySaveKey);
 	virtual void CallChangeActiveInputObjectDispatcher(UObject* NewTargetObject, UObject* OldTargetObject);
 	virtual void CallChangeDebugMenuLanguageDispatcher(const FName& NewLanguageKey, const FName& OldLanguageKey);
 	virtual void CallStartScreenshotRequestDispatcher();

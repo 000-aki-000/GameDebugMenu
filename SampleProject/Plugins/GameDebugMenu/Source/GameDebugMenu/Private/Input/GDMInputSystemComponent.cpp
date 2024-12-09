@@ -9,7 +9,6 @@
 #include <Engine/World.h>
 
 #include "GameDebugMenuFunctions.h"
-#include "Components/InputComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "GameFramework/PlayerInput.h"
 #include "GameFramework/WorldSettings.h"

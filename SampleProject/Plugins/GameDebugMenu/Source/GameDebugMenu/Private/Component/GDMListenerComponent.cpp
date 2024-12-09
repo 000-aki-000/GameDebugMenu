@@ -5,12 +5,13 @@
 * (See accompanying file LICENSE.txt or copy at http://opensource.org/licenses/MIT)
 */
 
-#include "GDMListenerComponent.h"
+#include "Component/GDMListenerComponent.h"
 #include <Engine/World.h>
 
 static TMap<UWorld*, TArray<TWeakObjectPtr<UGDMListenerComponent>>> GlobalListenerComponents;
 
-UGDMListenerComponent::UGDMListenerComponent()
+UGDMListenerComponent::UGDMListenerComponent(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
 {
 	PrimaryComponentTick.bCanEverTick          = false;
 	PrimaryComponentTick.bStartWithTickEnabled = false;

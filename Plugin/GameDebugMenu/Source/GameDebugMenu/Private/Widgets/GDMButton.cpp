@@ -7,10 +7,9 @@
 
 #include "Widgets/GDMButton.h"
 #include "Widgets/Input/SButton.h"
-#include <Components/ButtonSlot.h>
-#include <Components/Button.h>
 #include <GameDebugMenuFunctions.h>
 #include <GameDebugMenuManager.h>
+#include "Components/ButtonSlot.h"
 
 #define LOCTEXT_NAMESPACE "UMG"
 

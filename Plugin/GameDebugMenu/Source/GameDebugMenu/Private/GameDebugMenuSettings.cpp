@@ -16,9 +16,6 @@
 
 UGameDebugMenuSettings::UGameDebugMenuSettings()
 {
-	StartupConsoleCommands.Add(TEXT("Default"), FGDMStartupConsoleCommandList());
-	StartupConsoleCommandKeyName = TEXT("Default");
-
 	SetupCategoryResets();
 	SetupCategorySlomo();
 	SetupCategoryCamera();
@@ -78,14 +75,17 @@ UGameDebugMenuSettings::UGameDebugMenuSettings()
 
 	DefaultGameDebugMenuLanguage = Japanese;
 
-	bGameDebugMenuDirectStringKey = false;
-
 	DebugReportRequesterClass.Add(EGDMProjectManagementTool::Trello, AGDMRequesterTrello::StaticClass());
 	DebugReportRequesterClass.Add(EGDMProjectManagementTool::Redmine, AGDMRequesterRedmine::StaticClass());
 	DebugReportRequesterClass.Add(EGDMProjectManagementTool::Jira, AGDMRequesterJira::StaticClass());
 
 	bDisableScreenCaptureProcessingWhenOpeningDebugMenu = false;
 
+	SaveFilePath = TEXT("Saved/DebugMenu");
+	SaveFileName = TEXT("DebugMenuSaveData.json");
+	bDisableSaveFile = false;
+	MaxCommandHistoryNum = 100;
+	
 	LineBreakString = TEXT("\n");
 }
 
@@ -302,6 +302,11 @@ int32 UGameDebugMenuSettings::GetGameplayCategoryIndex(const int32& ArrayIndex)
 TSubclassOf<AGDMDebugReportRequester>* UGameDebugMenuSettings::GetDebugReportRequesterClass()
 {
 	return DebugReportRequesterClass.Find(ProjectManagementToolType);
+}
+
+FString UGameDebugMenuSettings::GetFullSavePath() const
+{
+	return FPaths::ProjectDir().Append(SaveFilePath).Append(TEXT("/")).Append(SaveFileName);
 }
 
 void UGameDebugMenuSettings::SetupCategoryResets()

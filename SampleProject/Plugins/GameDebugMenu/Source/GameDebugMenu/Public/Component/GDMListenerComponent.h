@@ -8,20 +8,19 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Components/ActorComponent.h"
 #include "GDMListenerComponent.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FGDMGameDebugMenuListenerDelegate);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGDMOnExecuteConsoleCommandDelegate, const FString&, Command);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FGDMOnExecuteProcessEventDelegate, const FName&, FunctionName, UObject*, FunctionOwnerObject);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FGDMOnChangePropertyBoolDelegate, const FName&, PropertyName, UObject*, PropertyOwnerObject, bool, New, bool, Old);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FGDMOnChangePropertyIntDelegate, const FName&, PropertyName, UObject*, PropertyOwnerObject, int32, New, int32, Old);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FGDMOnChangePropertyFloatDelegate, const FName&, PropertyName, UObject*, PropertyOwnerObject, float, New, float, Old);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FGDMOnChangePropertyByteDelegate, const FName&, PropertyName, UObject*, PropertyOwnerObject, uint8, New, uint8, Old);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FGDMOnChangePropertyStringDelegate, const FName&, PropertyName, UObject*, PropertyOwnerObject, FString, New, FString, Old);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FGDMOnChangePropertyVectorDelegate, const FName&, PropertyName, UObject*, PropertyOwnerObject, FVector, New, FVector, Old);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FGDMOnChangePropertyVector2DDelegate, const FName&, PropertyName, UObject*, PropertyOwnerObject, FVector2D, New, FVector2D, Old);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FGDMOnChangePropertyRotatorDelegate, const FName&, PropertyName, UObject*, PropertyOwnerObject, FRotator, New, FRotator, Old);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_FiveParams(FGDMOnChangePropertyBoolDelegate, const FName&, PropertyName, UObject*, PropertyOwnerObject, bool, New, bool, Old, const FString&, PropertySaveKey);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_FiveParams(FGDMOnChangePropertyIntDelegate, const FName&, PropertyName, UObject*, PropertyOwnerObject, int32, New, int32, Old, const FString&, PropertySaveKey);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_FiveParams(FGDMOnChangePropertyFloatDelegate, const FName&, PropertyName, UObject*, PropertyOwnerObject, float, New, float, Old, const FString&, PropertySaveKey);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_FiveParams(FGDMOnChangePropertyByteDelegate, const FName&, PropertyName, UObject*, PropertyOwnerObject, uint8, New, uint8, Old, const FString&, PropertySaveKey);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_FiveParams(FGDMOnChangePropertyStringDelegate, const FName&, PropertyName, UObject*, PropertyOwnerObject, FString, New, FString, Old, const FString&, PropertySaveKey);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_FiveParams(FGDMOnChangePropertyVectorDelegate, const FName&, PropertyName, UObject*, PropertyOwnerObject, FVector, New, FVector, Old, const FString&, PropertySaveKey);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_FiveParams(FGDMOnChangePropertyVector2DDelegate, const FName&, PropertyName, UObject*, PropertyOwnerObject, FVector2D, New, FVector2D, Old, const FString&, PropertySaveKey);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_FiveParams(FGDMOnChangePropertyRotatorDelegate, const FName&, PropertyName, UObject*, PropertyOwnerObject, FRotator, New, FRotator, Old, const FString&, PropertySaveKey);
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGDMOnInputSystemDelegate, UObject*, TargetInputObject);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FGDMOnInputSystemChangeInputObjectDelegate, UObject*, NewInputObject, UObject*, OldInputObject);
@@ -109,7 +108,7 @@ public:
 	FGDMGameDebugMenuListenerDelegate OnScreenshotRequestProcessedDispatcher;
 
 public:	
-	UGDMListenerComponent();
+	UGDMListenerComponent(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 	virtual void InitializeComponent() override;
 	virtual void UninitializeComponent() override;
 

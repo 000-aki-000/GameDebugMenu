@@ -10,7 +10,6 @@
 #include "Engine/DebugCameraController.h"
 #include "GameDebugMenuManager.h"
 #include <GameDebugMenuFunctions.h>
-#include "Components/InputComponent.h"
 #include "Input/GDMInputEventFunctions.h"
 
 AGDMDebugCameraInput::AGDMDebugCameraInput()

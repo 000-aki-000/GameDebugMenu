@@ -5,15 +5,19 @@
 * (See accompanying file LICENSE.txt or copy at http://opensource.org/licenses/MIT)
 */
 
-#include "GDMOutputDevice.h"
+#include "Log/GDMOutputDevice.h"
+#include "HAL/CriticalSection.h"
 #include <CoreGlobals.h>
 #include <Misc/OutputDeviceHelper.h>
+
+#include "GameDebugMenuSettings.h"
 
 FGDMOutputDevice::FGDMOutputDevice()
 	: FOutputDevice()
 	, Logs()
 {
 	Logs.Reserve(10000);
+	CommandHistory.Reserve(100);
 	GLog->AddOutputDevice(this);
 }
 
@@ -39,6 +43,18 @@ void FGDMOutputDevice::Serialize(const TCHAR* Data, ELogVerbosity::Type Verbosit
 	}
 	else
 	{
+		static FName CommandCategory = TEXT("Cmd");
+
+		if (Category == CommandCategory)
+		{
+			while(CommandHistory.Num() > UGameDebugMenuSettings::Get()->MaxCommandHistoryNum - 1)
+			{
+				CommandHistory.RemoveAt(0);
+			}
+			
+			CommandHistory.Add(Data);
+		}
+		
 		/* 時間はUTCで固定し他はエディターの「outputlog」のものと同じものを保持しとく */
 		static ELogTimes::Type LogTimestampMode = ELogTimes::UTC;
 
@@ -83,4 +99,22 @@ void FGDMOutputDevice::Serialize(const TCHAR* Data, ELogVerbosity::Type Verbosit
 			}
 		}
 	}
+}
+
+TArray<FString> FGDMOutputDevice::GetLogs() const
+{
+	FScopeLock Lock(&CommandHistoryMutex);
+	return Logs;
+}
+
+TArray<FString> FGDMOutputDevice::GetCommandHistory() const
+{
+	FScopeLock Lock(&CommandHistoryMutex);
+	return CommandHistory;
+}
+
+void FGDMOutputDevice::ClearCommandHistory()
+{
+	FScopeLock Lock(&CommandHistoryMutex);
+	CommandHistory.Reset();
 }

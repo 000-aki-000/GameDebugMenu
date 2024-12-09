@@ -56,7 +56,7 @@ public:
 	* 取得(Managerの参照をもつことになるので使用する場合は注意)
 	*/
 	UFUNCTION(BlueprintPure, Category = "GDM|Functions", meta = (Keywords = "DebugMenu GDM", WorldContext = "WorldContextObject"))
-	static AGameDebugMenuManager* GetGameDebugMenuManager(UObject* WorldContextObject);
+	static AGameDebugMenuManager* GetGameDebugMenuManager(const UObject* WorldContextObject);
 
 	/**
 	* 表示
@@ -92,7 +92,7 @@ public:
 	* RootになるWidget取得(Widgetの参照をもつことになるので使用する場合は注意)
 	*/
 	UFUNCTION(BlueprintPure, BlueprintCosmetic, Category = "GDM|Functions", meta = (Keywords = "DebugMenu GDM", WorldContext = "WorldContextObject"))
-	static UGameDebugMenuRootWidget* GetGameDebugMenuRootWidget(UObject* WorldContextObject);
+	static UGameDebugMenuRootWidget* GetGameDebugMenuRootWidget(const UObject* WorldContextObject);
 
 	/**
 	* DebugMenuに表示させるオブジェクトのプロパティを登録する
@@ -101,13 +101,14 @@ public:
 	* @param PropertyUIConfigInfo - UIでの設定情報
 	* @param PropertyName         - プロパティ名
 	* @param CategoryKey		  - カテゴリ
+	* @param PropertySaveKey	  - プロパティデータ保存用の識別キー
 	* @param DisplayPropertyName  - UI上のプロパティ名,何も指定しなければ「PropertyName」で表示
 	* @param Description          - 説明文
 	* @param DisplayPriority	　- リスト追加時の表示優先度（降順）
 	* @return True: 登録成功 False: 何らかの要因で失敗した（ログに出力されてます）
 	*/
-	UFUNCTION(BlueprintCallable, BlueprintCosmetic, Category = "GDM|Functions", meta = (Keywords = "DebugMenu GDM", AdvancedDisplay = "4"))
-	static bool RegisterGDMObjectProperty(UObject* TargetObject, const FGDMPropertyUIConfigInfo PropertyUIConfigInfo,FName PropertyName,const FGDMGameplayCategoryKey CategoryKey,const FText DisplayPropertyName,const FText Description,const int32 DisplayPriority);
+	UFUNCTION(BlueprintCallable, BlueprintCosmetic, Category = "GDM|Functions", meta = (Keywords = "DebugMenu GDM", AdvancedDisplay = "5"))
+	static bool RegisterGDMObjectProperty(UObject* TargetObject, const FGDMPropertyUIConfigInfo PropertyUIConfigInfo, const FName PropertyName, const FGDMGameplayCategoryKey CategoryKey, const FString PropertySaveKey, const FText DisplayPropertyName,const FText Description,const int32 DisplayPriority);
 
 	/**
 	* DebugMenuに表示させるオブジェクトの関数（カスタムイベント）を登録する
@@ -134,7 +135,7 @@ public:
 	* 登録済みプロパティ情報を取得する
 	*/
 	UFUNCTION(BlueprintCallable, BlueprintCosmetic, Category = "GDM|Functions", meta = (Keywords = "DebugMenu GDM", WorldContext = "WorldContextObject"))
-	static UObject* GetGDMObjectProperty(UObject* WorldContextObject,const int32 Index, FGDMGameplayCategoryKey& OutCategoryKey, FText& OutDisplayPropertyName, FText& OutDescription, FName& OutPropertyName, EGDMPropertyType& OutPropertyType, FString& OutEnumPathName, FGDMPropertyUIConfigInfo& PropertyUIConfigInfo);
+	static UObject* GetGDMObjectProperty(UObject* WorldContextObject,const int32 Index, FGDMGameplayCategoryKey& OutCategoryKey, FString& OutPropertySaveKey, FText& OutDisplayPropertyName, FText& OutDescription, FName& OutPropertyName, EGDMPropertyType& OutPropertyType, FString& OutEnumPathName, FGDMPropertyUIConfigInfo& PropertyUIConfigInfo);
 
 	/**
 	* 登録済み関数（カスタムイベント）を取得する

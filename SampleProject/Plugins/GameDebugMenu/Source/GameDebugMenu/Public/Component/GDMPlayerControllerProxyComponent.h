@@ -8,7 +8,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Components/ActorComponent.h"
 #include "GameDebugMenuTypes.h"
 #include "GDMPlayerControllerProxyComponent.generated.h"
 

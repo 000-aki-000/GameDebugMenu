@@ -5,7 +5,7 @@
 * (See accompanying file LICENSE.txt or copy at http://opensource.org/licenses/MIT)
 */
 
-#include "GDMPlayerControllerProxyComponent.h"
+#include "Component/GDMPlayerControllerProxyComponent.h"
 #include <Engine/World.h>
 #include "GameFramework/PlayerController.h"
 #include "GameFramework/Character.h"

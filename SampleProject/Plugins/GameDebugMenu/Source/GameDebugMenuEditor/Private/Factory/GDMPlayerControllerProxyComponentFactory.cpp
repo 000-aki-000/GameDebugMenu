@@ -6,8 +6,8 @@
 */
 
 #include "Factory/GDMPlayerControllerProxyComponentFactory.h"
+#include "Component/GDMPlayerControllerProxyComponent.h"
 #include "Kismet2/KismetEditorUtilities.h"
-#include "GDMPlayerControllerProxyComponent.h"
 
 #define LOCTEXT_NAMESPACE "GameDebugMenu"
 

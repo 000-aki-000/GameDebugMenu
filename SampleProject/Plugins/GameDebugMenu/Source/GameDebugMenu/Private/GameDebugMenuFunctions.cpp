@@ -9,7 +9,6 @@
 #include "Engine/Engine.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameDebugMenuSettings.h"
-#include "GDMPlayerControllerProxyComponent.h"
 #include "CoreGlobals.h"
 #include "Misc/ConfigCacheIni.h"
 #include <GeneralProjectSettings.h>
@@ -157,13 +156,14 @@ bool UGameDebugMenuFunctions::TryCreateDebugMenuManager(UObject* WorldContextObj
 			const auto& PendingData = RegisterPendingProperties[Index];
 			if(PendingData.TargetObject.IsValid())
 			{
-				RegisterGDMObjectProperty(PendingData.TargetObject.Get(),
-										  PendingData.ConfigInfo,
-										  PendingData.TargetName,
-										  PendingData.CategoryKey,
-										  PendingData.DisplayPropertyName,
-										  PendingData.Description,
-										  PendingData.DisplayPriority
+				RegisterGDMObjectProperty(PendingData.TargetObject.Get()
+					,PendingData.ConfigInfo
+					,PendingData.TargetName
+					,PendingData.CategoryKey
+					,PendingData.PropertySaveKey
+					,PendingData.DisplayPropertyName
+					,PendingData.Description
+					,PendingData.DisplayPriority
 				);
 			}
 		}
@@ -247,7 +247,7 @@ bool UGameDebugMenuFunctions::DestroyDebugMenuManager(UObject* WorldContextObjec
 	return false;
 }
 
-AGameDebugMenuManager* UGameDebugMenuFunctions::GetGameDebugMenuManager(UObject* WorldContextObject)
+AGameDebugMenuManager* UGameDebugMenuFunctions::GetGameDebugMenuManager(const UObject* WorldContextObject)
 {
 	if(bDisableGameDebugMenu)
 	{
@@ -255,7 +255,7 @@ AGameDebugMenuManager* UGameDebugMenuFunctions::GetGameDebugMenuManager(UObject*
 		return nullptr;
 	}
 
-	UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::LogAndReturnNull);
+	const UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::LogAndReturnNull);
 	if( !IsValid(World) )
 	{
 		UE_LOG(LogGDM, Warning, TEXT("GetGameDebugMenuManager: not found World"));
@@ -274,7 +274,7 @@ AGameDebugMenuManager* UGameDebugMenuFunctions::GetGameDebugMenuManager(UObject*
 	/* 違うワールドの場合は検索して取得し直す（主にエディターなど） */
 	GDMManager = nullptr;
 
-	for (auto Manager : GGameDebugMenuManagers )
+	for (const auto Manager : GGameDebugMenuManagers )
 	{
 		if (Manager->GetWorld() == World)
 		{
@@ -350,7 +350,7 @@ bool UGameDebugMenuFunctions::IsShowingDebugMenu(UObject* WorldContextObject)
 	return GDMManager->IsShowingDebugMenu();
 }
 
-UGameDebugMenuRootWidget* UGameDebugMenuFunctions::GetGameDebugMenuRootWidget(UObject* WorldContextObject)
+UGameDebugMenuRootWidget* UGameDebugMenuFunctions::GetGameDebugMenuRootWidget(const UObject* WorldContextObject)
 {
 	AGameDebugMenuManager* GDMManager = GetGameDebugMenuManager(WorldContextObject);
 	if(!IsValid(GDMManager))
@@ -361,7 +361,7 @@ UGameDebugMenuRootWidget* UGameDebugMenuFunctions::GetGameDebugMenuRootWidget(UO
 	return GDMManager->GetDebugMenuRootWidget();
 }
 
-bool UGameDebugMenuFunctions::RegisterGDMObjectProperty(UObject* TargetObject, const FGDMPropertyUIConfigInfo PropertyUIConfigInfo,FName PropertyName,const FGDMGameplayCategoryKey CategoryKey,const FText DisplayPropertyName,const FText Description, const int32 DisplayPriority)
+bool UGameDebugMenuFunctions::RegisterGDMObjectProperty(UObject* TargetObject, const FGDMPropertyUIConfigInfo PropertyUIConfigInfo, const FName PropertyName, const FGDMGameplayCategoryKey CategoryKey, const FString PropertySaveKey, const FText DisplayPropertyName,const FText Description, const int32 DisplayPriority)
 {
 	if(bDisableGameDebugMenu)
 	{
@@ -376,6 +376,7 @@ bool UGameDebugMenuFunctions::RegisterGDMObjectProperty(UObject* TargetObject, c
 		PendingData.TargetObject        = TargetObject;
 		PendingData.TargetName          = PropertyName;
 		PendingData.CategoryKey			= CategoryKey;
+		PendingData.PropertySaveKey		= PropertySaveKey;
 		PendingData.DisplayPropertyName = DisplayPropertyName;
 		PendingData.Description         = Description;
 		PendingData.ConfigInfo          = PropertyUIConfigInfo;
@@ -383,7 +384,8 @@ bool UGameDebugMenuFunctions::RegisterGDMObjectProperty(UObject* TargetObject, c
 		RegisterPendingProperties.Add(PendingData);
 		return false;
 	}
-	return GDMManager->RegisterObjectProperty( TargetObject, PropertyName, CategoryKey, DisplayPropertyName, Description, PropertyUIConfigInfo, DisplayPriority);
+	
+	return GDMManager->RegisterObjectProperty(TargetObject, PropertyName, CategoryKey, PropertySaveKey, DisplayPropertyName, Description, PropertyUIConfigInfo, DisplayPriority);
 }
 
 bool UGameDebugMenuFunctions::RegisterGDMObjectFunction(UObject* TargetObject,FName FunctionName,const FGDMGameplayCategoryKey CategoryKey,const FText DisplayFunctionName,const FText Description, const int32 DisplayPriority)
@@ -407,6 +409,7 @@ bool UGameDebugMenuFunctions::RegisterGDMObjectFunction(UObject* TargetObject,FN
 		RegisterPendingFunctions.Add(PendingData);
 		return false;
 	}
+	
 	return GDMManager->RegisterObjectFunction(TargetObject,FunctionName, CategoryKey, DisplayFunctionName, Description, DisplayPriority);
 }
 
@@ -419,6 +422,7 @@ void UGameDebugMenuFunctions::UnregisterGDMObject(UObject* TargetObject)
 	}
 
 	FGDMGameplayCategoryKey CategoryKey;
+	FString PropertySaveKey;
 	FText DisplayPropertyName;
 	FText Description;
 	FName PropertyName;
@@ -428,7 +432,7 @@ void UGameDebugMenuFunctions::UnregisterGDMObject(UObject* TargetObject)
 
 	for(int32 Index = GDMManager->GetNumObjectProperties() - 1; Index >= 0; --Index)
 	{
-		UObject* RegisterObject = GDMManager->GetObjectProperty(Index, CategoryKey, DisplayPropertyName, Description, PropertyName, PropertyType, EnumPathName, PropertyUIConfigInfo);
+		UObject* RegisterObject = GDMManager->GetObjectProperty(Index, CategoryKey, PropertySaveKey, DisplayPropertyName, Description, PropertyName, PropertyType, EnumPathName, PropertyUIConfigInfo);
 		if(!IsValid(RegisterObject) || (TargetObject == RegisterObject))
 		{
 			GDMManager->RemoveObjectProperty(Index);
@@ -447,14 +451,14 @@ void UGameDebugMenuFunctions::UnregisterGDMObject(UObject* TargetObject)
 	}
 }
 
-UObject* UGameDebugMenuFunctions::GetGDMObjectProperty(UObject* WorldContextObject,const int32 Index, FGDMGameplayCategoryKey& OutCategoryKey, FText& OutDisplayPropertyName, FText& OutDescription, FName& OutPropertyName, EGDMPropertyType& OutPropertyType, FString& OutEnumPathName, FGDMPropertyUIConfigInfo& PropertyUIConfigInfo)
+UObject* UGameDebugMenuFunctions::GetGDMObjectProperty(UObject* WorldContextObject,const int32 Index, FGDMGameplayCategoryKey& OutCategoryKey, FString& OutPropertySaveKey, FText& OutDisplayPropertyName, FText& OutDescription, FName& OutPropertyName, EGDMPropertyType& OutPropertyType, FString& OutEnumPathName, FGDMPropertyUIConfigInfo& PropertyUIConfigInfo)
 {
 	AGameDebugMenuManager* GDMManager = GetGameDebugMenuManager(WorldContextObject);
 	if(!IsValid(GDMManager))
 	{
 		return nullptr;
 	}
-	return GDMManager->GetObjectProperty(Index, OutCategoryKey, OutDisplayPropertyName, OutDescription, OutPropertyName, OutPropertyType, OutEnumPathName, PropertyUIConfigInfo);
+	return GDMManager->GetObjectProperty(Index, OutCategoryKey, OutPropertySaveKey, OutDisplayPropertyName, OutDescription, OutPropertyName, OutPropertyType, OutEnumPathName, PropertyUIConfigInfo);
 }
 
 UObject* UGameDebugMenuFunctions::GetGDMObjectFunction(UObject* WorldContextObject,const int32 Index, FGDMGameplayCategoryKey& OutCategoryKey, FText& OutDisplayFunctionName, FText& OutDescription, FName& OutFunctionName)
@@ -498,6 +502,7 @@ bool UGameDebugMenuFunctions::VerifyGDMNumObjectProperties(UObject* WorldContext
 	}
 
 	FGDMGameplayCategoryKey CategoryKey;
+	FString PropertySaveKey;
 	FText DisplayPropertyName;
 	FText Description;
 	FName PropertyName;
@@ -508,7 +513,7 @@ bool UGameDebugMenuFunctions::VerifyGDMNumObjectProperties(UObject* WorldContext
 
 	for(int32 Index = GetGDMNumObjectProperties(WorldContextObject) - 1; Index >= 0; --Index)
 	{
-		UObject* PropertyOwnerObj = GetGDMObjectProperty(WorldContextObject,Index, CategoryKey, DisplayPropertyName, Description, PropertyName, PropertyType, EnumPathName, PropertyUIConfigInfo);
+		UObject* PropertyOwnerObj = GetGDMObjectProperty(WorldContextObject, Index, CategoryKey, PropertySaveKey, DisplayPropertyName, Description, PropertyName, PropertyType, EnumPathName, PropertyUIConfigInfo);
 		if(!IsValid(PropertyOwnerObj))
 		{
 			GDMManager->RemoveObjectProperty(Index);
@@ -941,13 +946,14 @@ void UGameDebugMenuFunctions::OnActorSpawnedClientWaitManager(AGameDebugMenuMana
 		{
 			if( PendingData.TargetObject->GetWorld() == SpawnDebugMenuManager->GetWorld() )
 			{
-				RegisterGDMObjectProperty(PendingData.TargetObject.Get(),
-										  PendingData.ConfigInfo,
-										  PendingData.TargetName,
-										  PendingData.CategoryKey,
-										  PendingData.DisplayPropertyName,
-										  PendingData.Description,
-										  PendingData.DisplayPriority
+				RegisterGDMObjectProperty(PendingData.TargetObject.Get()
+					,PendingData.ConfigInfo
+					,PendingData.TargetName
+					,PendingData.CategoryKey
+					,PendingData.PropertySaveKey
+					,PendingData.DisplayPropertyName
+					,PendingData.Description
+					,PendingData.DisplayPriority
 				);
 			}
 		}
@@ -960,12 +966,12 @@ void UGameDebugMenuFunctions::OnActorSpawnedClientWaitManager(AGameDebugMenuMana
 		{
 			if( PendingData.TargetObject->GetWorld() == SpawnDebugMenuManager->GetWorld() )
 			{
-				RegisterGDMObjectFunction(PendingData.TargetObject.Get(),
-										  PendingData.TargetName,
-										  PendingData.CategoryKey,
-										  PendingData.DisplayPropertyName,
-										  PendingData.Description,
-										  PendingData.DisplayPriority
+				RegisterGDMObjectFunction(PendingData.TargetObject.Get()
+					,PendingData.TargetName
+					,PendingData.CategoryKey
+					,PendingData.DisplayPropertyName
+					,PendingData.Description
+					,PendingData.DisplayPriority
 				);
 			}
 		}
@@ -1004,7 +1010,7 @@ void UGameDebugMenuFunctions::OnActorSpawnedServer(AActor* SpawnActor)
 		return;
 	}
 
-	AGameDebugMenuManager* DebugMenuManager = UGameDebugMenuFunctions::GetGameDebugMenuManager(SpawnActor);
+	AGameDebugMenuManager* DebugMenuManager = GetGameDebugMenuManager(SpawnActor);
 	if (!IsValid(DebugMenuManager))
 	{
 		UE_LOG(LogGDM, Warning, TEXT("OnActorSpawnedServer: Not found DebugMenuManager"));
@@ -1053,9 +1059,7 @@ void UGameDebugMenuFunctions::ToggleInputSystemLog()
 	/* キャッシュしてるマネージャーに対して実行 */
 	if( CurrentGameDebugMenuManager.IsValid() )
 	{
-		if( UGDMInputSystemComponent* InputSystemComponent = CurrentGameDebugMenuManager->GetDebugMenuInputSystemComponent() )
-		{
-			InputSystemComponent->bOutputDebugLog = !InputSystemComponent->bOutputDebugLog;
-		}
+		UGDMInputSystemComponent* InputSystemComponent = CurrentGameDebugMenuManager->GetDebugMenuInputSystemComponent();
+		InputSystemComponent->bOutputDebugLog = !InputSystemComponent->bOutputDebugLog;
 	}
 }

@@ -5,7 +5,7 @@
 * (See accompanying file LICENSE.txt or copy at http://opensource.org/licenses/MIT)
 */
 
-#include "GDMScreenshotRequesterComponent.h"
+#include "Component/GDMScreenshotRequesterComponent.h"
 #include "Engine/GameViewportClient.h"
 #include "UnrealClient.h"
 #include "TimerManager.h"
@@ -13,8 +13,8 @@
 #include "GameDebugMenuFunctions.h"
 #include "Widgets/GDMDebugReportWidget.h"
 
-UGDMScreenshotRequesterComponent::UGDMScreenshotRequesterComponent()
-	: Super()
+UGDMScreenshotRequesterComponent::UGDMScreenshotRequesterComponent(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
 	, OnScreenshotCapturedHandle()
 	, OnScreenshotRequestProcessedHandle()
 	, bRequestProcessed(true)

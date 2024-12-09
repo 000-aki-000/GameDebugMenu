@@ -104,7 +104,7 @@ void UGDMPropertyWidget::SetPropertyValue_Bool(bool bNewValue, bool& bHasPropert
 	if (bNewValue != bOldValue)
 	{
 		BoolProp->SetPropertyValue(BoolProp->ContainerPtrToValuePtr<void*>(TargetObject), bNewValue);
-		UGameDebugMenuFunctions::GetGameDebugMenuManager(this)->CallChangePropertyBoolDispatcher(PropertyName, TargetObject, bNewValue, bOldValue);
+		UGameDebugMenuFunctions::GetGameDebugMenuManager(this)->CallChangePropertyBoolDispatcher(PropertyName, TargetObject, bNewValue, bOldValue, PropertySaveKey);
 	}
 }
 
@@ -153,7 +153,7 @@ void UGDMPropertyWidget::SetPropertyValue_Float(float NewValue, bool& bHasProper
 			if (FMath::IsNearlyEqual(NewValue, OldValue) == false)
 			{
 				DoubleProp->SetPropertyValue(DoubleProp->ContainerPtrToValuePtr<void*>(TargetObject), NewValue);
-				UGameDebugMenuFunctions::GetGameDebugMenuManager(this)->CallChangePropertyFloatDispatcher(PropertyName, TargetObject, NewValue, OldValue);
+				UGameDebugMenuFunctions::GetGameDebugMenuManager(this)->CallChangePropertyFloatDispatcher(PropertyName, TargetObject, NewValue, OldValue, PropertySaveKey);
 			}
 		}
 		return;
@@ -165,7 +165,7 @@ void UGDMPropertyWidget::SetPropertyValue_Float(float NewValue, bool& bHasProper
 	if (FMath::IsNearlyEqual(NewValue, OldValue) == false)
 	{
 		FloatProp->SetPropertyValue(FloatProp->ContainerPtrToValuePtr<void*>(TargetObject), NewValue);
-		UGameDebugMenuFunctions::GetGameDebugMenuManager(this)->CallChangePropertyFloatDispatcher(PropertyName, TargetObject, NewValue, OldValue);
+		UGameDebugMenuFunctions::GetGameDebugMenuManager(this)->CallChangePropertyFloatDispatcher(PropertyName, TargetObject, NewValue, OldValue, PropertySaveKey);
 	}
 }
 
@@ -208,7 +208,7 @@ void UGDMPropertyWidget::SetPropertyValue_Int(int32 NewValue, bool& bHasProperty
 	if (NewValue != OldValue)
 	{
 		IntProp->SetPropertyValue(IntProp->ContainerPtrToValuePtr<void*>(TargetObject), NewValue);
-		UGameDebugMenuFunctions::GetGameDebugMenuManager(this)->CallChangePropertyIntDispatcher(PropertyName, TargetObject, NewValue, OldValue);
+		UGameDebugMenuFunctions::GetGameDebugMenuManager(this)->CallChangePropertyIntDispatcher(PropertyName, TargetObject, NewValue, OldValue, PropertySaveKey);
 	}
 }
 
@@ -270,7 +270,7 @@ void UGDMPropertyWidget::SetPropertyValue_Byte(uint8 NewValue, bool& bHasPropert
 		if( NewValue != OldValue )
 		{
 			NumProp->SetIntPropertyValue(EnumProp->ContainerPtrToValuePtr<void*>(TargetObject),static_cast<uint64>( NewValue ));
-			UGameDebugMenuFunctions::GetGameDebugMenuManager(this)->CallChangePropertyByteDispatcher(PropertyName,TargetObject,NewValue,OldValue);
+			UGameDebugMenuFunctions::GetGameDebugMenuManager(this)->CallChangePropertyByteDispatcher(PropertyName,TargetObject,NewValue,OldValue, PropertySaveKey);
 		}
 		return;
 	}
@@ -284,7 +284,7 @@ void UGDMPropertyWidget::SetPropertyValue_Byte(uint8 NewValue, bool& bHasPropert
 		if( NewValue != OldValue )
 		{
 			ByteProp->SetPropertyValue(ByteProp->ContainerPtrToValuePtr<void*>(TargetObject),NewValue);
-			UGameDebugMenuFunctions::GetGameDebugMenuManager(this)->CallChangePropertyByteDispatcher(PropertyName,TargetObject,NewValue,OldValue);
+			UGameDebugMenuFunctions::GetGameDebugMenuManager(this)->CallChangePropertyByteDispatcher(PropertyName, TargetObject, NewValue, OldValue, PropertySaveKey);
 		}
 	}
 }
@@ -348,7 +348,7 @@ void UGDMPropertyWidget::SetPropertyValue_String(FString NewValue, bool& bHasPro
 	if (NewValue != OldValue)
 	{
 		StrProp->SetPropertyValue(StrProp->ContainerPtrToValuePtr<void*>(TargetObject), NewValue);
-		UGameDebugMenuFunctions::GetGameDebugMenuManager(this)->CallChangePropertyStringDispatcher(PropertyName, TargetObject, NewValue, OldValue);
+		UGameDebugMenuFunctions::GetGameDebugMenuManager(this)->CallChangePropertyStringDispatcher(PropertyName, TargetObject, NewValue, OldValue, PropertySaveKey);
 	}
 }
 
@@ -417,26 +417,11 @@ void UGDMPropertyWidget::SetPropertyValue_Vector(FVector NewValue, bool& bHasPro
 			if( NewValue != OldValue )
 			{
 				*Value = NewValue;
-				UGameDebugMenuFunctions::GetGameDebugMenuManager(this)->CallChangePropertyVectorDispatcher(PropertyName, TargetObject, NewValue, OldValue);
+				UGameDebugMenuFunctions::GetGameDebugMenuManager(this)->CallChangePropertyVectorDispatcher(PropertyName, TargetObject, NewValue, OldValue, PropertySaveKey);
 			}
 		}
 	}
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 FVector2D UGDMPropertyWidget::GetPropertyValue_Vector2D(bool& bHasProperty)
 {
@@ -503,7 +488,7 @@ void UGDMPropertyWidget::SetPropertyValue_Vector2D(FVector2D NewValue, bool& bHa
 			if( NewValue != OldValue )
 			{
 				*Value = NewValue;
-				UGameDebugMenuFunctions::GetGameDebugMenuManager(this)->CallChangePropertyVector2DDispatcher(PropertyName, TargetObject, NewValue, OldValue);
+				UGameDebugMenuFunctions::GetGameDebugMenuManager(this)->CallChangePropertyVector2DDispatcher(PropertyName, TargetObject, NewValue, OldValue, PropertySaveKey);
 			}
 		}
 	}
@@ -574,7 +559,7 @@ void UGDMPropertyWidget::SetPropertyValue_Rotator(FRotator NewValue, bool& bHasP
 			if( NewValue != OldValue )
 			{
 				*Value = NewValue;
-				UGameDebugMenuFunctions::GetGameDebugMenuManager(this)->CallChangePropertyRotatorDispatcher(PropertyName, TargetObject, NewValue, OldValue);
+				UGameDebugMenuFunctions::GetGameDebugMenuManager(this)->CallChangePropertyRotatorDispatcher(PropertyName, TargetObject, NewValue, OldValue, PropertySaveKey);
 			}
 		}
 	}

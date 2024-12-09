@@ -8,7 +8,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Components/ActorComponent.h"
 #include "GDMScreenshotRequesterComponent.generated.h"
 
 class AGameDebugMenuManager;
@@ -29,7 +28,7 @@ protected:
 	bool bRequestProcessed;
 
 public:	
-	UGDMScreenshotRequesterComponent();
+	UGDMScreenshotRequesterComponent(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 

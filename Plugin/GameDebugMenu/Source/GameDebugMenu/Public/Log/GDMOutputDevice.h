@@ -21,12 +21,19 @@ class AGameDebugMenuManager;
  */
 class GAMEDEBUGMENU_API FGDMOutputDevice : public FOutputDevice
 {
-public:
 	TArray<FString> Logs;
-
+	TArray<FString> CommandHistory;
+	mutable FCriticalSection CommandHistoryMutex;
+	
 public:
 	FGDMOutputDevice();
 	~FGDMOutputDevice();
 	virtual void Serialize(const TCHAR* Data, ELogVerbosity::Type Verbosity, const class FName& Category, const double Time) override;
 	virtual void Serialize(const TCHAR* Data, ELogVerbosity::Type Verbosity, const class FName& Category) override;
+
+
+public:
+	TArray<FString> GetLogs() const;
+	TArray<FString> GetCommandHistory() const;
+	void ClearCommandHistory();
 };

@@ -24,14 +24,6 @@ class GAMEDEBUGMENU_API UGameDebugMenuSettings : public UObject
 	GENERATED_BODY()
 
 public:
-	/** 起動時に実行されるコマンド郡 */
-	UPROPERTY(EditAnywhere, config, Category = "ConsoleCommand")
-	TMap<FName,FGDMStartupConsoleCommandList> StartupConsoleCommands;
-
-	/** 起動時に実行されるコマンド郡 */
-	UPROPERTY(EditAnywhere, config, Category = "ConsoleCommand")
-	FName StartupConsoleCommandKeyName;
-
 	/** コンソールコマンド名 */
 	UPROPERTY(EditAnywhere, config, Category = "ConsoleCommand")
 	TArray<FGDMConsoleCommandSingle> ConsoleCommandNames;
@@ -127,11 +119,24 @@ public:
 	/** デバックメニューの使用言語 */
 	UPROPERTY(EditAnywhere, config, Category = "Localization")
 	FName DefaultGameDebugMenuLanguage;
+	
+	/** JSON保存先のファイルパス（相対パス） */
+	UPROPERTY(config, EditAnywhere, BlueprintReadOnly, Category="Save")
+	FString SaveFilePath;
 
-	/** デバックメニュー用の StringKey を指定してる箇所をそのまま表示する */
-	UPROPERTY(EditAnywhere, config, Category = "Localization")
-	bool bGameDebugMenuDirectStringKey;
+	/** JSON保存先のファイル名 */
+	UPROPERTY(config, EditAnywhere, BlueprintReadOnly, Category="Save")
+	FString SaveFileName;
 
+	/** True: DebugMenuの保存機能を無効にする */
+	UPROPERTY(config, EditAnywhere, BlueprintReadOnly, Category="Save")
+	bool bDisableSaveFile;
+
+	/** 保存するコンソールコマンドの履歴件数 */
+	UPROPERTY(config, EditAnywhere, BlueprintReadOnly, Category="Save")
+	int32 MaxCommandHistoryNum;
+	
+	/** DebugMenuでの改行文字 */
 	UPROPERTY(EditAnywhere, config, Category = "Other")
 	FString LineBreakString;
 	
@@ -158,6 +163,7 @@ public:
 	FString GetGameplayCategoryTitle(const int32& ArrayIndex);
 	int32 GetGameplayCategoryIndex(const int32& ArrayIndex);
 	TSubclassOf<AGDMDebugReportRequester>* GetDebugReportRequesterClass();
+	FString GetFullSavePath() const;
 
 private:
 	void SetupCategoryResets();

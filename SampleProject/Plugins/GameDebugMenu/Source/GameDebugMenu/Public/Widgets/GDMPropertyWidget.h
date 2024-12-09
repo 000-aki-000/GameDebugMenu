@@ -42,6 +42,9 @@ public:
 	UPROPERTY(BlueprintReadWrite, Category = "GDM|Properties")
 	float ChangeAmount;
 
+	UPROPERTY(BlueprintReadWrite, Category = "GDM|Properties")
+	FString PropertySaveKey;
+	
 protected:
 	bool bStartChangeAmount;
 	bool bChangedMaxChangeAmount;

@@ -393,6 +393,7 @@ public:
 	FGDMPropertyUIConfigInfo ConfigInfo;
 	int32 DisplayPriority;
 	UScriptStruct* Struct;
+	FString PropertySaveKey;
 
 	FGDMObjectPropertyInfo()
 		: CategoryKey()
@@ -405,6 +406,7 @@ public:
 		, ConfigInfo()
 		, DisplayPriority(0)
 		, Struct(nullptr)
+		, PropertySaveKey()
 	{
 	}
 };
@@ -447,6 +449,7 @@ struct GAMEDEBUGMENU_API FGDMPendingObjectData
 	FText Description;
 	FGDMPropertyUIConfigInfo ConfigInfo;
 	int32 DisplayPriority;
+	FString PropertySaveKey;
 
 	FGDMPendingObjectData()
 		: TargetObject(nullptr)
@@ -456,6 +459,7 @@ struct GAMEDEBUGMENU_API FGDMPendingObjectData
 		, Description(FText::GetEmpty())
 		, ConfigInfo()
 		, DisplayPriority(0)
+		, PropertySaveKey()
 	{
 	}
 };
@@ -644,21 +648,6 @@ struct GAMEDEBUGMENU_API FGDMJiraSettings : public FGDMProjectManagementToolSett
 
 	FString GetAssigneeAccountIdByListIndex(int32 ListIndex) const;
 	FText GetAssigneeTextByListIndex(int32 ListIndex) const;
-};
-
-USTRUCT(BlueprintType)
-struct GAMEDEBUGMENU_API FGDMStartupConsoleCommandList
-{
-	GENERATED_BODY()
-
-	/** コマンド */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TArray<FString> Commands;
-
-	FGDMStartupConsoleCommandList()
-		:Commands()
-	{
-	}
 };
 
 /**

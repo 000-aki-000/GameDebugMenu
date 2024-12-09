@@ -18,11 +18,13 @@
 #include "Blueprint/WidgetBlueprintLibrary.h"
 #include "GameDebugMenuSettings.h"
 #include "GameDebugMenuFunctions.h"
-#include "GDMListenerComponent.h"
-#include "GDMPlayerControllerProxyComponent.h"
-#include "GDMScreenshotRequesterComponent.h"
-#include "GDMOutputDevice.h"
+#include "Component/GDMListenerComponent.h"
+#include "Component/GDMPlayerControllerProxyComponent.h"
+#include "Component/GDMScreenshotRequesterComponent.h"
+#include "Log/GDMOutputDevice.h"
 #include "Blueprint/GameViewportSubsystem.h"
+#include "Component/GDMPropertyJsonSystemComponent.h"
+#include "Component/GDMSaveSystemComponent.h"
 #include "Input/GDMDebugCameraInput.h"
 #include "Input/GDMInputSystemComponent.h"
 #include "Widgets/GameDebugMenuRootWidget.h"
@@ -31,14 +33,16 @@
 #include "Framework/Application/SlateApplication.h"
 
 
-/************************************************************************/
+/********************************************************************/
 /* AGameDebugMenuManager										    */
-/************************************************************************/
+/********************************************************************/
 
 AGameDebugMenuManager::AGameDebugMenuManager(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 	, DebugMenuInputSystemComponent(nullptr)
 	, ScreenshotRequesterComponent(nullptr)
+	, PropertyJsonSystemComponent(nullptr)
+	, SaveSystemComponent(nullptr)
 	, ListenerComponent(nullptr)
 	, bShowDebugMenu(false)
 	, bCachedGamePaused(false)
@@ -55,11 +59,11 @@ AGameDebugMenuManager::AGameDebugMenuManager(const FObjectInitializer& ObjectIni
 	, DebugMenuPCProxyComponentClass()
 	, OutputLog(nullptr)
 	, DebugMenuStrings()
-	, CurrentDebugMenuLanguage()
-	, bCurrentDebugMenuDirectStringKey(false)
 {
 	DebugMenuInputSystemComponent = CreateDefaultSubobject<UGDMInputSystemComponent>(TEXT("DebugMenuInputSystemComponent"));
 	ScreenshotRequesterComponent  = CreateDefaultSubobject<UGDMScreenshotRequesterComponent>(TEXT("ScreenshotRequesterComponent"));
+	PropertyJsonSystemComponent   = CreateDefaultSubobject<UGDMPropertyJsonSystemComponent>(TEXT("PropertyJsonSystemComponent"));
+	SaveSystemComponent			  = CreateDefaultSubobject<UGDMSaveSystemComponent>(TEXT("SaveSystemComponent"));
 	ListenerComponent             = CreateDefaultSubobject<UGDMListenerComponent>(TEXT("ListenerComponent"));
 
 	PrimaryActorTick.bCanEverTick			= true;
@@ -81,65 +85,19 @@ AGameDebugMenuManager::AGameDebugMenuManager(const FObjectInitializer& ObjectIni
 
 void AGameDebugMenuManager::BeginPlay()
 {
+	/* 他で参照される前にロードは処理しとく */
+	GetSaveSystemComponent()->LoadDebugMenuFile();
+	
 	Super::BeginPlay();
 
 	UGameDebugMenuFunctions::RegisterGameDebugMenuManagerInstance(this);
-
+	
 	UGameDebugMenuFunctions::PrintLogScreen(this, TEXT("AGameDebugMenuManager: Call BeginPlay"), 4.0f);
 
-	OutputLog = MakeShareable(new FGDMOutputDevice);
-
-	CurrentDebugMenuLanguage = UGameDebugMenuSettings::Get()->DefaultGameDebugMenuLanguage;
-
-	bCurrentDebugMenuDirectStringKey = UGameDebugMenuSettings::Get()->bGameDebugMenuDirectStringKey;
-
+	/* managerのBeginplayがちゃんと完了後に処理↓ */
 	GetWorld()->GetTimerManager().SetTimerForNextTick(FTimerDelegate::CreateLambda([this]()
 	{
-		/* managerのBeginplayがちゃんと完了後に処理↓ */
-
-		SyncLoadDebugMenuStringTables(CurrentDebugMenuLanguage);
-
-		CreateDebugCameraInputClass();
-
-		if( !UKismetSystemLibrary::IsDedicatedServer(this) )
-		{
-			CreateDebugMenuRootWidget();
-
-			TArray<UUserWidget*> FoundWidgets;
-			UWidgetBlueprintLibrary::GetAllWidgetsOfClass(this, FoundWidgets, UGameDebugMenuWidget::StaticClass(), false);
-						
-			UGameViewportSubsystem* GameViewportSubsystem = UGameViewportSubsystem::Get();
-			GameViewportSubsystem->OnWidgetAdded.AddUObject(this, &AGameDebugMenuManager::OnWidgetAdded);
-			GameViewportSubsystem->OnWidgetRemoved.AddUObject(this, &AGameDebugMenuManager::OnWidgetRemoved);
-
-			for(const auto W : FoundWidgets)
-			{
-				if(UGameDebugMenuWidget* DebugMenuWidget = Cast<UGameDebugMenuWidget>(W))
-				{
-					ViewportDebugMenuWidgets.AddUnique(DebugMenuWidget);
-				}
-			}
-			
-			if( APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0) )
-			{
-				const FGDMStartupConsoleCommandList* CommandList = UGameDebugMenuSettings::Get()->StartupConsoleCommands.Find(UGameDebugMenuSettings::Get()->StartupConsoleCommandKeyName);
-				if( CommandList != nullptr )
-				{
-					for( const auto& Command : CommandList->Commands )
-					{
-						ExecuteConsoleCommand(Command, PC);
-					}
-				}
-				else
-				{
-					UGameDebugMenuFunctions::PrintLogScreen(this, TEXT("AGameDebugMenuManager: Beginplay error StartupConsoleCommands"), 4.0f);
-				}
-			}
-			else
-			{
-				UGameDebugMenuFunctions::PrintLogScreen(this, TEXT("AGameDebugMenuManager: Beginplay Notfound PlayerController"), 4.0f);
-			}
-		}
+		OnInitializeManager();
 	}));
 }
 
@@ -225,9 +183,63 @@ UGDMScreenshotRequesterComponent* AGameDebugMenuManager::GetScreenshotRequesterC
 	return ScreenshotRequesterComponent;
 }
 
+UGDMPropertyJsonSystemComponent* AGameDebugMenuManager::GetPropertyJsonSystemComponent() const
+{
+	return PropertyJsonSystemComponent;
+}
+
+UGDMSaveSystemComponent* AGameDebugMenuManager::GetSaveSystemComponent() const
+{
+	return SaveSystemComponent;
+}
+
 UGDMListenerComponent* AGameDebugMenuManager::GetListenerComponent() const
 {
 	return ListenerComponent;
+}
+
+void AGameDebugMenuManager::OnInitializeManager()
+{
+	bCurrentDebugMenuDirectStringKey = GetPropertyJsonSystemComponent()->GetSingleStringFromJson(TEXT("DebugMenuDirectStringKey"), TEXT("False")).ToBool();
+	
+	SyncLoadDebugMenuStringTables(GetCurrentDebugMenuLanguage());
+	
+	if( !UKismetSystemLibrary::IsDedicatedServer(this) )
+	{
+		CreateDebugCameraInputClass();
+		
+		CreateDebugMenuRootWidget();
+
+		TArray<UUserWidget*> FoundWidgets;
+		UWidgetBlueprintLibrary::GetAllWidgetsOfClass(this, FoundWidgets, UGameDebugMenuWidget::StaticClass(), false);
+						
+		UGameViewportSubsystem* GameViewportSubsystem = UGameViewportSubsystem::Get();
+		GameViewportSubsystem->OnWidgetAdded.AddUObject(this, &AGameDebugMenuManager::OnWidgetAdded);
+		GameViewportSubsystem->OnWidgetRemoved.AddUObject(this, &AGameDebugMenuManager::OnWidgetRemoved);
+
+		for(const auto W : FoundWidgets)
+		{
+			if(UGameDebugMenuWidget* DebugMenuWidget = Cast<UGameDebugMenuWidget>(W))
+			{
+				ViewportDebugMenuWidgets.AddUnique(DebugMenuWidget);
+			}
+		}
+	}
+
+	if( APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0) )
+	{
+		TArray<FString> CommandHistory = GetPropertyJsonSystemComponent()->GetStringArrayFromJson(TEXT("CommandHistory"));
+		for(const auto& Command : CommandHistory )
+		{
+			PC->ConsoleCommand(Command);
+		}
+	}
+	else
+	{
+		UGameDebugMenuFunctions::PrintLogScreen(this, TEXT("AGameDebugMenuManager: Beginplay Notfound PlayerController"), 4.0f);
+	}
+	
+	OutputLog = MakeShareable(new FGDMOutputDevice);
 }
 
 void AGameDebugMenuManager::CreateDebugMenuRootWidget()
@@ -281,7 +293,7 @@ void AGameDebugMenuManager::CreateDebugCameraInputClass()
 	DebugCameraInput                         = GetWorld()->SpawnActor<AGDMDebugCameraInput>(DebugCameraInputClass, SpawnInfo);
 
 	bool bExistDCC        = false;
-	APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+	const APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
 	if(IsValid(PC) && IsValid(PC->CheatManager))
 	{
 		if(ADebugCameraController* DCC = PC->CheatManager->DebugCameraControllerRef)
@@ -431,7 +443,9 @@ void AGameDebugMenuManager::ExecuteConsoleCommand(const FString& Command, APlaye
 	}
 
 	LogCommand = PC->ConsoleCommand(Command);
+	
 	UGameDebugMenuFunctions::PrintLogScreen(this, FString::Printf(TEXT("ExecuteConsoleCommand PC: %s: Log %s"), *Command, *LogCommand), 4.0f);
+	
 	CallExecuteConsoleCommandDispatcher(Command);
 }
 
@@ -551,6 +565,7 @@ void AGameDebugMenuManager::HideDebugMenu()
 	EnabledNavigationConfigs();
 	RestoreShowMouseCursorFlag(PC);
 	RestoreGamePause();
+	GetSaveSystemComponent()->SaveDebugMenuFile();
 
 	DebugMenuInputSystemComponent->CallReleasedButtons();
 
@@ -611,18 +626,28 @@ TSubclassOf<UGameDebugMenuWidget> AGameDebugMenuManager::GetDebugMenuWidgetClass
 
 bool AGameDebugMenuManager::GetDebugMenuWidgetInstances(TArray<UGameDebugMenuWidget*>& OutInstances)
 {
-	DebugMenuInstances.GenerateValueArray(OutInstances);
-	return (OutInstances.Num() > 0);
-}
+	TArray<TObjectPtr<UGameDebugMenuWidget>> Array; 
+	DebugMenuInstances.GenerateValueArray(Array);
 
-void AGameDebugMenuManager::GetOutputLogStrings(TArray<FString>& OutLogs)
-{
-	OutLogs = OutputLog->Logs;
+	OutInstances.Reset();
+	OutInstances.Reserve(Array.Num());
+
+	for (auto A : Array)
+	{
+		OutInstances.Add(A);
+	}
+	
+	return (OutInstances.Num() > 0);
 }
 
 void AGameDebugMenuManager::GetOutputLogString(FString& OutLog, const FString& Separator)
 {
-	OutLog = UKismetStringLibrary::JoinStringArray(OutputLog->Logs, Separator);
+	OutLog = UKismetStringLibrary::JoinStringArray(OutputLog->GetLogs(), Separator);
+}
+
+void AGameDebugMenuManager::GetOutputCommandHistoryString(TArray<FString>& OutCommandHistory)
+{
+	OutCommandHistory = OutputLog->GetCommandHistory();
 }
 
 EGDMPropertyType AGameDebugMenuManager::GetPropertyType(FProperty* TargetProperty)
@@ -680,7 +705,7 @@ EGDMPropertyType AGameDebugMenuManager::GetPropertyType(FProperty* TargetPropert
 	return EGDMPropertyType::GDM_Null;
 }
 
-bool AGameDebugMenuManager::RegisterObjectProperty(UObject* TargetObject,FName PropertyName, const FGDMGameplayCategoryKey& CategoryKey,const FText& DisplayPropertyName,const FText& Description, const FGDMPropertyUIConfigInfo& PropertyUIConfigInfo, const int32& DisplayPriority)
+bool AGameDebugMenuManager::RegisterObjectProperty(UObject* TargetObject, const FName PropertyName, const FGDMGameplayCategoryKey& CategoryKey, const FString& PropertySaveKey, const FText& DisplayPropertyName, const FText& Description, const FGDMPropertyUIConfigInfo& PropertyUIConfigInfo, const int32& DisplayPriority)
 {
 	if(!IsValid(TargetObject))
 	{
@@ -710,6 +735,7 @@ bool AGameDebugMenuManager::RegisterObjectProperty(UObject* TargetObject,FName P
 	PropertyInfo->ConfigInfo                        = PropertyUIConfigInfo;
 	PropertyInfo->Description						= Description;
 	PropertyInfo->DisplayPriority					= DisplayPriority;
+	PropertyInfo->PropertySaveKey					= PropertySaveKey;
 
 	/* Enumならセット */
 	const FEnumProperty* EnumProp = CastField<FEnumProperty>(Property);/* C++定義だとこっち */
@@ -736,11 +762,17 @@ bool AGameDebugMenuManager::RegisterObjectProperty(UObject* TargetObject,FName P
 	{
 		return A->DisplayPriority >= B->DisplayPriority;
 	});
-
+	
+	if (!PropertySaveKey.IsEmpty())
+	{
+		/* 保存キーがある場合は登録時に既にあればそれを設定する */
+		GetPropertyJsonSystemComponent()->ApplyJsonToObject(PropertySaveKey, TargetObject, PropertyName.ToString());
+	}
+	
 	return true;
 }
 
-bool AGameDebugMenuManager::RegisterObjectFunction(UObject* TargetObject,FName FunctionName, const FGDMGameplayCategoryKey& CategoryKey,const FText& DisplayFunctionName,const FText& Description,const int32& DisplayPriority)
+bool AGameDebugMenuManager::RegisterObjectFunction(UObject* TargetObject, const FName FunctionName, const FGDMGameplayCategoryKey& CategoryKey,const FText& DisplayFunctionName,const FText& Description,const int32& DisplayPriority)
 {
 	if(!IsValid(TargetObject))
 	{
@@ -780,7 +812,7 @@ bool AGameDebugMenuManager::RegisterObjectFunction(UObject* TargetObject,FName F
 	return true;
 }
 
-UObject* AGameDebugMenuManager::GetObjectProperty(const int32 Index, FGDMGameplayCategoryKey& OutCategoryKey, FText& OutDisplayPropertyName, FText& OutDescription, FName& OutPropertyName, EGDMPropertyType& OutPropertyType, FString& OutEnumPathName, FGDMPropertyUIConfigInfo& OutPropertyUIConfigInfo)
+UObject* AGameDebugMenuManager::GetObjectProperty(const int32 Index, FGDMGameplayCategoryKey& OutCategoryKey, FString& OutPropertySaveKey, FText& OutDisplayPropertyName, FText& OutDescription, FName& OutPropertyName, EGDMPropertyType& OutPropertyType, FString& OutEnumPathName, FGDMPropertyUIConfigInfo& OutPropertyUIConfigInfo)
 {
 	OutPropertyType = EGDMPropertyType::GDM_Null;
 
@@ -805,6 +837,7 @@ UObject* AGameDebugMenuManager::GetObjectProperty(const int32 Index, FGDMGamepla
 	}
 
 	OutCategoryKey			= ObjProp->CategoryKey;
+	OutPropertySaveKey		= ObjProp->PropertySaveKey;
 	OutDisplayPropertyName	= ObjProp->Name;
 	OutDescription			= ObjProp->Description;
 	OutPropertyName			= ObjProp->PropertyName;
@@ -938,6 +971,8 @@ void AGameDebugMenuManager::ChangeDebugMenuLanguage(FName LanguageKey, bool bFor
 {
 	UE_LOG(LogGDM, Verbose, TEXT("Call ChangeDebugMenuLanguage LanguageKey:%s bForcedUpdate:%d"), *LanguageKey.ToString(), bForcedUpdate);
 
+	const FName CurrentDebugMenuLanguage = GetCurrentDebugMenuLanguage();
+	
 	if( !bForcedUpdate )
 	{
 		if( LanguageKey == NAME_None )
@@ -951,10 +986,15 @@ void AGameDebugMenuManager::ChangeDebugMenuLanguage(FName LanguageKey, bool bFor
 		}
 	}
 
-	FName Old = CurrentDebugMenuLanguage;
-	CurrentDebugMenuLanguage = LanguageKey;
+	const FName Old = CurrentDebugMenuLanguage;
 
-	SyncLoadDebugMenuStringTables(CurrentDebugMenuLanguage);
+	/* 言語を切り替えをし保存。その後テーブルを読み直す */
+	{
+		GetPropertyJsonSystemComponent()->SetSingleStringToJson(TEXT("DebugMenuDirectStringKey"), bCurrentDebugMenuDirectStringKey ? TEXT("True") : TEXT("False"));
+		GetPropertyJsonSystemComponent()->SetSingleStringToJson(TEXT("DebugMenuLanguage"), LanguageKey.ToString());
+		GetSaveSystemComponent()->SaveDebugMenuFile();
+		SyncLoadDebugMenuStringTables(LanguageKey);
+	}
 
 	TArray<UWidget*> ChildWidgets;
 	for(const auto ViewportWidget : ViewportDebugMenuWidgets )
@@ -1025,6 +1065,11 @@ TArray<FName> AGameDebugMenuManager::GetDebugMenuLanguageKeys()
 TArray<UGameDebugMenuWidget*> AGameDebugMenuManager::GetViewportDebugMenuWidgets()
 {
 	return ViewportDebugMenuWidgets;
+}
+
+FName AGameDebugMenuManager::GetCurrentDebugMenuLanguage() const
+{
+	return *GetPropertyJsonSystemComponent()->GetSingleStringFromJson(TEXT("DebugMenuLanguage"), UGameDebugMenuSettings::Get()->DefaultGameDebugMenuLanguage.ToString());
 }
 
 void AGameDebugMenuManager::CallExecuteConsoleCommandDispatcher(const FString& Command)
@@ -1109,91 +1154,91 @@ void AGameDebugMenuManager::CallExecuteProcessEventDispatcher(const FName& Funct
 	}
 }
 
-void AGameDebugMenuManager::CallChangePropertyBoolDispatcher(const FName& PropertyName, UObject* PropertyOwnerObject, bool New, bool Old)
+void AGameDebugMenuManager::CallChangePropertyBoolDispatcher(const FName& PropertyName, UObject* PropertyOwnerObject, bool New, bool Old, const FString& PropertySaveKey)
 {
 	TArray<UGDMListenerComponent*> ListenerComponents;
 	UGDMListenerComponent::GetAllListenerComponents(GetWorld(), ListenerComponents);
 
 	for(const auto& Component : ListenerComponents)
 	{
-		Component->OnChangePropertyBoolDispatcher.Broadcast(PropertyName, PropertyOwnerObject, New, Old);
+		Component->OnChangePropertyBoolDispatcher.Broadcast(PropertyName, PropertyOwnerObject, New, Old, PropertySaveKey);
 	}
 }
 
-void AGameDebugMenuManager::CallChangePropertyIntDispatcher(const FName& PropertyName, UObject* PropertyOwnerObject, int32 New, int32 Old)
+void AGameDebugMenuManager::CallChangePropertyIntDispatcher(const FName& PropertyName, UObject* PropertyOwnerObject, int32 New, int32 Old, const FString& PropertySaveKey)
 {
 	TArray<UGDMListenerComponent*> ListenerComponents;
 	UGDMListenerComponent::GetAllListenerComponents(GetWorld(), ListenerComponents);
 
 	for(const auto& Component : ListenerComponents)
 	{
-		Component->OnChangePropertyIntDispatcher.Broadcast(PropertyName, PropertyOwnerObject, New, Old);
+		Component->OnChangePropertyIntDispatcher.Broadcast(PropertyName, PropertyOwnerObject, New, Old, PropertySaveKey);
 	}
 }
 
-void AGameDebugMenuManager::CallChangePropertyFloatDispatcher(const FName& PropertyName, UObject* PropertyOwnerObject, float New, float Old)
+void AGameDebugMenuManager::CallChangePropertyFloatDispatcher(const FName& PropertyName, UObject* PropertyOwnerObject, float New, float Old, const FString& PropertySaveKey)
 {
 	TArray<UGDMListenerComponent*> ListenerComponents;
 	UGDMListenerComponent::GetAllListenerComponents(GetWorld(), ListenerComponents);
 
 	for(const auto& Component : ListenerComponents)
 	{
-		Component->OnChangePropertyFloatDispatcher.Broadcast(PropertyName, PropertyOwnerObject, New, Old);
+		Component->OnChangePropertyFloatDispatcher.Broadcast(PropertyName, PropertyOwnerObject, New, Old, PropertySaveKey);
 	}
 }
 
-void AGameDebugMenuManager::CallChangePropertyByteDispatcher(const FName& PropertyName, UObject* PropertyOwnerObject, uint8 New, uint8 Old)
+void AGameDebugMenuManager::CallChangePropertyByteDispatcher(const FName& PropertyName, UObject* PropertyOwnerObject, uint8 New, uint8 Old, const FString& PropertySaveKey)
 {
 	TArray<UGDMListenerComponent*> ListenerComponents;
 	UGDMListenerComponent::GetAllListenerComponents(GetWorld(), ListenerComponents);
 
 	for(const auto& Component : ListenerComponents)
 	{
-		Component->OnChangePropertyByteDispatcher.Broadcast(PropertyName, PropertyOwnerObject, New, Old);
+		Component->OnChangePropertyByteDispatcher.Broadcast(PropertyName, PropertyOwnerObject, New, Old, PropertySaveKey);
 	}
 }
 
-void AGameDebugMenuManager::CallChangePropertyStringDispatcher(const FName& PropertyName, UObject* PropertyOwnerObject, FString New, FString Old)
+void AGameDebugMenuManager::CallChangePropertyStringDispatcher(const FName& PropertyName, UObject* PropertyOwnerObject, FString New, FString Old, const FString& PropertySaveKey)
 {
 	TArray<UGDMListenerComponent*> ListenerComponents;
 	UGDMListenerComponent::GetAllListenerComponents(GetWorld(), ListenerComponents);
 
 	for(const auto& Component : ListenerComponents)
 	{
-		Component->OnChangePropertyStringDispatcher.Broadcast(PropertyName, PropertyOwnerObject, New, Old);
+		Component->OnChangePropertyStringDispatcher.Broadcast(PropertyName, PropertyOwnerObject, New, Old, PropertySaveKey);
 	}
 }
 
-void AGameDebugMenuManager::CallChangePropertyVectorDispatcher(const FName& PropertyName, UObject* PropertyOwnerObject, FVector New, FVector Old)
+void AGameDebugMenuManager::CallChangePropertyVectorDispatcher(const FName& PropertyName, UObject* PropertyOwnerObject, FVector New, FVector Old, const FString& PropertySaveKey)
 {
 	TArray<UGDMListenerComponent*> ListenerComponents;
 	UGDMListenerComponent::GetAllListenerComponents(GetWorld(), ListenerComponents);
 
 	for(const auto& Component : ListenerComponents )
 	{
-		Component->OnChangePropertyVectorDispatcher.Broadcast(PropertyName, PropertyOwnerObject, New, Old);
+		Component->OnChangePropertyVectorDispatcher.Broadcast(PropertyName, PropertyOwnerObject, New, Old, PropertySaveKey);
 	}
 }
 
-void AGameDebugMenuManager::CallChangePropertyVector2DDispatcher(const FName& PropertyName, UObject* PropertyOwnerObject, FVector2D New, FVector2D Old)
+void AGameDebugMenuManager::CallChangePropertyVector2DDispatcher(const FName& PropertyName, UObject* PropertyOwnerObject, FVector2D New, FVector2D Old, const FString& PropertySaveKey)
 {
 	TArray<UGDMListenerComponent*> ListenerComponents;
 	UGDMListenerComponent::GetAllListenerComponents(GetWorld(), ListenerComponents);
 
 	for(const auto& Component : ListenerComponents )
 	{
-		Component->OnChangePropertyVector2DDispatcher.Broadcast(PropertyName, PropertyOwnerObject, New, Old);
+		Component->OnChangePropertyVector2DDispatcher.Broadcast(PropertyName, PropertyOwnerObject, New, Old, PropertySaveKey);
 	}
 }
 
-void AGameDebugMenuManager::CallChangePropertyRotatorDispatcher(const FName& PropertyName, UObject* PropertyOwnerObject, FRotator New, FRotator Old)
+void AGameDebugMenuManager::CallChangePropertyRotatorDispatcher(const FName& PropertyName, UObject* PropertyOwnerObject, FRotator New, FRotator Old, const FString& PropertySaveKey)
 {
 	TArray<UGDMListenerComponent*> ListenerComponents;
 	UGDMListenerComponent::GetAllListenerComponents(GetWorld(), ListenerComponents);
 
 	for(const auto& Component : ListenerComponents )
 	{
-		Component->OnChangePropertyRotatorDispatcher.Broadcast(PropertyName, PropertyOwnerObject, New, Old);
+		Component->OnChangePropertyRotatorDispatcher.Broadcast(PropertyName, PropertyOwnerObject, New, Old, PropertySaveKey);
 	}
 }
 
@@ -1228,7 +1273,6 @@ void AGameDebugMenuManager::CallStartScreenshotRequestDispatcher()
 	{
 		Component->OnStartScreenshotRequestDispatcher.Broadcast();
 	}
-
 }
 
 void AGameDebugMenuManager::CallScreenshotRequestProcessedDispatcher()

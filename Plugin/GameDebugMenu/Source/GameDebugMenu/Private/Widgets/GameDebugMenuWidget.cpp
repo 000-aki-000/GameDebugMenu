@@ -10,7 +10,7 @@
 #include <Kismet/GameplayStatics.h>
 #include "TimerManager.h"
 #include "GameDebugMenuManager.h"
-#include <GDMPlayerControllerProxyComponent.h>
+#include "Component/GDMPlayerControllerProxyComponent.h"
 
 void UGameDebugMenuWidget::SendSelfEvent(FName EventName)
 {

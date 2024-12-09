@@ -6,8 +6,8 @@
 */
 
 #include "AssetTypeActions/AssetTypeActions_GDMPlayerControllerProxyComponent.h"
-#include "GDMPlayerControllerProxyComponent.h"
 #include "GameDebugMenuEditor.h"
+#include "Component/GDMPlayerControllerProxyComponent.h"
 
 FText FAssetTypeActions_GDMPlayerControllerProxyComponent::GetName() const
 {
