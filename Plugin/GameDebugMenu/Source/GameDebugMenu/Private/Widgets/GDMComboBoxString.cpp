@@ -8,7 +8,7 @@
 #include "Widgets/GDMComboBoxString.h"
 #include <GameDebugMenuSettings.h>
 
-#define LOCTEXT_NAMESPACE "UMG"
+#define LOCTEXT_NAMESPACE "GameDebugMenu"
 
 UGDMComboBoxString::UGDMComboBoxString(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)

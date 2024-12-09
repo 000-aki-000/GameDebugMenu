@@ -11,7 +11,7 @@
 #include "Widgets/GameDebugMenuWidget.h"
 #include "Kismet2/KismetEditorUtilities.h"
 
-#define LOCTEXT_NAMESPACE "UGameDebugMenu"
+#define LOCTEXT_NAMESPACE "GameDebugMenu"
 
 UGameDebugMenuWidgetFactory::UGameDebugMenuWidgetFactory(const class FObjectInitializer& Object)
 	: Super(Object)

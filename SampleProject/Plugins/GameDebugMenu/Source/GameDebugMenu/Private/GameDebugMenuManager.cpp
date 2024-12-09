@@ -200,7 +200,22 @@ UGDMListenerComponent* AGameDebugMenuManager::GetListenerComponent() const
 
 void AGameDebugMenuManager::OnInitializeManager()
 {
-	bCurrentDebugMenuDirectStringKey = GetPropertyJsonSystemComponent()->GetSingleStringFromJson(TEXT("DebugMenuDirectStringKey"), TEXT("False")).ToBool();
+	FString StringKey = TEXT("DebugMenuDirectStringKey");
+	if (!GetPropertyJsonSystemComponent()->HasStringInJson(StringKey))
+	{
+		GetPropertyJsonSystemComponent()->SetSingleStringToJson(StringKey, TEXT("False"));
+		bCurrentDebugMenuDirectStringKey = false;
+	}
+	else
+	{
+		bCurrentDebugMenuDirectStringKey = GetPropertyJsonSystemComponent()->GetSingleStringFromJson(StringKey, TEXT("False")).ToBool();
+	}
+
+	StringKey = TEXT("DebugMenuLanguage");
+	if (!GetPropertyJsonSystemComponent()->HasStringInJson(StringKey))
+	{
+		GetPropertyJsonSystemComponent()->SetSingleStringToJson(StringKey, UGameDebugMenuSettings::Get()->DefaultGameDebugMenuLanguage.ToString());
+	}
 	
 	SyncLoadDebugMenuStringTables(GetCurrentDebugMenuLanguage());
 	
@@ -766,7 +781,11 @@ bool AGameDebugMenuManager::RegisterObjectProperty(UObject* TargetObject, const 
 	if (!PropertySaveKey.IsEmpty())
 	{
 		/* 保存キーがある場合は登録時に既にあればそれを設定する */
-		GetPropertyJsonSystemComponent()->ApplyJsonToObject(PropertySaveKey, TargetObject, PropertyName.ToString());
+		if (!GetPropertyJsonSystemComponent()->ApplyJsonToObject(PropertySaveKey, TargetObject, PropertyName.ToString()))
+		{
+			/* 失敗したためJsonに書き込み */
+			GetPropertyJsonSystemComponent()->AddPropertyToJson(PropertySaveKey, TargetObject, PropertyName.ToString());
+		}
 	}
 	
 	return true;

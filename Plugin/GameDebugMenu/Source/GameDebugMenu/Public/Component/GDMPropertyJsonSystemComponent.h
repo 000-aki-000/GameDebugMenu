@@ -26,6 +26,7 @@ public:
     UGDMPropertyJsonSystemComponent(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
     virtual void BeginPlay() override;
 
+public:
     /**
      * 対象のオブジェクトのプロパティをJsonに追加する
      * @param ObjectKey 
@@ -33,41 +34,25 @@ public:
      * @param PropertyName 
      */
     UFUNCTION(BlueprintCallable)
-    void AddPropertyToJsonSingle(const FString& ObjectKey, UObject* TargetObject, const FString& PropertyName) const;
-
-    /**
-     * 対象のオブジェクトのプロパティをJsonに追加する（複数指定版）
-     * @param ObjectKey 
-     * @param TargetObject 
-     * @param PropertyNames 
-     */
-    UFUNCTION(BlueprintCallable)
-    void AddPropertyToJson(const FString& ObjectKey, UObject* TargetObject, const TArray<FString>& PropertyNames);
-
+    void AddPropertyToJson(const FString& ObjectKey, UObject* TargetObject, const FString& PropertyName) const;
+    
     /**
      * Jsonから指定プロパティを削除する
      * @param ObjectKey 
      * @param PropertyName 
      */
     UFUNCTION(BlueprintCallable)
-    void RemovePropertyFromJsonSingle(const FString& ObjectKey, const FString& PropertyName) const;
-
-    /**
-     * Jsonから指定プロパティを削除する（複数指定版）
-     * @param ObjectKey 
-     * @param PropertyNames 
-     */
-    UFUNCTION(BlueprintCallable)
-    void RemovePropertyToJson(const FString& ObjectKey, const TArray<FString>& PropertyNames);
+    void RemovePropertyFromJson(const FString& ObjectKey, const FString& PropertyName) const;
 
     /**
      * Json内の指定プロパティ情報を対象のオブジェクトに反映する
      * @param ObjectKey 
      * @param TargetObject 
-     * @param PropertyName 
+     * @param PropertyName
+     * @return true: 反映に成功 false: データがなかったか取得に失敗した
      */
     UFUNCTION(BlueprintCallable)
-    void ApplyJsonToObject(const FString& ObjectKey, UObject* TargetObject, const FString& PropertyName);
+    bool ApplyJsonToObject(const FString& ObjectKey, UObject* TargetObject, const FString& PropertyName);
 
     /**
      * 配列の文字列をJsonにセットする
@@ -95,6 +80,12 @@ public:
      */
     UFUNCTION(BlueprintCallable)
     FString GetSingleStringFromJson(const FString& Key, const FString& DefaultValue = TEXT("")) const;
+
+    /**
+     * Json内に指定されたキーで文字列が存在するかを確認する
+     */
+    UFUNCTION(BlueprintCallable)
+    bool HasStringInJson(const FString& Key) const;
 
     /**
      * Jsonを文字列で取得

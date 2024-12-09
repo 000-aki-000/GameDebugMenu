@@ -29,7 +29,7 @@ void UGDMSaveSystemComponent::SaveDebugMenuFile() const
 	}
 	
 	UGDMPropertyJsonSystemComponent* JsonSystemComponent = GetPropertyJsonSystemComponent();
-	if (!JsonSystemComponent)
+	if (!IsValid(JsonSystemComponent))
 	{
 		UE_LOG(LogGDM, Error, TEXT("SaveDebugMenuFile: PropertyJsonSystemComponent not found on the same actor."));
 		return;
@@ -73,7 +73,7 @@ void UGDMSaveSystemComponent::LoadDebugMenuFile() const
 	}
 	
 	UGDMPropertyJsonSystemComponent* JsonSystemComponent = GetPropertyJsonSystemComponent();
-	if (!JsonSystemComponent)
+	if (!IsValid(JsonSystemComponent))
 	{
 		UE_LOG(LogGDM, Error, TEXT("LoadDebugMenuFile: JsonSystemComponent not found on the same actor."));
 		return;

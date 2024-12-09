@@ -11,7 +11,7 @@
 #include <GameDebugMenuManager.h>
 #include "Components/ButtonSlot.h"
 
-#define LOCTEXT_NAMESPACE "UMG"
+#define LOCTEXT_NAMESPACE "GameDebugMenu"
 
 
 

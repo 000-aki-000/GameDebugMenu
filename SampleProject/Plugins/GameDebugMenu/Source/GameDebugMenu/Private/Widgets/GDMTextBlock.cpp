@@ -13,7 +13,7 @@
 #include "Widgets/GameDebugMenuRootWidget.h"
 #include "Widgets/Text/STextBlock.h"
 
-#define LOCTEXT_NAMESPACE "UMG"
+#define LOCTEXT_NAMESPACE "GameDebugMenu"
 
 UGDMTextBlock::UGDMTextBlock(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
