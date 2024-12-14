@@ -780,10 +780,10 @@ bool AGameDebugMenuManager::RegisterObjectProperty(UObject* TargetObject, const 
 	
 	if (!PropertySaveKey.IsEmpty())
 	{
-		/* 保存キーがある場合は登録時に既にあればそれを設定する */
+		/* 保存キーがあるため、既に一致する情報があればそれをプロパティにセットする */
 		if (!GetPropertyJsonSystemComponent()->ApplyJsonToObject(PropertySaveKey, TargetObject, PropertyName.ToString()))
 		{
-			/* 失敗したためJsonに書き込み */
+			/* 失敗、データがないので現状の値をJsonに書き込み */
 			GetPropertyJsonSystemComponent()->AddPropertyToJson(PropertySaveKey, TargetObject, PropertyName.ToString());
 		}
 	}
@@ -1302,5 +1302,27 @@ void AGameDebugMenuManager::CallScreenshotRequestProcessedDispatcher()
 	for(const auto& Component : ListenerComponents )
 	{
 		Component->OnScreenshotRequestProcessedDispatcher.Broadcast();
+	}
+}
+
+void AGameDebugMenuManager::CallLoadedDebugMenuDispatcher()
+{
+	TArray<UGDMListenerComponent*> ListenerComponents;
+	UGDMListenerComponent::GetAllListenerComponents(GetWorld(), ListenerComponents);
+
+	for(const auto& Component : ListenerComponents )
+	{
+		Component->OnLoadedDebugMenuDispatcher.Broadcast();
+	}
+}
+
+void AGameDebugMenuManager::CallSavedDebugMenuDispatcher()
+{
+	TArray<UGDMListenerComponent*> ListenerComponents;
+	UGDMListenerComponent::GetAllListenerComponents(GetWorld(), ListenerComponents);
+
+	for(const auto& Component : ListenerComponents )
+	{
+		Component->OnSavedDebugMenuDispatcher.Broadcast();
 	}
 }

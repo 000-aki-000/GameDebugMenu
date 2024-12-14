@@ -119,7 +119,11 @@ public:
 	/** デバックメニューの使用言語 */
 	UPROPERTY(EditAnywhere, config, Category = "Localization")
 	FName DefaultGameDebugMenuLanguage;
-	
+
+	/** true: SaveGameを使用する。 false: Jsonファイルを使用する */
+	UPROPERTY(config, EditAnywhere, BlueprintReadOnly, Category="Save")
+	bool bUseSaveGame;
+
 	/** JSON保存先のファイルパス（相対パス） */
 	UPROPERTY(config, EditAnywhere, BlueprintReadOnly, Category="Save")
 	FString SaveFilePath;
@@ -153,12 +157,12 @@ public:
 		return CastChecked<UGameDebugMenuSettings>(UGameDebugMenuSettings::StaticClass()->GetDefaultObject());
 	}
 	
-	UObject* GetGDMFont();
+	UObject* GetGDMFont() const;
 	TArray<FText> GetIssueCategoryNameList();
 	TArray<FText> GetPriorityNameList();
 	TArray<FText> GetAssigneeNameList();
-	int32 GetDefaultIssueCategoryIndex();
-	int32 GetDefaultPriorityIndex();
+	int32 GetDefaultIssueCategoryIndex() const;
+	int32 GetDefaultPriorityIndex() const;
 	FString GetDebugMenuString(const FName& LanguageKey, const FString& StringKey);
 	FString GetGameplayCategoryTitle(const int32& ArrayIndex);
 	int32 GetGameplayCategoryIndex(const int32& ArrayIndex);

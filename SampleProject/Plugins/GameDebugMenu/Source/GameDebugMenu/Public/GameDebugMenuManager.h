@@ -332,4 +332,7 @@ public:
 	virtual void CallChangeDebugMenuLanguageDispatcher(const FName& NewLanguageKey, const FName& OldLanguageKey);
 	virtual void CallStartScreenshotRequestDispatcher();
 	virtual void CallScreenshotRequestProcessedDispatcher();
+	virtual void CallLoadedDebugMenuDispatcher();
+	virtual void CallSavedDebugMenuDispatcher();
+	
 };

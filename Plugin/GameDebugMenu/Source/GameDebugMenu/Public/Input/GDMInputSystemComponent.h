@@ -111,9 +111,9 @@ protected:
 	virtual UObject* GetCurrentInputObject(bool bCheckEnableInput = true);
 	virtual void UpdateInputObject();
 
-	/************************************************************************/
+	/****************************************************************/
 	/* 押された(離した)ときの入力										*/
-	/************************************************************************/
+	/****************************************************************/
 protected:
 	virtual void CallInputPressedInterfaceEvent(FName EventName);
 	virtual void CallInputReleasedInterfaceEvent(FName EventName);
@@ -121,18 +121,18 @@ protected:
 public:
 	virtual void CallReleasedButtons();
 
-	/************************************************************************/
+	/****************************************************************/
 	/* Axis系イベント													*/
-	/************************************************************************/
+	/****************************************************************/
 protected:
 	virtual void OnAxisMoveForward(float Value);
 	virtual void OnAxisMoveRight(float Value);
 	virtual void OnAxisLookRight(float Value);
 	virtual void OnAxisLookUp(float Value);
 
-	/************************************************************************/
+	/****************************************************************/
 	/* リピートイベント												*/
-	/************************************************************************/
+	/****************************************************************/
 protected:
 	virtual void OnInputRepeat(const FName& EventName);
 	virtual void SetupRepeatButtons();

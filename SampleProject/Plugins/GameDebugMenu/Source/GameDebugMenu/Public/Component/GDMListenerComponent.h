@@ -106,7 +106,14 @@ public:
 	/** DebugMenuでスクショ処理の終了時に呼ばれるイベント */
 	UPROPERTY(BlueprintAssignable, Category = "GDM|Dispatcher")
 	FGDMGameDebugMenuListenerDelegate OnScreenshotRequestProcessedDispatcher;
-
+	
+	/** DebugMenuでロードが完了した時に呼ばれるイベント */
+	UPROPERTY(BlueprintAssignable, Category = "GDM|Dispatcher")
+	FGDMGameDebugMenuListenerDelegate OnLoadedDebugMenuDispatcher;
+	
+	/** DebugMenuでセーブが完了した時に呼ばれるイベント */
+	UPROPERTY(BlueprintAssignable, Category = "GDM|Dispatcher")
+	FGDMGameDebugMenuListenerDelegate OnSavedDebugMenuDispatcher;
 public:	
 	UGDMListenerComponent(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 	virtual void InitializeComponent() override;

@@ -23,7 +23,7 @@ FGDMOutputDevice::FGDMOutputDevice()
 
 FGDMOutputDevice::~FGDMOutputDevice()
 {
-	if(GLog != NULL)
+	if(GLog != nullptr)
 	{
 		GLog->RemoveOutputDevice(this);
 	}

@@ -14,6 +14,7 @@ const FString AGDMDebugReportRequester::LineBreak = TEXT("\r\n");
 
 AGDMDebugReportRequester::AGDMDebugReportRequester()
 	: Super()
+	, bSendLogs(false), bSendScreenshotCapture(false)
 	, Subject()
 	, Description()
 	, IssueCategoryIndex(0)

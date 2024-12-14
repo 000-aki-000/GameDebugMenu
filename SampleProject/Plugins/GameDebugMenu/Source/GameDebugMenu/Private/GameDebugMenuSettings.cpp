@@ -81,8 +81,9 @@ UGameDebugMenuSettings::UGameDebugMenuSettings()
 
 	bDisableScreenCaptureProcessingWhenOpeningDebugMenu = false;
 
+	bUseSaveGame = false;
 	SaveFilePath = TEXT("Saved/DebugMenu");
-	SaveFileName = TEXT("DebugMenuSaveData.json");
+	SaveFileName = TEXT("DebugMenuSaveData");
 	bDisableSaveFile = false;
 	MaxCommandHistoryNum = 100;
 	
@@ -134,7 +135,7 @@ void UGameDebugMenuSettings::PostEditChangeProperty(struct FPropertyChangedEvent
 }
 #endif
 
-UObject* UGameDebugMenuSettings::GetGDMFont()
+UObject* UGameDebugMenuSettings::GetGDMFont() const
 {
 	UObject* Obj = FontName.ResolveObject();
 	return ( (Obj == nullptr) ? FontName.TryLoad() : Obj );
@@ -210,7 +211,7 @@ TArray<FText> UGameDebugMenuSettings::GetAssigneeNameList()
 	return Empty;
 }
 
-int32 UGameDebugMenuSettings::GetDefaultIssueCategoryIndex()
+int32 UGameDebugMenuSettings::GetDefaultIssueCategoryIndex() const
 {
 	switch (ProjectManagementToolType)
 	{
@@ -231,7 +232,7 @@ int32 UGameDebugMenuSettings::GetDefaultIssueCategoryIndex()
 	return 0;
 }
 
-int32 UGameDebugMenuSettings::GetDefaultPriorityIndex()
+int32 UGameDebugMenuSettings::GetDefaultPriorityIndex() const
 {
 	switch (ProjectManagementToolType)
 	{
@@ -306,7 +307,7 @@ TSubclassOf<AGDMDebugReportRequester>* UGameDebugMenuSettings::GetDebugReportReq
 
 FString UGameDebugMenuSettings::GetFullSavePath() const
 {
-	return FPaths::ProjectDir().Append(SaveFilePath).Append(TEXT("/")).Append(SaveFileName);
+	return FPaths::ProjectDir().Append(SaveFilePath).Append(TEXT("/")).Append(SaveFileName).Append(TEXT(".json"));
 }
 
 void UGameDebugMenuSettings::SetupCategoryResets()
