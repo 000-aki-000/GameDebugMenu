@@ -841,7 +841,7 @@ void UGameDebugMenuFunctions::PrintLogScreen(UObject* WorldContextObject, const 
 			switch (World->GetNetMode())
 			{
 			case NM_Client:
-				Prefix = FString::Printf(TEXT("Client %d: "), GPlayInEditorID - 1);
+				Prefix = FString::Printf(TEXT("Client %d: "), UE::GetPlayInEditorID() - 1);
 				break;
 			case NM_DedicatedServer:
 			case NM_ListenServer:
@@ -849,6 +849,7 @@ void UGameDebugMenuFunctions::PrintLogScreen(UObject* WorldContextObject, const 
 				break;
 			case NM_Standalone:
 				break;
+			default: ;
 			}
 		}
 	}

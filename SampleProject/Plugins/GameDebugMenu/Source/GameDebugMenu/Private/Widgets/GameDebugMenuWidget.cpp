@@ -80,7 +80,7 @@ bool UGameDebugMenuWidget::GetWidgetChildrenOfClass(TSubclassOf<UWidget> WidgetC
 
 	while( WidgetsToCheck.Num() > 0 )
 	{
-		UWidget* PossibleParent = WidgetsToCheck.Pop(false);
+		UWidget* PossibleParent = WidgetsToCheck.Pop(EAllowShrinking::No);
 
 		if( CheckedWidgets.Contains(PossibleParent) )
 		{

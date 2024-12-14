@@ -34,7 +34,7 @@
 
 
 /********************************************************************/
-/* AGameDebugMenuManager										    */
+/* AGameDebugMenuManager										*/
 /********************************************************************/
 
 AGameDebugMenuManager::AGameDebugMenuManager(const FObjectInitializer& ObjectInitializer)
@@ -76,7 +76,7 @@ AGameDebugMenuManager::AGameDebugMenuManager(const FObjectInitializer& ObjectIni
 	bReplicates                             = true;
 	bAlwaysRelevant                         = true;
 	SetReplicatingMovement(false);
-	NetUpdateFrequency                      = 1;/* デフォルトのPlayerStateと同じかんじにしとく */
+	SetNetUpdateFrequency(1);/* デフォルトのPlayerStateと同じかんじにしとく */
 	SetRemoteRoleForBackwardsCompat(ROLE_SimulatedProxy);
 
 	DebugCameraInputClass          = AGDMDebugCameraInput::StaticClass();
@@ -85,6 +85,8 @@ AGameDebugMenuManager::AGameDebugMenuManager(const FObjectInitializer& ObjectIni
 
 void AGameDebugMenuManager::BeginPlay()
 {
+	OutputLog = MakeShareable(new FGDMOutputDevice);
+	
 	/* 他で参照される前にロードは処理しとく */
 	GetSaveSystemComponent()->LoadDebugMenuFile();
 	
@@ -253,8 +255,6 @@ void AGameDebugMenuManager::OnInitializeManager()
 	{
 		UGameDebugMenuFunctions::PrintLogScreen(this, TEXT("AGameDebugMenuManager: Beginplay Notfound PlayerController"), 4.0f);
 	}
-	
-	OutputLog = MakeShareable(new FGDMOutputDevice);
 }
 
 void AGameDebugMenuManager::CreateDebugMenuRootWidget()
