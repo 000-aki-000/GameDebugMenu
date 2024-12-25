@@ -742,15 +742,15 @@ bool AGameDebugMenuManager::RegisterObjectProperty(UObject* TargetObject, const 
 	}
 
 	const TSharedPtr<FGDMObjectPropertyInfo> PropertyInfo = MakeShareable(new FGDMObjectPropertyInfo);
-	PropertyInfo->CategoryKey                       = CategoryKey;
-	PropertyInfo->Name                              = (DisplayPropertyName.IsEmpty() != false) ? FText::FromName(PropertyName) : DisplayPropertyName;
-	PropertyInfo->TargetObject                      = TargetObject;
-	PropertyInfo->PropertyName                      = PropertyName;
-	PropertyInfo->TargetProperty                    = Property;
-	PropertyInfo->ConfigInfo                        = PropertyUIConfigInfo;
-	PropertyInfo->Description						= Description;
-	PropertyInfo->DisplayPriority					= DisplayPriority;
-	PropertyInfo->PropertySaveKey					= PropertySaveKey;
+	PropertyInfo->CategoryKey = CategoryKey;
+	PropertyInfo->Name = (DisplayPropertyName.IsEmpty() != false) ? FText::FromName(PropertyName) : DisplayPropertyName;
+	PropertyInfo->TargetObject = TargetObject;
+	PropertyInfo->PropertyName = PropertyName;
+	PropertyInfo->TargetProperty = Property;
+	PropertyInfo->ConfigInfo = PropertyUIConfigInfo;
+	PropertyInfo->Description = Description;
+	PropertyInfo->DisplayPriority = DisplayPriority;
+	PropertyInfo->PropertySaveKey = PropertySaveKey;
 
 	/* Enumならセット */
 	const FEnumProperty* EnumProp = CastField<FEnumProperty>(Property);/* C++定義だとこっち */
@@ -780,7 +780,7 @@ bool AGameDebugMenuManager::RegisterObjectProperty(UObject* TargetObject, const 
 	
 	if (!PropertySaveKey.IsEmpty())
 	{
-		/* 保存キーがあるため、既に一致する情報があればそれをプロパティにセットする */
+		/* 保存キーを指定してるため、既に一致する情報があればそれをプロパティにセットを試みる */
 		if (!GetPropertyJsonSystemComponent()->ApplyJsonToObject(PropertySaveKey, TargetObject, PropertyName.ToString()))
 		{
 			/* 失敗、データがないので現状の値をJsonに書き込み */
@@ -1324,5 +1324,16 @@ void AGameDebugMenuManager::CallSavedDebugMenuDispatcher()
 	for(const auto& Component : ListenerComponents )
 	{
 		Component->OnSavedDebugMenuDispatcher.Broadcast();
+	}
+}
+
+void AGameDebugMenuManager::CallDeletedDebugMenuDispatcher()
+{
+	TArray<UGDMListenerComponent*> ListenerComponents;
+	UGDMListenerComponent::GetAllListenerComponents(GetWorld(), ListenerComponents);
+
+	for(const auto& Component : ListenerComponents )
+	{
+		Component->OnDeletedDebugMenuDispatcher.Broadcast();
 	}
 }

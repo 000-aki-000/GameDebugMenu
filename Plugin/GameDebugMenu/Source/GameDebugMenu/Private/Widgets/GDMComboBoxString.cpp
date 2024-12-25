@@ -29,3 +29,5 @@ const FText UGDMComboBoxString::GetPaletteCategory()
 }
 
 #endif
+
+#undef LOCTEXT_NAMESPACE

@@ -44,11 +44,18 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable)
 	virtual void LoadDebugMenuFile();
-
+	
+	/**
+	 * DebugMenuのセーブデータを削除する
+	 */
+	UFUNCTION(BlueprintCallable)
+	virtual void DeleteDebugMenuFile();
+	
 protected:
 	UGDMPropertyJsonSystemComponent* GetPropertyJsonSystemComponent() const;
-	bool SaveFile(const FString& ContentString);
-	bool LoadFile(FString& OutLoadedContentString);
+	virtual bool SaveFile(const FString& ContentString);
+	virtual bool LoadFile(FString& OutLoadedContentString);
+	virtual bool DeleteFile();
 	bool CanUseSaveGame();
 };
 

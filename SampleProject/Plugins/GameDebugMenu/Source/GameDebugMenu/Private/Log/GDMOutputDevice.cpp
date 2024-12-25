@@ -51,8 +51,22 @@ void FGDMOutputDevice::Serialize(const TCHAR* Data, ELogVerbosity::Type Verbosit
 			{
 				CommandHistory.RemoveAt(0);
 			}
-			
-			CommandHistory.Add(Data);
+
+			bool bAdd = true;
+			const FString CheckStr = Data;
+			for (const auto& C : UGameDebugMenuSettings::Get()->NoSaveConsoleCommands)
+			{
+				if (CheckStr.Contains(C))
+				{
+					bAdd = false;
+					break;
+				}
+			}
+
+			if (bAdd)
+			{
+				CommandHistory.Add(Data);
+			}
 		}
 		
 		/* 時間はUTCで固定し他はエディターの「outputlog」のものと同じものを保持しとく */

@@ -114,6 +114,11 @@ public:
 	/** DebugMenuでセーブが完了した時に呼ばれるイベント */
 	UPROPERTY(BlueprintAssignable, Category = "GDM|Dispatcher")
 	FGDMGameDebugMenuListenerDelegate OnSavedDebugMenuDispatcher;
+
+	/** DebugMenuのセーブが削除した時に呼ばれるイベント */
+	UPROPERTY(BlueprintAssignable, Category = "GDM|Dispatcher")
+	FGDMGameDebugMenuListenerDelegate OnDeletedDebugMenuDispatcher;
+	
 public:	
 	UGDMListenerComponent(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 	virtual void InitializeComponent() override;

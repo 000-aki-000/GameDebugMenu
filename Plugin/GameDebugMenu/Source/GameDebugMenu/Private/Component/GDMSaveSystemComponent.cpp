@@ -39,7 +39,11 @@ void UGDMSaveSystemComponent::SaveDebugMenuFile()
 	}
 
 	TArray<FString> CommandHistory;
-	Manager->GetOutputCommandHistoryString(CommandHistory);
+	if (!UGameDebugMenuSettings::Get()->bDoesNotSaveConsoleCommand)
+	{
+		Manager->GetOutputCommandHistoryString(CommandHistory);
+	}
+	
 	JsonSystemComponent->SetStringArrayToJson(TEXT("CommandHistory"), CommandHistory);
 	
 	const FString JsonString = JsonSystemComponent->GetJsonAsString();
@@ -92,6 +96,25 @@ void UGDMSaveSystemComponent::LoadDebugMenuFile()
 	Manager->CallLoadedDebugMenuDispatcher();
 
 	UE_LOG(LogGDM, Log, TEXT("LoadDebugMenuFile: JSON loaded and applied to JsonSystemComponent."));
+}
+
+void UGDMSaveSystemComponent::DeleteDebugMenuFile()
+{
+	AGameDebugMenuManager* Manager = Cast<AGameDebugMenuManager>(GetOwner());
+	if (!IsValid(Manager))
+	{
+		UE_LOG(LogGDM, Error, TEXT("DeleteDebugMenuFile: GameDebugMenuManager not found on owner actor."));
+		return;
+	}
+
+	if (!DeleteFile())
+	{
+		return;
+	}
+
+	Manager->CallDeletedDebugMenuDispatcher();
+
+	UE_LOG(LogGDM, Log, TEXT("DeleteDebugMenuFile: JSON deleted and applied to JsonSystemComponent."));
 }
 
 UGDMPropertyJsonSystemComponent* UGDMSaveSystemComponent::GetPropertyJsonSystemComponent() const
@@ -170,6 +193,34 @@ bool UGDMSaveSystemComponent::LoadFile(FString& OutLoadedContentString)
 		}
 
 		UE_LOG(LogGDM, Warning, TEXT("LoadFile: Failed to load JSON to '%s'"), *LoadFilePath);
+	}
+
+	return false;
+}
+
+bool UGDMSaveSystemComponent::DeleteFile()
+{
+	if (CanUseSaveGame())
+	{
+		const FString SlotName = UGameDebugMenuSettings::Get()->SaveFileName;
+		if (UGameplayStatics::DeleteGameInSlot(SlotName, UserIndex))
+		{
+			return true;
+		}
+		
+		UE_LOG(LogGDM, Warning, TEXT("DeleteFile: Failed to DeleteGameInSlot to '%s'"), *SlotName);
+	}
+	else
+	{
+		const FString FilePath = UGameDebugMenuSettings::Get()->GetFullSavePath();
+		if (FFileHelper::SaveStringToFile(FString(), *FilePath))/* ファイル削除がないので空で上書き */
+		{
+			UE_LOG(LogGDM, Log, TEXT("DeleteFile: JSON saved to '%s'"), *FilePath);
+
+			return true;
+		}
+
+		UE_LOG(LogGDM, Error, TEXT("DeleteFile: Failed to save JSON to '%s'"), *FilePath);
 	}
 
 	return false;

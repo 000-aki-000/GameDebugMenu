@@ -334,5 +334,6 @@ public:
 	virtual void CallScreenshotRequestProcessedDispatcher();
 	virtual void CallLoadedDebugMenuDispatcher();
 	virtual void CallSavedDebugMenuDispatcher();
+	virtual void CallDeletedDebugMenuDispatcher();
 	
 };

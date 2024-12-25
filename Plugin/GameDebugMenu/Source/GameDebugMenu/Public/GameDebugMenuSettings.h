@@ -136,9 +136,17 @@ public:
 	UPROPERTY(config, EditAnywhere, BlueprintReadOnly, Category="Save")
 	bool bDisableSaveFile;
 
+	/** True: コンソールコマンドは保存されない False: 実行したコンソールコマンドはMaxCommandHistoryNumまで保存する(超えたら古いものから上書き) */
+	UPROPERTY(config, EditAnywhere, BlueprintReadOnly, Category="Save")
+	bool bDoesNotSaveConsoleCommand;
+
 	/** 保存するコンソールコマンドの履歴件数 */
 	UPROPERTY(config, EditAnywhere, BlueprintReadOnly, Category="Save")
 	int32 MaxCommandHistoryNum;
+
+	/** ここに含まれる文字のコンソールコマンドは保存されない */
+	UPROPERTY(config, EditAnywhere, BlueprintReadOnly, Category="Save")
+	TArray<FString> NoSaveConsoleCommands;
 	
 	/** DebugMenuでの改行文字 */
 	UPROPERTY(EditAnywhere, config, Category = "Other")
