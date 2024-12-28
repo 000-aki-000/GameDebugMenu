@@ -31,7 +31,7 @@ void UGDMDebugReportWidget::SendDebugReport(const FString& Subject, const FStrin
 	AGameDebugMenuManager* DebugMenuManager = UGameDebugMenuFunctions::GetGameDebugMenuManager(this);
 	check(DebugMenuManager != nullptr);
 
-	TSubclassOf<AGDMDebugReportRequester>* RequesterClass = UGameDebugMenuSettings::Get()->GetDebugReportRequesterClass();
+	const TSubclassOf<AGDMDebugReportRequester>* RequesterClass = UGameDebugMenuSettings::Get()->GetDebugReportRequesterClass();
 	if( RequesterClass == nullptr )
 	{
 		OnReceivedReportDispatcher.Broadcast(false);

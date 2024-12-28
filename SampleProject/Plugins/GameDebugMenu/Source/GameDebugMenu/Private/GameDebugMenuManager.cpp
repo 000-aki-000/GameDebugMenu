@@ -32,7 +32,6 @@
 #include "Data/GameDebugMenuWidgetDataAsset.h"
 #include "Framework/Application/SlateApplication.h"
 
-
 /********************************************************************/
 /* AGameDebugMenuManager										*/
 /********************************************************************/
@@ -720,6 +719,59 @@ EGDMPropertyType AGameDebugMenuManager::GetPropertyType(FProperty* TargetPropert
 	return EGDMPropertyType::GDM_Null;
 }
 
+#define SET_VARIANT_PROPERTY(PropertyClass) \
+{ \
+	OldValueVariant = CastField<PropertyClass>(Property)->GetPropertyValue(ValuePtr); \
+}
+
+#define SET_VARIANT_STRUCT_PROPERTY(Class) \
+{ \
+	const FStructProperty* StructProperty = CastField<FStructProperty>(Property); \
+	OldValueVariant = *StructProperty->ContainerPtrToValuePtr<Class>(TargetObject); \
+}
+
+#define SET_VARIANT_ENUM_PROPERTY() \
+{ \
+	const FEnumProperty* EnumProperty = CastField<const FEnumProperty>(Property); \
+	const FNumericProperty* NumProp = EnumProp->GetUnderlyingProperty(); \
+	const uint64 Value = NumProp->GetUnsignedIntPropertyValue(EnumProp->ContainerPtrToValuePtr<void*>(TargetObject)); \
+	OldValueVariant = static_cast<uint8>( Value ); \
+}
+
+#define CALL_PROPERTY_DISPATCHER(Type, PropertyClass, ValueType) \
+{ \
+	const PropertyClass* TypedProperty = CastField<PropertyClass>(Property); \
+	ValueType CurrentValue = TypedProperty->GetPropertyValue(ValuePtr); \
+	ValueType OldValue = OldValueVariant.GetValue<ValueType>(); \
+	if (CurrentValue != OldValue) \
+	{ \
+		CallChangeProperty##Type##Dispatcher(PropertyName, TargetObject, CurrentValue, OldValue, PropertySaveKey); \
+	} \
+}
+
+#define CALL_STRUCT_PROPERTY_DISPATCHER(Type, StructType) \
+{ \
+	const FStructProperty* StructProperty = CastField<FStructProperty>(Property); \
+	StructType CurrentValue = *StructProperty->ContainerPtrToValuePtr<StructType>(TargetObject); \
+	StructType OldValue = OldValueVariant.GetValue<StructType>(); \
+	if (CurrentValue != OldValue) \
+	{ \
+		CallChangeProperty##Type##Dispatcher(PropertyName, TargetObject, CurrentValue, OldValue, PropertySaveKey); \
+	} \
+}
+
+#define CALL_ENUM_PROPERTY_DISPATCHER() \
+{ \
+	const FEnumProperty* EnumProperty = CastField<FEnumProperty>(Property); \
+	const FNumericProperty* NumProp = EnumProperty->GetUnderlyingProperty(); \
+	uint8 CurrentValue = static_cast<uint8>(NumProp->GetUnsignedIntPropertyValue(ValuePtr)); \
+	uint8 OldValue = OldValueVariant.GetValue<uint8>(); \
+	if (CurrentValue != OldValue) \
+	{ \
+		CallChangePropertyByteDispatcher(PropertyName, TargetObject, CurrentValue, OldValue, PropertySaveKey); \
+	} \
+}
+
 bool AGameDebugMenuManager::RegisterObjectProperty(UObject* TargetObject, const FName PropertyName, const FGDMGameplayCategoryKey& CategoryKey, const FString& PropertySaveKey, const FText& DisplayPropertyName, const FText& Description, const FGDMPropertyUIConfigInfo& PropertyUIConfigInfo, const int32& DisplayPriority)
 {
 	if(!IsValid(TargetObject))
@@ -735,7 +787,8 @@ bool AGameDebugMenuManager::RegisterObjectProperty(UObject* TargetObject, const 
 		return false;
 	}
 
-	if(GetPropertyType(Property) == EGDMPropertyType::GDM_Null)
+	const EGDMPropertyType PropertyType = GetPropertyType(Property);
+	if(PropertyType == EGDMPropertyType::GDM_Null)
 	{
 		UE_LOG(LogGDM, Warning, TEXT("RegisterObjectProperty: not supported Property: %s: %s"), *PropertyName.ToString(), *GetNameSafe(Property));
 		return false;
@@ -780,11 +833,47 @@ bool AGameDebugMenuManager::RegisterObjectProperty(UObject* TargetObject, const 
 	
 	if (!PropertySaveKey.IsEmpty())
 	{
+		/* プロパティ型に応じた値を一時的に保存 */
+		FVariant OldValueVariant;
+
+		void* ValuePtr = Property->ContainerPtrToValuePtr<void*>(TargetObject);
+		switch (PropertyType)
+		{
+			case EGDMPropertyType::GDM_Bool:	{ SET_VARIANT_PROPERTY(FBoolProperty) break;	}
+			case EGDMPropertyType::GDM_Int:		{ SET_VARIANT_PROPERTY(FIntProperty) break;		}
+			case EGDMPropertyType::GDM_Float:	{ SET_VARIANT_PROPERTY(FFloatProperty) break;	}
+			case EGDMPropertyType::GDM_Enum:	{ SET_VARIANT_ENUM_PROPERTY() break;			}
+			case EGDMPropertyType::GDM_Byte:	{ SET_VARIANT_PROPERTY(FByteProperty) break;	}
+			case EGDMPropertyType::GDM_String:	{ SET_VARIANT_PROPERTY(FStrProperty) break;		}
+			case EGDMPropertyType::GDM_Vector:  { SET_VARIANT_STRUCT_PROPERTY(FVector) break;	}
+			case EGDMPropertyType::GDM_Vector2D:{ SET_VARIANT_STRUCT_PROPERTY(FVector2D) break;	}
+			case EGDMPropertyType::GDM_Rotator:	{ SET_VARIANT_STRUCT_PROPERTY(FRotator) break;	}
+			default:
+				UE_LOG(LogGDM, Warning, TEXT("Unsupported property type for old value caching"));
+		}
+		
 		/* 保存キーを指定してるため、既に一致する情報があればそれをプロパティにセットを試みる */
 		if (!GetPropertyJsonSystemComponent()->ApplyJsonToObject(PropertySaveKey, TargetObject, PropertyName.ToString()))
 		{
 			/* 失敗、データがないので現状の値をJsonに書き込み */
 			GetPropertyJsonSystemComponent()->AddPropertyToJson(PropertySaveKey, TargetObject, PropertyName.ToString());
+		}
+		else
+		{
+			switch (PropertyType)
+			{
+				case EGDMPropertyType::GDM_Bool:	{ CALL_PROPERTY_DISPATCHER(Bool, FBoolProperty, bool) break;		}
+				case EGDMPropertyType::GDM_Int:		{ CALL_PROPERTY_DISPATCHER(Int, FIntProperty, int32) break;			}
+				case EGDMPropertyType::GDM_Float:	{ CALL_PROPERTY_DISPATCHER(Float, FFloatProperty, float) break;		}
+				case EGDMPropertyType::GDM_Enum:	{ CALL_ENUM_PROPERTY_DISPATCHER() break;							}
+				case EGDMPropertyType::GDM_Byte:    { CALL_PROPERTY_DISPATCHER(Byte, FByteProperty, uint8) break;		}
+				case EGDMPropertyType::GDM_String:  { CALL_PROPERTY_DISPATCHER(String, FStrProperty, FString) break;	}
+				case EGDMPropertyType::GDM_Vector:  { CALL_STRUCT_PROPERTY_DISPATCHER(Vector, FVector); break;			}
+				case EGDMPropertyType::GDM_Vector2D:{ CALL_STRUCT_PROPERTY_DISPATCHER(Vector2D, FVector2D); break;		}
+				case EGDMPropertyType::GDM_Rotator:	{ CALL_STRUCT_PROPERTY_DISPATCHER(Rotator, FRotator); break;		}
+				default:
+					UE_LOG(LogGDM, Warning, TEXT("Unsupported property type for old value caching"));
+			}
 		}
 	}
 	

@@ -53,6 +53,7 @@ void UGDMListenerComponent::AllUnbindDispatchers()
 	OnScreenshotRequestProcessedDispatcher.Clear();
 	OnLoadedDebugMenuDispatcher.Clear();
 	OnSavedDebugMenuDispatcher.Clear();
+	OnDeletedDebugMenuDispatcher.Clear();
 }
 
 int32 UGDMListenerComponent::PushListenerComponent(UWorld* TargetWorld, UGDMListenerComponent* Listener)

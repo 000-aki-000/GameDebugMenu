@@ -90,19 +90,10 @@ UGameDebugMenuSettings::UGameDebugMenuSettings()
 	NoSaveConsoleCommands.Reset();
 	NoSaveConsoleCommands.Add(TEXT("LevelEditor."));
 	NoSaveConsoleCommands.Add(TEXT("ToggleDebugCamera"));
-	NoSaveConsoleCommands.Add(TEXT("stat None"));
-	NoSaveConsoleCommands.Add(TEXT("stat Grouped"));
-	NoSaveConsoleCommands.Add(TEXT("LoadTimes.reset"));
-	NoSaveConsoleCommands.Add(TEXT("stat fps"));
-	NoSaveConsoleCommands.Add(TEXT("stat Unit"));
-	NoSaveConsoleCommands.Add(TEXT("stat UnitGraph"));
-	NoSaveConsoleCommands.Add(TEXT("stat UnitMax"));
-	NoSaveConsoleCommands.Add(TEXT("stat UnitTime"));
-	NoSaveConsoleCommands.Add(TEXT("stat Raw"));
-	NoSaveConsoleCommands.Add(TEXT("stat startfile"));
-	NoSaveConsoleCommands.Add(TEXT("stat stopfile"));
-	NoSaveConsoleCommands.Add(TEXT("CsvProfile Start"));
-	NoSaveConsoleCommands.Add(TEXT("CsvProfile Stop"));
+	NoSaveConsoleCommands.Add(TEXT("stat "));
+	NoSaveConsoleCommands.Add(TEXT("LoadTimes."));
+	NoSaveConsoleCommands.Add(TEXT("CsvProfile "));
+	NoSaveConsoleCommands.Add(TEXT("Obj "));
 	LineBreakString = TEXT("\n");
 }
 
