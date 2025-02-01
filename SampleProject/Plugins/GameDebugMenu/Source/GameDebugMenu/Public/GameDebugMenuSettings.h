@@ -8,7 +8,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "UObject/NoExportTypes.h"
+#include "Engine/DeveloperSettings.h"
 #include "Templates/SubclassOf.h"
 #include "GameDebugMenuTypes.h"
 #include "GameDebugMenuSettings.generated.h"
@@ -19,7 +19,7 @@ class AGDMDebugReportRequester;
 * DebugMenu用設定クラス
 */
 UCLASS(config=Game, defaultconfig)
-class GAMEDEBUGMENU_API UGameDebugMenuSettings : public UObject
+class GAMEDEBUGMENU_API UGameDebugMenuSettings : public UDeveloperSettings
 {
 	GENERATED_BODY()
 
@@ -121,60 +121,64 @@ public:
 	FName DefaultGameDebugMenuLanguage;
 
 	/** true: SaveGameを使用する。 false: Jsonファイルを使用する */
-	UPROPERTY(config, EditAnywhere, BlueprintReadOnly, Category="Save")
+	UPROPERTY(config, EditAnywhere, Category="Save")
 	bool bUseSaveGame;
 
 	/** JSON保存先のファイルパス（相対パス） */
-	UPROPERTY(config, EditAnywhere, BlueprintReadOnly, Category="Save")
+	UPROPERTY(config, EditAnywhere, Category="Save")
 	FString SaveFilePath;
 
 	/** JSON保存先のファイル名 */
-	UPROPERTY(config, EditAnywhere, BlueprintReadOnly, Category="Save")
+	UPROPERTY(config, EditAnywhere, Category="Save")
 	FString SaveFileName;
 
 	/** True: DebugMenuの保存機能を無効にする */
-	UPROPERTY(config, EditAnywhere, BlueprintReadOnly, Category="Save")
+	UPROPERTY(config, EditAnywhere, Category="Save")
 	bool bDisableSaveFile;
 
 	/** True: コンソールコマンドは保存されない False: 実行したコンソールコマンドはMaxCommandHistoryNumまで保存する(超えたら古いものから上書き) */
-	UPROPERTY(config, EditAnywhere, BlueprintReadOnly, Category="Save")
+	UPROPERTY(config, EditAnywhere, Category="Save")
 	bool bDoesNotSaveConsoleCommand;
 
 	/** 保存するコンソールコマンドの履歴件数 */
-	UPROPERTY(config, EditAnywhere, BlueprintReadOnly, Category="Save")
+	UPROPERTY(config, EditAnywhere, Category="Save")
 	int32 MaxCommandHistoryNum;
 
 	/** ここに含まれる文字のコンソールコマンドは保存されない */
-	UPROPERTY(config, EditAnywhere, BlueprintReadOnly, Category="Save")
+	UPROPERTY(config, EditAnywhere, Category="Save")
 	TArray<FString> NoSaveConsoleCommands;
 	
 	/** DebugMenuでの改行文字 */
 	UPROPERTY(EditAnywhere, config, Category = "Other")
 	FString LineBreakString;
+
+	/** デバックメニューを無効化する */
+	UPROPERTY(EditAnywhere, config, Category = "Other")
+	bool bDisableGameDebugMenu;
 	
 public:
 	UGameDebugMenuSettings();
 
-#if WITH_EDITOR
-	virtual void PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent) override;
-#endif
-
-	/** ゲッター */
-	static UGameDebugMenuSettings* Get()
+	virtual FName GetCategoryName() const override
 	{
-		return CastChecked<UGameDebugMenuSettings>(UGameDebugMenuSettings::StaticClass()->GetDefaultObject());
+		return FName("Plugins");
 	}
 	
+#if WITH_EDITOR
+	virtual void PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent) override;
+	virtual FText GetSectionText() const override;
+#endif
+
 	UObject* GetGDMFont() const;
-	TArray<FText> GetIssueCategoryNameList();
-	TArray<FText> GetPriorityNameList();
-	TArray<FText> GetAssigneeNameList();
+	TArray<FText> GetIssueCategoryNameList() const;
+	TArray<FText> GetPriorityNameList() const;
+	TArray<FText> GetAssigneeNameList() const;
 	int32 GetDefaultIssueCategoryIndex() const;
 	int32 GetDefaultPriorityIndex() const;
-	FString GetDebugMenuString(const FName& LanguageKey, const FString& StringKey);
-	FString GetGameplayCategoryTitle(const int32& ArrayIndex);
-	int32 GetGameplayCategoryIndex(const int32& ArrayIndex);
-	TSubclassOf<AGDMDebugReportRequester>* GetDebugReportRequesterClass();
+	FString GetDebugMenuString(const FName& LanguageKey, const FString& StringKey) const;
+	FString GetGameplayCategoryTitle(const int32& ArrayIndex) const;
+	int32 GetGameplayCategoryIndex(const int32& ArrayIndex) const;
+	const TSubclassOf<AGDMDebugReportRequester>* GetDebugReportRequesterClass() const;
 	FString GetFullSavePath() const;
 
 private:

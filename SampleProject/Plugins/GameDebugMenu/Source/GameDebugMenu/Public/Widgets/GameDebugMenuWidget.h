@@ -131,4 +131,6 @@ public:
 	*/
 	UFUNCTION(BlueprintCallable, Category = "GDM", meta = (DeterminesOutputType = "WidgetClass", DynamicOutputParam = "OutChildWidgets"))
 	virtual bool GetWidgetChildrenOfClass(TSubclassOf<UWidget> WidgetClass, TArray<UWidget*>& OutChildWidgets, bool bEndSearchAsYouFind);
+
+	APlayerController* GetOriginalPlayerController() const;
 };

@@ -17,7 +17,7 @@ UGDMComboBoxString::UGDMComboBoxString(const FObjectInitializer& ObjectInitializ
 
 	if(!IsRunningDedicatedServer())
 	{
-		InitFont(FSlateFontInfo(UGameDebugMenuSettings::Get()->GetGDMFont(), 14, FName("Bold")));
+		InitFont(FSlateFontInfo(GetDefault<UGameDebugMenuSettings>()->GetGDMFont(), 14, FName("Bold")));
 	}
 }
 

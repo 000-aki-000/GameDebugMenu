@@ -18,7 +18,6 @@ public class GameDebugMenu : ModuleRules
 				"GameDebugMenu/Private",
             }
 			);
-			
 		
 		PublicDependencyModuleNames.AddRange(
 			new string[]
@@ -46,13 +45,7 @@ public class GameDebugMenu : ModuleRules
 				"Engine",
 				"Slate",
 				"SlateCore",
-			}
-			);
-		
-		
-		DynamicallyLoadedModuleNames.AddRange(
-			new string[]
-			{
+				"DeveloperSettings",
 			}
 			);
 	}

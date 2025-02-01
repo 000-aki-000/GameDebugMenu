@@ -51,6 +51,9 @@ class GAMEDEBUGMENU_API AGameDebugMenuManager : public AActor
 	UPROPERTY(Transient)
 	TObjectPtr<UGDMListenerComponent> ListenerComponent;
 
+	FTimerHandle InitializeManagerHandle;
+	bool bInitializedManager = false;
+	
 protected:
 	/** True：UI表示中 */
 	bool bShowDebugMenu;
@@ -116,6 +119,7 @@ protected:
 	
 public:
 	AGameDebugMenuManager(const FObjectInitializer& ObjectInitializer);
+	
 protected:
 	virtual void BeginPlay() override;
 
@@ -140,6 +144,9 @@ public:
 	
 	UFUNCTION(BlueprintPure)
 	UGDMListenerComponent* GetListenerComponent() const;
+
+	UFUNCTION(BlueprintPure, Category = "GDM")
+	bool IsInitializedManager() const;
 
 protected:
 	/**
@@ -204,6 +211,12 @@ public:
 	*/
 	virtual bool IsShowingDebugMenu();
 
+	/**
+	* オーナーのPlayerControllerを取得
+	*/
+	UFUNCTION(BlueprintPure, Category = "GDM")
+	APlayerController* GetOwnerPlayerController() const;
+	
 	/**
 	* メインとなるWidget取得
 	*/

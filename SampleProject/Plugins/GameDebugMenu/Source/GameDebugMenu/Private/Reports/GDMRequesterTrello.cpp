@@ -15,7 +15,7 @@
 void AGDMRequesterTrello::StartRequest()
 {
 	bWasRequestSuccessful = false;
-	const FGDMTrelloSettings& TrelloSettings = UGameDebugMenuSettings::Get()->TrelloSettings;
+	const FGDMTrelloSettings& TrelloSettings = GetDefault<UGameDebugMenuSettings>()->TrelloSettings;
 	AttachmentCardListID.Reset();
 
 	FString URL(TEXT("https://api.trello.com/1/cards?"));
@@ -46,7 +46,7 @@ void AGDMRequesterTrello::StartRequest()
 
 void AGDMRequesterTrello::RequestUploadScreenshotCapture()
 {
-	const FGDMTrelloSettings& TrelloSettings = UGameDebugMenuSettings::Get()->TrelloSettings;
+	const FGDMTrelloSettings& TrelloSettings = GetDefault<UGameDebugMenuSettings>()->TrelloSettings;
 
 	FString URL(TEXT("https://api.trello.com/1/cards/"));
 	URL += AttachmentCardListID;
@@ -77,7 +77,7 @@ void AGDMRequesterTrello::RequestUploadScreenshotCapture()
 
 void AGDMRequesterTrello::RequestUploadLog()
 {
-	const FGDMTrelloSettings& TrelloSettings = UGameDebugMenuSettings::Get()->TrelloSettings;
+	const FGDMTrelloSettings& TrelloSettings = GetDefault<UGameDebugMenuSettings>()->TrelloSettings;
 
 	FString URL(TEXT("https://api.trello.com/1/cards/"));
 	URL += AttachmentCardListID;

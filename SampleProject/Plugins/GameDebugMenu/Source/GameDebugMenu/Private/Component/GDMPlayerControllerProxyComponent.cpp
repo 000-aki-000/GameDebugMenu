@@ -10,12 +10,20 @@
 #include "GameFramework/PlayerController.h"
 #include "GameFramework/Character.h"
 #include "GameDebugMenuFunctions.h"
+#include "Net/UnrealNetwork.h"
 
 UGDMPlayerControllerProxyComponent::UGDMPlayerControllerProxyComponent()
 {
 	PrimaryComponentTick.bCanEverTick          = false;
 	PrimaryComponentTick.bStartWithTickEnabled = false;
 	SetIsReplicatedByDefault(true);
+}
+
+void UGDMPlayerControllerProxyComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps ) const
+{
+	Super::GetLifetimeReplicatedProps( OutLifetimeProps );
+
+	DOREPLIFETIME( UGDMPlayerControllerProxyComponent, DebugMenuManager );
 }
 
 void UGDMPlayerControllerProxyComponent::BeginPlay()
@@ -57,6 +65,11 @@ ACharacter* UGDMPlayerControllerProxyComponent::GetOwnerPlayerCharacter() const
 	return PlayerController->GetCharacter();
 }
 
+AGameDebugMenuManager* UGDMPlayerControllerProxyComponent::GetDebugMenuManager() const
+{
+	return DebugMenuManager;
+}
+
 void UGDMPlayerControllerProxyComponent::ROS_ExecuteConsoleCommand_Implementation(const FString& Command, bool bAllClient)
 {
 	if (bAllClient)
@@ -76,7 +89,7 @@ bool UGDMPlayerControllerProxyComponent::ROS_ExecuteConsoleCommand_Validate(cons
 
 void UGDMPlayerControllerProxyComponent::ROC_ExecuteConsoleCommand_Implementation(const FString& Command)
 {
-	UGameDebugMenuFunctions::GetGameDebugMenuManager(this)->ExecuteConsoleCommand(Command, Cast<APlayerController>(GetOwner()));
+	GetDebugMenuManager()->ExecuteConsoleCommand(Command, GetOwnerPlayerController());
 }
 
 bool UGDMPlayerControllerProxyComponent::ROC_ExecuteConsoleCommand_Validate(const FString& Command)
@@ -91,7 +104,7 @@ void UGDMPlayerControllerProxyComponent::ExecuteConsoleCommand(const FString& Co
 		case EGDMConsoleCommandNetType::LocalOnly:
 		{
 			/* 通信せず実行者の環境で実行する */
-			UGameDebugMenuFunctions::GetGameDebugMenuManager(this)->ExecuteConsoleCommand(Command, Cast<APlayerController>(GetOwner()));
+			GetDebugMenuManager()->ExecuteConsoleCommand(Command, GetOwnerPlayerController());
 			break;
 		}
 		case EGDMConsoleCommandNetType::ServerAll:
@@ -124,6 +137,6 @@ void UGDMPlayerControllerProxyComponent::AllExecuteConsoleCommand_Server(const F
 			continue;
 		}
 
-		UGameDebugMenuFunctions::GetGameDebugMenuManager(this)->ExecuteConsoleCommand(Command, PC);
+		GetDebugMenuManager()->ExecuteConsoleCommand(Command, PC);
 	}
 }

@@ -20,7 +20,7 @@ void AGDMRequesterJira::StartRequest()
 {
 	bWasRequestSuccessful = false;
 
-	const FGDMJiraSettings& JiraSettings = UGameDebugMenuSettings::Get()->JiraSettings;
+	const FGDMJiraSettings& JiraSettings = GetDefault<UGameDebugMenuSettings>()->JiraSettings;
 	const FString BasicAuthData          = TEXT("Basic ") + FBase64::Encode(JiraSettings.UserName + TEXT(":") + JiraSettings.AccessKey);
 	const FString URL                    = TEXT("https://") + JiraSettings.HostName + TEXT("/rest/api/3/issue");
 
@@ -154,7 +154,7 @@ void AGDMRequesterJira::StartRequest()
 
 void AGDMRequesterJira::RequestUploadContent(const FString& IssueKey)
 {
-	const FGDMJiraSettings& JiraSettings = UGameDebugMenuSettings::Get()->JiraSettings;
+	const FGDMJiraSettings& JiraSettings = GetDefault<UGameDebugMenuSettings>()->JiraSettings;
 	const FString BasicAuthData          = TEXT("Basic ") + FBase64::Encode(JiraSettings.UserName + TEXT(":") + JiraSettings.AccessKey);
 	const FString URL                    = TEXT("https://") + JiraSettings.HostName + TEXT("/rest/api/3/issue/") + IssueKey + TEXT("/attachments");
 	const FString BoundaryKey			 = MakeBoundaryString();

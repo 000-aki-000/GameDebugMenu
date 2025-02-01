@@ -21,7 +21,6 @@ class GAMEDEBUGMENU_API UGameDebugMenuFunctions : public UBlueprintFunctionLibra
 	static TArray<FGDMPendingObjectData> RegisterPendingProperties;
 	static TArray<FGDMPendingObjectData> RegisterPendingFunctions;
 	static FDelegateHandle ActorSpawnedDelegateHandle;
-	static bool bDisableGameDebugMenu;
 
 public:
 	UGameDebugMenuFunctions(const FObjectInitializer& ObjectInitializer);
@@ -32,25 +31,19 @@ public:
 
 public:
 	/**
-	* DebugMenuの無効化する
-	*
-	* @memo TryCreateDebugMenuManagerが実行されない限り動作はしないが不要な検索処理などが発生してしまうので不要ならこれを使用する
+	* 生成。ロードしてない場合は同期ロードされるので注意
+	* @param PlayerController - メニューを操作するローカルのプレイヤーコントローラー
+	* @param DebugMenuManagerClassPtr - 生成するマネージャークラス
+	* @return true: 正常終了 false: デバックメニューは使用できない
 	*/
 	UFUNCTION(BlueprintCallable, Category = "GDM|Functions", meta = (Keywords = "DebugMenu GDM"))
-	static void DisableGameDebugMenu();
-
-	/**
-	* 生成(同期ロードされるので注意)
-	* マルチプレイの場合はPlayerControllerなど環境で呼ぶように
-	*/
-	UFUNCTION(BlueprintCallable, Category = "GDM|Functions", meta = (Keywords = "DebugMenu GDM", WorldContext = "WorldContextObject"))
-	static bool TryCreateDebugMenuManager(UObject* WorldContextObject, TSoftClassPtr<AGameDebugMenuManager> DebugMenuManagerClassPtr);
+	static bool TryCreateDebugMenuManager(APlayerController* PlayerController, TSoftClassPtr<AGameDebugMenuManager> DebugMenuManagerClassPtr);
 
 	/**
 	* 削除
 	*/
-	UFUNCTION(BlueprintCallable, Category = "GDM|Functions", meta = (Keywords = "DebugMenu GDM", WorldContext = "WorldContextObject"))
-	static bool DestroyDebugMenuManager(UObject* WorldContextObject);
+	UFUNCTION(BlueprintCallable, Category = "GDM|Functions", meta = (Keywords = "DebugMenu GDM"))
+	static bool DestroyDebugMenuManager(APlayerController* PlayerController);
 
 	/**
 	* 取得(Managerの参照をもつことになるので使用する場合は注意)
@@ -61,7 +54,7 @@ public:
 	/**
 	* 表示
 	*
-	* @return True: 処理の正常終了　False:マネージャがない
+	* @return True: 処理の正常終了
 	*/
 	UFUNCTION(BlueprintCallable, BlueprintCosmetic, Category = "GDM|Functions", meta = (Keywords = "DebugMenu GDM", WorldContext = "WorldContextObject"))
 	static bool ShowDebugMenu(UObject* WorldContextObject);
@@ -69,7 +62,7 @@ public:
 	/**
 	* 非表示
 	*
-	* @return True: 処理の正常終了　False:マネージャがない
+	* @return True: 処理の正常終了
 	*/
 	UFUNCTION(BlueprintCallable, BlueprintCosmetic, Category = "GDM|Functions", meta = (Keywords = "DebugMenu GDM", WorldContext = "WorldContextObject"))
 	static bool HideDebugMenu(UObject* WorldContextObject);
@@ -77,7 +70,7 @@ public:
 	/**
 	* (非)表示に切り替える
 	*
-	* @return True: 処理の正常終了　False:マネージャがない
+	* @return True: 処理の正常終了
 	*/
 	UFUNCTION(BlueprintCallable, BlueprintCosmetic, Category = "GDM|Functions", meta = (Keywords = "DebugMenu GDM", WorldContext = "WorldContextObject"))
 	static bool ToggleDebugMenu(UObject* WorldContextObject);
