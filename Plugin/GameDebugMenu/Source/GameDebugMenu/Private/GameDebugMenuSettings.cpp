@@ -95,6 +95,7 @@ UGameDebugMenuSettings::UGameDebugMenuSettings()
 	NoSaveConsoleCommands.Add(TEXT("CsvProfile "));
 	NoSaveConsoleCommands.Add(TEXT("Obj "));
 	LineBreakString = TEXT("\n");
+	bDisableGameDebugMenu = false;
 }
 
 #if WITH_EDITOR
@@ -140,6 +141,11 @@ void UGameDebugMenuSettings::PostEditChangeProperty(struct FPropertyChangedEvent
 		}
 	}
 }
+
+FText UGameDebugMenuSettings::GetSectionText() const
+{
+	return FText::FromString(TEXT("Game Debug Menu"));
+}
 #endif
 
 UObject* UGameDebugMenuSettings::GetGDMFont() const
@@ -148,7 +154,7 @@ UObject* UGameDebugMenuSettings::GetGDMFont() const
 	return ( (Obj == nullptr) ? FontName.TryLoad() : Obj );
 }
 
-TArray<FText> UGameDebugMenuSettings::GetIssueCategoryNameList()
+TArray<FText> UGameDebugMenuSettings::GetIssueCategoryNameList() const
 {
 	switch (ProjectManagementToolType)
 	{
@@ -170,7 +176,7 @@ TArray<FText> UGameDebugMenuSettings::GetIssueCategoryNameList()
 	return Empty;
 }
 
-TArray<FText> UGameDebugMenuSettings::GetPriorityNameList()
+TArray<FText> UGameDebugMenuSettings::GetPriorityNameList() const
 {
 	switch (ProjectManagementToolType)
 	{
@@ -192,7 +198,7 @@ TArray<FText> UGameDebugMenuSettings::GetPriorityNameList()
 	return Empty;
 }
 
-TArray<FText> UGameDebugMenuSettings::GetAssigneeNameList()
+TArray<FText> UGameDebugMenuSettings::GetAssigneeNameList() const
 {
 	switch(ProjectManagementToolType)
 	{
@@ -260,15 +266,15 @@ int32 UGameDebugMenuSettings::GetDefaultPriorityIndex() const
 	return 0;
 }
 
-FString UGameDebugMenuSettings::GetDebugMenuString(const FName& LanguageKey, const FString& StringKey)
+FString UGameDebugMenuSettings::GetDebugMenuString(const FName& LanguageKey, const FString& StringKey) const
 {
-	if( FGDMStringTableList* StringTableList = GameDebugMenuStringTables.Find(LanguageKey) )
+	if( const FGDMStringTableList* StringTableList = GameDebugMenuStringTables.Find(LanguageKey) )
 	{
 		FString OutSourceString;
 
 		for( auto& StrTablePtr : StringTableList->StringTables )
 		{
-			if( UStringTable* StringTable = StrTablePtr.LoadSynchronous() )
+			if(const UStringTable* StringTable = StrTablePtr.LoadSynchronous() )
 			{
 				if( StringTable->GetStringTable()->GetSourceString(StringKey, OutSourceString) )
 				{
@@ -281,7 +287,7 @@ FString UGameDebugMenuSettings::GetDebugMenuString(const FName& LanguageKey, con
 	return FString();
 }
 
-FString UGameDebugMenuSettings::GetGameplayCategoryTitle(const int32& ArrayIndex)
+FString UGameDebugMenuSettings::GetGameplayCategoryTitle(const int32& ArrayIndex) const
 {
 	FString ReturnValue;
 	if( OrderGameplayCategoryTitles.IsValidIndex(ArrayIndex) )
@@ -297,7 +303,7 @@ FString UGameDebugMenuSettings::GetGameplayCategoryTitle(const int32& ArrayIndex
 	return ReturnValue;
 }
 
-int32 UGameDebugMenuSettings::GetGameplayCategoryIndex(const int32& ArrayIndex)
+int32 UGameDebugMenuSettings::GetGameplayCategoryIndex(const int32& ArrayIndex) const
 {
 	if( OrderGameplayCategoryTitles.IsValidIndex(ArrayIndex) )
 	{
@@ -307,7 +313,7 @@ int32 UGameDebugMenuSettings::GetGameplayCategoryIndex(const int32& ArrayIndex)
 	return 0;
 }
 
-TSubclassOf<AGDMDebugReportRequester>* UGameDebugMenuSettings::GetDebugReportRequesterClass()
+const TSubclassOf<AGDMDebugReportRequester>* UGameDebugMenuSettings::GetDebugReportRequesterClass() const
 {
 	return DebugReportRequesterClass.Find(ProjectManagementToolType);
 }

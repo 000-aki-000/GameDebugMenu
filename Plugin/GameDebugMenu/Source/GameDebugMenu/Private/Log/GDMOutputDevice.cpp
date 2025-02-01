@@ -47,14 +47,14 @@ void FGDMOutputDevice::Serialize(const TCHAR* Data, ELogVerbosity::Type Verbosit
 
 		if (Category == CommandCategory)
 		{
-			while(CommandHistory.Num() > UGameDebugMenuSettings::Get()->MaxCommandHistoryNum - 1)
+			while(CommandHistory.Num() > GetDefault<UGameDebugMenuSettings>()->MaxCommandHistoryNum - 1)
 			{
 				CommandHistory.RemoveAt(0);
 			}
 
 			bool bAdd = true;
 			const FString CheckStr = Data;
-			for (const auto& C : UGameDebugMenuSettings::Get()->NoSaveConsoleCommands)
+			for (const auto& C : GetDefault<UGameDebugMenuSettings>()->NoSaveConsoleCommands)
 			{
 				if (CheckStr.Contains(C))
 				{

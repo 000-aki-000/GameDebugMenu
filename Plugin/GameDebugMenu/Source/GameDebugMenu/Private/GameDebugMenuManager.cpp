@@ -43,6 +43,8 @@ AGameDebugMenuManager::AGameDebugMenuManager(const FObjectInitializer& ObjectIni
 	, PropertyJsonSystemComponent(nullptr)
 	, SaveSystemComponent(nullptr)
 	, ListenerComponent(nullptr)
+	, InitializeManagerHandle()
+	, bInitializedManager(false)
 	, bShowDebugMenu(false)
 	, bCachedGamePaused(false)
 	, bCachedShowMouseCursor(false)
@@ -84,7 +86,7 @@ AGameDebugMenuManager::AGameDebugMenuManager(const FObjectInitializer& ObjectIni
 
 void AGameDebugMenuManager::BeginPlay()
 {
-	OutputLog = MakeShareable(new FGDMOutputDevice);
+	OutputLog = MakeShared<FGDMOutputDevice>();
 	
 	/* 他で参照される前にロードは処理しとく */
 	GetSaveSystemComponent()->LoadDebugMenuFile();
@@ -96,10 +98,10 @@ void AGameDebugMenuManager::BeginPlay()
 	UGameDebugMenuFunctions::PrintLogScreen(this, TEXT("AGameDebugMenuManager: Call BeginPlay"), 4.0f);
 
 	/* managerのBeginplayがちゃんと完了後に処理↓ */
-	GetWorld()->GetTimerManager().SetTimerForNextTick(FTimerDelegate::CreateLambda([this]()
+	GetWorld()->GetTimerManager().SetTimer(InitializeManagerHandle, FTimerDelegate::CreateLambda([this]()
 	{
 		OnInitializeManager();
-	}));
+	}), 0.01f, true);
 }
 
 void AGameDebugMenuManager::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -152,12 +154,6 @@ void AGameDebugMenuManager::EnableInput(class APlayerController* PlayerControlle
 		{
 			Super::EnableInput(DCC);
 		}
-		else
-		{
-			/* この時点でまだない場合,Clientの可能性があるのでローカルで実行できるようにチートを有効にする */
-			PlayerController->EnableCheats();
-			UGameDebugMenuFunctions::PrintLogScreen(this, TEXT("AGameDebugMenuManager: EnableCheats"), 4.0f);
-		}
 	}
 }
 
@@ -199,8 +195,20 @@ UGDMListenerComponent* AGameDebugMenuManager::GetListenerComponent() const
 	return ListenerComponent;
 }
 
+bool AGameDebugMenuManager::IsInitializedManager() const
+{
+	return bInitializedManager;
+}
+
 void AGameDebugMenuManager::OnInitializeManager()
 {
+	if (GetOwner() == nullptr)
+	{
+		return;
+	}
+
+	bInitializedManager = true;
+	
 	FString StringKey = TEXT("DebugMenuDirectStringKey");
 	if (!GetPropertyJsonSystemComponent()->HasStringInJson(StringKey))
 	{
@@ -215,7 +223,7 @@ void AGameDebugMenuManager::OnInitializeManager()
 	StringKey = TEXT("DebugMenuLanguage");
 	if (!GetPropertyJsonSystemComponent()->HasStringInJson(StringKey))
 	{
-		GetPropertyJsonSystemComponent()->SetSingleStringToJson(StringKey, UGameDebugMenuSettings::Get()->DefaultGameDebugMenuLanguage.ToString());
+		GetPropertyJsonSystemComponent()->SetSingleStringToJson(StringKey, GetDefault<UGameDebugMenuSettings>()->DefaultGameDebugMenuLanguage.ToString());
 	}
 	
 	SyncLoadDebugMenuStringTables(GetCurrentDebugMenuLanguage());
@@ -227,7 +235,7 @@ void AGameDebugMenuManager::OnInitializeManager()
 		CreateDebugMenuRootWidget();
 
 		TArray<UUserWidget*> FoundWidgets;
-		UWidgetBlueprintLibrary::GetAllWidgetsOfClass(this, FoundWidgets, UGameDebugMenuWidget::StaticClass(), false);
+		UWidgetBlueprintLibrary::GetAllWidgetsOfClass(this, FoundWidgets, UGameDebugMenuWidget::StaticClass(), true);
 						
 		UGameViewportSubsystem* GameViewportSubsystem = UGameViewportSubsystem::Get();
 		GameViewportSubsystem->OnWidgetAdded.AddUObject(this, &AGameDebugMenuManager::OnWidgetAdded);
@@ -242,18 +250,24 @@ void AGameDebugMenuManager::OnInitializeManager()
 		}
 	}
 
-	if( APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0) )
+	APlayerController* PC = Cast<APlayerController>(GetOwner());
+
+	if (!IsValid(PC->CheatManager))
 	{
-		TArray<FString> CommandHistory = GetPropertyJsonSystemComponent()->GetStringArrayFromJson(TEXT("CommandHistory"));
-		for(const auto& Command : CommandHistory )
+		if (GetNetMode() == NM_Client)
 		{
-			PC->ConsoleCommand(Command);
+			/* クライアントでも利用できるように常に有効化 */
+			PC->EnableCheats();
 		}
 	}
-	else
+	
+	TArray<FString> CommandHistory = GetPropertyJsonSystemComponent()->GetStringArrayFromJson(TEXT("CommandHistory"));
+	for(const auto& Command : CommandHistory )
 	{
-		UGameDebugMenuFunctions::PrintLogScreen(this, TEXT("AGameDebugMenuManager: Beginplay Notfound PlayerController"), 4.0f);
+		PC->ConsoleCommand(Command);
 	}
+
+	GetWorld()->GetTimerManager().ClearTimer(InitializeManagerHandle);
 }
 
 void AGameDebugMenuManager::CreateDebugMenuRootWidget()
@@ -269,7 +283,7 @@ void AGameDebugMenuManager::CreateDebugMenuRootWidget()
 		DebugMenuRootWidget->RemoveFromParent();
 	}
 
-	DebugMenuRootWidget = Cast<UGameDebugMenuRootWidget>(UWidgetBlueprintLibrary::Create(this, WidgetDataAsset->DebugMenuRootWidgetClass, nullptr));
+	DebugMenuRootWidget = Cast<UGameDebugMenuRootWidget>(UWidgetBlueprintLibrary::Create(this, WidgetDataAsset->DebugMenuRootWidgetClass, GetOwnerPlayerController()));
 	DebugMenuRootWidget->DebugMenuManager = this;
 	DebugMenuRootWidget->AddToViewport(WidgetDataAsset->WidgetZOrder);
 	DebugMenuRootWidget->SetVisibility(ESlateVisibility::Collapsed);
@@ -307,8 +321,8 @@ void AGameDebugMenuManager::CreateDebugCameraInputClass()
 	DebugCameraInput                         = GetWorld()->SpawnActor<AGDMDebugCameraInput>(DebugCameraInputClass, SpawnInfo);
 
 	bool bExistDCC        = false;
-	const APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
-	if(IsValid(PC) && IsValid(PC->CheatManager))
+	const APlayerController* PC = GetOwnerPlayerController();
+	if(IsValid(PC->CheatManager))
 	{
 		if(ADebugCameraController* DCC = PC->CheatManager->DebugCameraControllerRef)
 		{
@@ -392,7 +406,7 @@ void AGameDebugMenuManager::SyncLoadDebugMenuStringTables(FName TargetDebugMenuL
 {
 	DebugMenuStrings.Reset();
 
-	if( FGDMStringTableList* StringTableList = UGameDebugMenuSettings::Get()->GameDebugMenuStringTables.Find(TargetDebugMenuLanguage) )
+	if( const FGDMStringTableList* StringTableList = GetDefault<UGameDebugMenuSettings>()->GameDebugMenuStringTables.Find(TargetDebugMenuLanguage) )
 	{
 		UE_LOG(LogGDM, Verbose, TEXT("Call SyncLoadDebugMenuStringTables %s"), *TargetDebugMenuLanguage.ToString());
 
@@ -477,14 +491,7 @@ bool AGameDebugMenuManager::ShowDebugMenu(bool bWaitToCaptureBeforeOpeningMenuFl
 		UGameDebugMenuFunctions::PrintLogScreen(this, TEXT("ShowDebugMenu: Not found World"), 4.0f);
 		return false;
 	}
-
-	APlayerController* PC = UGameplayStatics::GetPlayerController(World, 0);
-	if(!IsValid(PC))
-	{
-		UGameDebugMenuFunctions::PrintLogScreen(this, TEXT("ShowDebugMenu: Not found PlayerController"), 4.0f);
-		return false;
-	}
-
+	
 	if(!IsValid(DebugMenuRootWidget))
 	{
 		UGameDebugMenuFunctions::PrintLogScreen(this, TEXT("ShowDebugMenu: Not found DebugMenuRootWidget"), 4.0f);
@@ -492,6 +499,8 @@ bool AGameDebugMenuManager::ShowDebugMenu(bool bWaitToCaptureBeforeOpeningMenuFl
 	}
 
 	bShowDebugMenu = true;
+
+	APlayerController* PC = GetOwnerPlayerController();
 	EnableInput(PC);
 	DisabledNavigationConfigs();
 	EnableShowMouseCursorFlag(PC);
@@ -499,7 +508,7 @@ bool AGameDebugMenuManager::ShowDebugMenu(bool bWaitToCaptureBeforeOpeningMenuFl
 
 	bool bShow = true;
 
-	if( !UGameDebugMenuSettings::Get()->bDisableScreenCaptureProcessingWhenOpeningDebugMenu )
+	if( !GetDefault<UGameDebugMenuSettings>()->bDisableScreenCaptureProcessingWhenOpeningDebugMenu )
 	{
 		GetScreenshotRequesterComponent()->RequestScreenshot();
 
@@ -559,14 +568,7 @@ void AGameDebugMenuManager::HideDebugMenu()
 		UGameDebugMenuFunctions::PrintLogScreen(this, TEXT("HideDebugMenu: Not found World"), 4.0f);
 		return;
 	}
-
-	APlayerController* PC = UGameplayStatics::GetPlayerController(World,0);
-	if(!IsValid(PC))
-	{
-		UGameDebugMenuFunctions::PrintLogScreen(this, TEXT("HideDebugMenu: Not found PlayerController"), 4.0f);
-		return;
-	}
-
+	
 	if(!IsValid(DebugMenuRootWidget))
 	{
 		UGameDebugMenuFunctions::PrintLogScreen(this, TEXT("HideDebugMenu: Not found DebugMenuWidget"), 4.0f);
@@ -575,6 +577,7 @@ void AGameDebugMenuManager::HideDebugMenu()
 
 	bShowDebugMenu = false;
 
+	APlayerController* PC = GetOwnerPlayerController();
 	DisableInput(PC);
 	EnabledNavigationConfigs();
 	RestoreShowMouseCursorFlag(PC);
@@ -600,6 +603,13 @@ void AGameDebugMenuManager::HideDebugMenu()
 bool AGameDebugMenuManager::IsShowingDebugMenu()
 {
 	return bShowDebugMenu;
+}
+
+APlayerController* AGameDebugMenuManager::GetOwnerPlayerController() const
+{
+	checkf(IsValid(GetOwner()), TEXT("No owner"));
+	checkf(IsValid(Cast<APlayerController>(GetOwner())), TEXT("Owner needs to be PlayerController"));
+	return Cast<APlayerController>(GetOwner());
 }
 
 UGameDebugMenuRootWidget* AGameDebugMenuManager::GetDebugMenuRootWidget()
@@ -1027,15 +1037,10 @@ void AGameDebugMenuManager::AddDebugMenuPCProxyComponent(APlayerController* Play
 		return;
 	}
 
-	UActorComponent* NewComponent = NewObject<UActorComponent>(PlayerController, DebugMenuPCProxyComponentClass);
-	if (!IsValid(NewComponent))
-	{
-		UE_LOG(LogGDM, Warning, TEXT("AddDebugMenuPCProxyComponent; Not found NewComponent"));
-		return;
-	}
-
-	/* 登録 */
-	NewComponent->RegisterComponent();
+	UGDMPlayerControllerProxyComponent* NewComponent = Cast<UGDMPlayerControllerProxyComponent>( PlayerController->AddComponentByClass(DebugMenuPCProxyComponentClass, false, FTransform::Identity, true));
+	check(IsValid(NewComponent));
+	NewComponent->DebugMenuManager = this;
+	PlayerController->FinishAddComponent(NewComponent, false, FTransform::Identity);
 }
 
 bool AGameDebugMenuManager::RegisterInputObject(UObject* TargetObject)
@@ -1166,7 +1171,7 @@ bool AGameDebugMenuManager::GetDebugMenuString(const FString& StringKey, FString
 TArray<FName> AGameDebugMenuManager::GetDebugMenuLanguageKeys()
 {
 	TArray<FName> ReturnValues;
-	UGameDebugMenuSettings::Get()->GameDebugMenuStringTables.GetKeys(ReturnValues);
+	GetDefault<UGameDebugMenuSettings>()->GameDebugMenuStringTables.GetKeys(ReturnValues);
 	return ReturnValues;
 }
 
@@ -1177,7 +1182,7 @@ TArray<UGameDebugMenuWidget*> AGameDebugMenuManager::GetViewportDebugMenuWidgets
 
 FName AGameDebugMenuManager::GetCurrentDebugMenuLanguage() const
 {
-	return *GetPropertyJsonSystemComponent()->GetSingleStringFromJson(TEXT("DebugMenuLanguage"), UGameDebugMenuSettings::Get()->DefaultGameDebugMenuLanguage.ToString());
+	return *GetPropertyJsonSystemComponent()->GetSingleStringFromJson(TEXT("DebugMenuLanguage"), GetDefault<UGameDebugMenuSettings>()->DefaultGameDebugMenuLanguage.ToString());
 }
 
 void AGameDebugMenuManager::CallExecuteConsoleCommandDispatcher(const FString& Command)

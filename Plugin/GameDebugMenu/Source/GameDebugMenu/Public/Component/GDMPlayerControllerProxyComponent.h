@@ -11,6 +11,8 @@
 #include "GameDebugMenuTypes.h"
 #include "GDMPlayerControllerProxyComponent.generated.h"
 
+class AGameDebugMenuManager;
+
 /**
 * DebugMenuManager生成時、PlayerControllerに自動で追加されるコンポーネント
 * 使用用途としてはマルチプレイなどでDebug目的の通信が必要な場合、PlayerControllerの代わりに記述などができる
@@ -20,13 +22,17 @@ class GAMEDEBUGMENU_API UGDMPlayerControllerProxyComponent : public UActorCompon
 {
 	GENERATED_BODY()
 
+public:
+	UPROPERTY(Replicated)
+	TObjectPtr<AGameDebugMenuManager> DebugMenuManager = nullptr;
+	
 public:	
 	UGDMPlayerControllerProxyComponent();
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps ) const override;
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 public:
-
 	UFUNCTION(BlueprintPure)
 	APlayerController* GetOwnerPlayerController() const;
 
@@ -36,6 +42,9 @@ public:
 	UFUNCTION(BlueprintPure)
 	ACharacter* GetOwnerPlayerCharacter() const;
 
+	UFUNCTION(BlueprintPure)
+	AGameDebugMenuManager* GetDebugMenuManager() const;
+	
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ROS_ExecuteConsoleCommand(const FString& Command,bool bAllClient);
 

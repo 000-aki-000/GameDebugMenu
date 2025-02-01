@@ -31,7 +31,7 @@ void UGDMDebugReportWidget::SendDebugReport(const FString& Subject, const FStrin
 	AGameDebugMenuManager* DebugMenuManager = UGameDebugMenuFunctions::GetGameDebugMenuManager(this);
 	check(DebugMenuManager != nullptr);
 
-	const TSubclassOf<AGDMDebugReportRequester>* RequesterClass = UGameDebugMenuSettings::Get()->GetDebugReportRequesterClass();
+	const TSubclassOf<AGDMDebugReportRequester>* RequesterClass = GetDefault<UGameDebugMenuSettings>()->GetDebugReportRequesterClass();
 	if( RequesterClass == nullptr )
 	{
 		OnReceivedReportDispatcher.Broadcast(false);
@@ -61,27 +61,27 @@ void UGDMDebugReportWidget::SendDebugReport(const FString& Subject, const FStrin
 
 TArray<FText> UGDMDebugReportWidget::GetIssueCategoryNameList()
 {
-	return UGameDebugMenuSettings::Get()->GetIssueCategoryNameList();
+	return GetDefault<UGameDebugMenuSettings>()->GetIssueCategoryNameList();
 }
 
 TArray<FText> UGDMDebugReportWidget::GetPriorityNameList()
 {
-	return UGameDebugMenuSettings::Get()->GetPriorityNameList();
+	return GetDefault<UGameDebugMenuSettings>()->GetPriorityNameList();
 }
 
 TArray<FText> UGDMDebugReportWidget::GetAssigneeNameList()
 {
-	return UGameDebugMenuSettings::Get()->GetAssigneeNameList();
+	return GetDefault<UGameDebugMenuSettings>()->GetAssigneeNameList();
 }
 
 int32 UGDMDebugReportWidget::GetDefaultIssueCategoryIndex()
 {
-	return UGameDebugMenuSettings::Get()->GetDefaultIssueCategoryIndex();
+	return GetDefault<UGameDebugMenuSettings>()->GetDefaultIssueCategoryIndex();
 }
 
 int32 UGDMDebugReportWidget::GetDefaultPriorityIndex()
 {
-	return UGameDebugMenuSettings::Get()->GetDefaultPriorityIndex();
+	return GetDefault<UGameDebugMenuSettings>()->GetDefaultPriorityIndex();
 }
 
 void UGDMDebugReportWidget::OnScreenshotCaptured(int32 Width, int32 Height, const TArray<FColor>& Bitmap)

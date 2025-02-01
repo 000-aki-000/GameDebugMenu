@@ -7,10 +7,11 @@
 
 #include "Widgets/GameDebugMenuWidget.h"
 #include <Blueprint/WidgetTree.h>
-#include <Kismet/GameplayStatics.h>
 #include "TimerManager.h"
 #include "GameDebugMenuManager.h"
 #include "Component/GDMPlayerControllerProxyComponent.h"
+#include "Engine/DebugCameraController.h"
+#include "Engine/LocalPlayer.h"
 
 void UGameDebugMenuWidget::SendSelfEvent(FName EventName)
 {
@@ -19,7 +20,7 @@ void UGameDebugMenuWidget::SendSelfEvent(FName EventName)
 
 void UGameDebugMenuWidget::ExecuteGDMConsoleCommand(const FString Command, const EGDMConsoleCommandNetType CommandNetType)
 {
-	if (const APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0) )
+	if (const APlayerController* PC = GetOriginalPlayerController() )
 	{
 		if( UGDMPlayerControllerProxyComponent* DebugMenuPCProxyComponent = PC->FindComponentByClass<UGDMPlayerControllerProxyComponent>() )
 		{
@@ -128,4 +129,18 @@ bool UGameDebugMenuWidget::GetWidgetChildrenOfClass(TSubclassOf<UWidget> WidgetC
 	}
 
 	return (OutChildWidgets.Num() > 0);
+}
+
+APlayerController* UGameDebugMenuWidget::GetOriginalPlayerController() const
+{
+	APlayerController* PlayerController = GetOwningPlayer();
+
+	const ADebugCameraController* DCC = Cast<ADebugCameraController>(PlayerController);
+	if (IsValid(DCC))
+	{
+		/* FLocalPlayerContextのGetPlayerControllerはADebugCameraControllerを無視できないのでオリジナルを返す */
+		return DCC->OriginalControllerRef;
+	}
+	
+	return PlayerController;
 }

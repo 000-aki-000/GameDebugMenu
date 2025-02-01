@@ -24,7 +24,7 @@ UGDMTextBlock::UGDMTextBlock(const FObjectInitializer& ObjectInitializer)
 {
 	if( !IsRunningDedicatedServer() )
 	{
-		SetFont(FSlateFontInfo(UGameDebugMenuSettings::Get()->GetGDMFont(), 24, FName("Bold")));
+		SetFont(FSlateFontInfo(GetDefault<UGameDebugMenuSettings>()->GetGDMFont(), 24, FName("Bold")));
 	}
 }
 
@@ -71,7 +71,7 @@ void UGDMTextBlock::SetText(FText InText)
 
 			if( World->WorldType == EWorldType::Editor || World->WorldType == EWorldType::EditorPreview )
 			{
-				DebugMenuStr = UGameDebugMenuSettings::Get()->GetDebugMenuString(PreviewLanguageKey, StringKey);
+				DebugMenuStr = GetDefault<UGameDebugMenuSettings>()->GetDebugMenuString(PreviewLanguageKey, StringKey);
 				if( !DebugMenuStr.IsEmpty() )
 				{
 					DebugMenuStringKey = InText.ToString();

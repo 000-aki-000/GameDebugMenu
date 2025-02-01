@@ -37,9 +37,9 @@ void AGDMRequesterRedmine::StartRequest()
 void AGDMRequesterRedmine::RequestUploadScreenshotCapture()
 {
 	FString URL(TEXT("http://"));
-	URL += UGameDebugMenuSettings::Get()->RedmineSettings.HostName;
+	URL += GetDefault<UGameDebugMenuSettings>()->RedmineSettings.HostName;
 	URL += TEXT("/redmine/uploads.json?key=");
-	URL += UGameDebugMenuSettings::Get()->RedmineSettings.AccessKey;
+	URL += GetDefault<UGameDebugMenuSettings>()->RedmineSettings.AccessKey;
 
 	const TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request = FHttpModule::Get().CreateRequest();
 	Request->OnProcessRequestComplete().BindUObject(this, &AGDMRequesterRedmine::OnResponseReceivedUploaded);
@@ -57,9 +57,9 @@ void AGDMRequesterRedmine::RequestUploadLog()
 	GetOwnerDebugMenuManager()->GetOutputLogString(GameLog, LineBreak);
 
 	FString URL(TEXT("http://"));
-	URL += UGameDebugMenuSettings::Get()->RedmineSettings.HostName;
+	URL += GetDefault<UGameDebugMenuSettings>()->RedmineSettings.HostName;
 	URL += TEXT("/redmine/uploads.json?key=");
-	URL += UGameDebugMenuSettings::Get()->RedmineSettings.AccessKey;
+	URL += GetDefault<UGameDebugMenuSettings>()->RedmineSettings.AccessKey;
 
 	const TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request = FHttpModule::Get().CreateRequest();
 	Request->OnProcessRequestComplete().BindUObject(this, &AGDMRequesterRedmine::OnResponseReceivedLog);
@@ -73,9 +73,9 @@ void AGDMRequesterRedmine::RequestUploadLog()
 void AGDMRequesterRedmine::RequestIssues()
 {
 	FString URL(TEXT("http://"));
-	URL += UGameDebugMenuSettings::Get()->RedmineSettings.HostName;
+	URL += GetDefault<UGameDebugMenuSettings>()->RedmineSettings.HostName;
 	URL += TEXT("/redmine/issues.json?key=");
-	URL += UGameDebugMenuSettings::Get()->RedmineSettings.AccessKey;
+	URL += GetDefault<UGameDebugMenuSettings>()->RedmineSettings.AccessKey;
 
 	const TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request = FHttpModule::Get().CreateRequest();
 	Request->OnProcessRequestComplete().BindUObject(this, &AGDMRequesterRedmine::OnResponseReceived);
@@ -86,7 +86,7 @@ void AGDMRequesterRedmine::RequestIssues()
 	const TSharedRef<FJsonObject> JsonRootObject = MakeShareable(new FJsonObject());
 	const TSharedRef<FJsonObject> JsonIssueObject = MakeShareable(new FJsonObject());
 	JsonRootObject->SetObjectField(TEXT("issue"), JsonIssueObject);
-	JsonIssueObject->SetStringField(TEXT("project_id"), FString::FromInt(UGameDebugMenuSettings::Get()->RedmineSettings.ProjectId));
+	JsonIssueObject->SetStringField(TEXT("project_id"), FString::FromInt(GetDefault<UGameDebugMenuSettings>()->RedmineSettings.ProjectId));
 	JsonIssueObject->SetStringField(TEXT("tracker_id"), FString::FromInt(IssueCategoryIndex + 1));
 	JsonIssueObject->SetStringField(TEXT("priority_id"), FString::FromInt(PriorityIndex + 1));
 	JsonIssueObject->SetStringField(TEXT("subject"), GetSubject());

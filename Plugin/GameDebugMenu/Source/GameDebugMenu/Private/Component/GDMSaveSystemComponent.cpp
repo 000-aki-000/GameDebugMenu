@@ -19,7 +19,7 @@ UGDMSaveSystemComponent::UGDMSaveSystemComponent(const FObjectInitializer& Objec
 
 void UGDMSaveSystemComponent::SaveDebugMenuFile()
 {
-	if (UGameDebugMenuSettings::Get()->bDisableSaveFile)
+	if (GetDefault<UGameDebugMenuSettings>()->bDisableSaveFile)
 	{
 		return;
 	}
@@ -39,7 +39,7 @@ void UGDMSaveSystemComponent::SaveDebugMenuFile()
 	}
 
 	TArray<FString> CommandHistory;
-	if (!UGameDebugMenuSettings::Get()->bDoesNotSaveConsoleCommand)
+	if (!GetDefault<UGameDebugMenuSettings>()->bDoesNotSaveConsoleCommand)
 	{
 		Manager->GetOutputCommandHistoryString(CommandHistory);
 	}
@@ -61,7 +61,7 @@ void UGDMSaveSystemComponent::SaveDebugMenuFile()
 
 void UGDMSaveSystemComponent::LoadDebugMenuFile()
 {
-	if (UGameDebugMenuSettings::Get()->bDisableSaveFile)
+	if (GetDefault<UGameDebugMenuSettings>()->bDisableSaveFile)
 	{
 		return;
 	}
@@ -139,7 +139,7 @@ bool UGDMSaveSystemComponent::SaveFile(const FString& ContentString)
 		}
 
 		SaveGame->Json = ContentString;
-		const FString SlotName = UGameDebugMenuSettings::Get()->SaveFileName;
+		const FString SlotName = GetDefault<UGameDebugMenuSettings>()->SaveFileName;
 		UGameplayStatics::SaveGameToSlot(SaveGame, SlotName, UserIndex);
 
 		UE_LOG(LogGDM, Log, TEXT("SaveFile: JSON saved to SlotName '%s' UserIndex '%d'"), *SlotName, UserIndex);
@@ -147,7 +147,7 @@ bool UGDMSaveSystemComponent::SaveFile(const FString& ContentString)
 	}
 	else
 	{
-		const FString SaveFilePath = UGameDebugMenuSettings::Get()->GetFullSavePath();
+		const FString SaveFilePath = GetDefault<UGameDebugMenuSettings>()->GetFullSavePath();
 
 		if (FFileHelper::SaveStringToFile(ContentString, *SaveFilePath))
 		{
@@ -168,7 +168,7 @@ bool UGDMSaveSystemComponent::LoadFile(FString& OutLoadedContentString)
 	
 	if (CanUseSaveGame())
 	{
-		const FString SlotName = UGameDebugMenuSettings::Get()->SaveFileName;
+		const FString SlotName = GetDefault<UGameDebugMenuSettings>()->SaveFileName;
 		SaveGame = Cast<UGDMSaveGame>(UGameplayStatics::LoadGameFromSlot(SlotName, UserIndex));
 		if (!IsValid(SaveGame))
 		{
@@ -184,7 +184,7 @@ bool UGDMSaveSystemComponent::LoadFile(FString& OutLoadedContentString)
 	}
 	else
 	{
-		const FString LoadFilePath = UGameDebugMenuSettings::Get()->GetFullSavePath();
+		const FString LoadFilePath = GetDefault<UGameDebugMenuSettings>()->GetFullSavePath();
 		
 		if (FFileHelper::LoadFileToString(OutLoadedContentString, *LoadFilePath))
 		{
@@ -202,7 +202,7 @@ bool UGDMSaveSystemComponent::DeleteFile()
 {
 	if (CanUseSaveGame())
 	{
-		const FString SlotName = UGameDebugMenuSettings::Get()->SaveFileName;
+		const FString SlotName = GetDefault<UGameDebugMenuSettings>()->SaveFileName;
 		if (UGameplayStatics::DeleteGameInSlot(SlotName, UserIndex))
 		{
 			return true;
@@ -212,7 +212,7 @@ bool UGDMSaveSystemComponent::DeleteFile()
 	}
 	else
 	{
-		const FString FilePath = UGameDebugMenuSettings::Get()->GetFullSavePath();
+		const FString FilePath = GetDefault<UGameDebugMenuSettings>()->GetFullSavePath();
 		if (FFileHelper::SaveStringToFile(FString(), *FilePath))/* ファイル削除がないので空で上書き */
 		{
 			UE_LOG(LogGDM, Log, TEXT("DeleteFile: JSON saved to '%s'"), *FilePath);
@@ -228,7 +228,7 @@ bool UGDMSaveSystemComponent::DeleteFile()
 
 bool UGDMSaveSystemComponent::CanUseSaveGame()
 {
-	if (!UGameDebugMenuSettings::Get()->bUseSaveGame)
+	if (!GetDefault<UGameDebugMenuSettings>()->bUseSaveGame)
 	{
 		/* テキストファイルで直接書き込み */
 		

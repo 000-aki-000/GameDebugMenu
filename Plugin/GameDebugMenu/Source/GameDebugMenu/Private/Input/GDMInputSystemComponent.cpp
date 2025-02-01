@@ -60,7 +60,7 @@ void UGDMInputSystemComponent::RepeatButtonInfo::Tick(float DeltaTime)
 
 	if(ElapsedTime <= 0.0f)
 	{
-		ElapsedTime = UGameDebugMenuSettings::Get()->ButtonRepeatInterval;
+		ElapsedTime = GetDefault<UGameDebugMenuSettings>()->ButtonRepeatInterval;
 
 		/* イベント呼び出し */
 		(Instance->*CallFunction)(EventName);
@@ -75,7 +75,7 @@ void UGDMInputSystemComponent::RepeatButtonInfo::Start()
 	}
 
 	bRun = true;
-	ElapsedTime = UGameDebugMenuSettings::Get()->ButtonRepeatDelay;
+	ElapsedTime = GetDefault<UGameDebugMenuSettings>()->ButtonRepeatDelay;
 }
 
 void UGDMInputSystemComponent::RepeatButtonInfo::Stop()
@@ -228,7 +228,7 @@ void UGDMInputSystemComponent::InitializeInputMapping()
 	{
 		bActionMappingBindingsAdded = true;
 
-		const auto& ActionMappingKeys = UGameDebugMenuSettings::Get()->ActionMappingKeys;
+		const auto& ActionMappingKeys = GetDefault<UGameDebugMenuSettings>()->ActionMappingKeys;
 		for( const auto& Pair : ActionMappingKeys)
 		{
 			for( const auto& KeyEvent : Pair.Value.Keys)
@@ -237,7 +237,7 @@ void UGDMInputSystemComponent::InitializeInputMapping()
 			}
 		}
 
-		const auto& AxisMappingKeys = UGameDebugMenuSettings::Get()->AxisMappingKeys;
+		const auto& AxisMappingKeys = GetDefault<UGameDebugMenuSettings>()->AxisMappingKeys;
 		for( const auto& Pair : AxisMappingKeys)
 		{
 			const FGDMAxisMappingKey& Axis = Pair.Value;
@@ -258,7 +258,7 @@ void UGDMInputSystemComponent::SetupInputComponentBindActions(UInputComponent* O
 {
 	FInputActionBinding* InputActionBinding = nullptr;
 
-	const auto& ActionMappingKeys = UGameDebugMenuSettings::Get()->ActionMappingKeys;
+	const auto& ActionMappingKeys = GetDefault<UGameDebugMenuSettings>()->ActionMappingKeys;
 	for( const auto& Pair : ActionMappingKeys )
 	{
 		InputActionBinding = &OwnerInputComponent->BindAction<FGDMInputActionDelegate>(Pair.Key, EInputEvent::IE_Pressed, this, &UGDMInputSystemComponent::CallInputPressedInterfaceEvent, Pair.Key);
@@ -433,7 +433,7 @@ void UGDMInputSystemComponent::CallInputReleasedInterfaceEvent(FName EventName)
 
 void UGDMInputSystemComponent::CallReleasedButtons()
 {
-	const auto& ActionMappingKeys = UGameDebugMenuSettings::Get()->ActionMappingKeys;
+	const auto& ActionMappingKeys = GetDefault<UGameDebugMenuSettings>()->ActionMappingKeys;
 	for( const auto& Pair : ActionMappingKeys )
 	{
 		CallInputReleasedInterfaceEvent(Pair.Key);
@@ -502,7 +502,7 @@ void UGDMInputSystemComponent::SetupRepeatButtons()
 	RepeatButtonInfo Repeat(this);
 	Repeat.SetFunction(&UGDMInputSystemComponent::OnInputRepeat);
 
-	const auto& ActionMappingKeys = UGameDebugMenuSettings::Get()->ActionMappingKeys;
+	const auto& ActionMappingKeys = GetDefault<UGameDebugMenuSettings>()->ActionMappingKeys;
 	for( const auto& Pair : ActionMappingKeys )
 	{
 		if( Pair.Value.bRepeat )

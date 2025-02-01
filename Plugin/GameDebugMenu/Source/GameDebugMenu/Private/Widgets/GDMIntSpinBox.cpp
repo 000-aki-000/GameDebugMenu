@@ -18,7 +18,7 @@ UGDMIntSpinBox::UGDMIntSpinBox(const FObjectInitializer& ObjectInitializer)
 {
 	if (!IsRunningDedicatedServer())
 	{
-		Font = FSlateFontInfo(UGameDebugMenuSettings::Get()->GetGDMFont(), 12, FName("Bold"));
+		Font = FSlateFontInfo(GetDefault<UGameDebugMenuSettings>()->GetGDMFont(), 12, FName("Bold"));
 	}
 
 	// Grab other defaults from slate arguments.
