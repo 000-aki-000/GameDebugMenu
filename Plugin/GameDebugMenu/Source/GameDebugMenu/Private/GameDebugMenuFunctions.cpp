@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2025 akihiko moroi
+* Copyright (c) 2020 akihiko moroi
 *
 * This software is released under the MIT License.
 * (See accompanying file LICENSE.txt or copy at http://opensource.org/licenses/MIT)
@@ -13,6 +13,7 @@
 #include "Misc/ConfigCacheIni.h"
 #include <GeneralProjectSettings.h>
 
+#include "Component/GDMLocalizeStringComponent.h"
 #include "GameFramework/WorldSettings.h"
 #include "Input/GDMInputSystemComponent.h"
 
@@ -91,22 +92,34 @@ bool UGameDebugMenuFunctions::TryCreateDebugMenuManager(APlayerController* Playe
 		return false;
 	}
 
+	if (DebugMenuManagerClassPtr.IsNull())
+	{
+		UE_LOG(LogGDM, Log, TEXT("TryCreateDebugMenuManager: Class Pointer null[%s]"), *NetMode);
+		return false;
+	}
+
+	if (!FPackageName::DoesPackageExist(DebugMenuManagerClassPtr.GetLongPackageName()))
+	{
+		UE_LOG(LogGDM, Log, TEXT("TryCreateDebugMenuManager: Package was not on disk[%s]"), *NetMode);
+		return false;
+	}
+
 	if(!bServer)
 	{
 		/* Client */
-		if( !IsValid(GetGameDebugMenuManager(PlayerController)) )
+		if( !IsValid(GetGameDebugMenuManager(PlayerController, false)) )
 		{
 			/* まだ生成してもらってないので待つ */
 			UE_LOG(LogGDM, Log, TEXT("TryCreateDebugMenuManager: Wait spawn[%s]"), *NetMode);
 			return true;
 		}
 
-		CurrentGameDebugMenuManager = GetGameDebugMenuManager(PlayerController);
+		CurrentGameDebugMenuManager = GetGameDebugMenuManager(PlayerController, false);
 	}
 	else
 	{
 		/* Server */
-		if (IsValid(GetGameDebugMenuManager(PlayerController)))
+		if (IsValid(GetGameDebugMenuManager(PlayerController, false)))
 		{
 			UE_LOG(LogGDM, Log, TEXT("TryCreateDebugMenuManager: Created manager[%s]"), *NetMode);
 			return true;
@@ -232,7 +245,7 @@ bool UGameDebugMenuFunctions::DestroyDebugMenuManager(APlayerController* PlayerC
 			});
 	}
 
-	AGameDebugMenuManager* GDMManager = GetGameDebugMenuManager(PlayerController);
+	AGameDebugMenuManager* GDMManager = GetGameDebugMenuManager(PlayerController, false);
 	if(IsValid(GDMManager))
 	{
 		GDMManager->HideDebugMenu();
@@ -243,7 +256,7 @@ bool UGameDebugMenuFunctions::DestroyDebugMenuManager(APlayerController* PlayerC
 	return false;
 }
 
-AGameDebugMenuManager* UGameDebugMenuFunctions::GetGameDebugMenuManager(const UObject* WorldContextObject)
+AGameDebugMenuManager* UGameDebugMenuFunctions::GetGameDebugMenuManager(const UObject* WorldContextObject, const bool bCheckInitialize)
 {
 	if(GetDefault<UGameDebugMenuSettings>()->bDisableGameDebugMenu)
 	{
@@ -258,11 +271,16 @@ AGameDebugMenuManager* UGameDebugMenuFunctions::GetGameDebugMenuManager(const UO
 	}
 
 	AGameDebugMenuManager* GDMManager = CurrentGameDebugMenuManager.Get();
-	if (IsValid(GDMManager))if (IsValid(GDMManager))
+	if (IsValid(GDMManager))
 	{
 		if (GDMManager->GetWorld() == World)
 		{
-			return GDMManager->IsInitializedManager() ? GDMManager : nullptr;
+			if(bCheckInitialize)
+			{
+				return GDMManager->IsInitializedManager() ? GDMManager : nullptr;
+			}
+
+			return GDMManager;
 		}
 	}
 
@@ -280,7 +298,12 @@ AGameDebugMenuManager* UGameDebugMenuFunctions::GetGameDebugMenuManager(const UO
 
 	if (IsValid(GDMManager))
 	{
-		return GDMManager->IsInitializedManager() ? GDMManager : nullptr;
+		if(bCheckInitialize)
+		{
+			return GDMManager->IsInitializedManager() ? GDMManager : nullptr;
+		}
+
+		return GDMManager;
 	}
 
 	return nullptr;
@@ -513,7 +536,7 @@ bool UGameDebugMenuFunctions::VerifyGDMNumObjectProperties(UObject* WorldContext
 
 	for(int32 Index = GetGDMNumObjectProperties(WorldContextObject) - 1; Index >= 0; --Index)
 	{
-		UObject* PropertyOwnerObj = GetGDMObjectProperty(WorldContextObject, Index, CategoryKey, PropertySaveKey, DisplayPropertyName, Description, PropertyName, PropertyType, EnumPathName, PropertyUIConfigInfo);
+		const UObject* PropertyOwnerObj = GetGDMObjectProperty(WorldContextObject, Index, CategoryKey, PropertySaveKey, DisplayPropertyName, Description, PropertyName, PropertyType, EnumPathName, PropertyUIConfigInfo);
 		if(!IsValid(PropertyOwnerObj))
 		{
 			GDMManager->RemoveObjectProperty(Index);
@@ -536,7 +559,7 @@ bool UGameDebugMenuFunctions::VerifyGDMNumObjectFunctions(UObject* WorldContextO
 		return false;
 	}
 
-	int32 Num = GetGDMNumObjectFunctions(WorldContextObject);
+	const int32 Num = GetGDMNumObjectFunctions(WorldContextObject);
 
 	FGDMGameplayCategoryKey CategoryKey;
 	FText DisplayFunctionName;
@@ -546,7 +569,7 @@ bool UGameDebugMenuFunctions::VerifyGDMNumObjectFunctions(UObject* WorldContextO
 
 	for(int32 Index = Num - 1; Index >= 0; --Index)
 	{
-		UObject* FunctionOwnerObj = GetGDMObjectFunction(WorldContextObject,Index,CategoryKey,DisplayFunctionName,Description,FunctionName);
+		const UObject* FunctionOwnerObj = GetGDMObjectFunction(WorldContextObject,Index,CategoryKey,DisplayFunctionName,Description,FunctionName);
 		if(!IsValid(FunctionOwnerObj))
 		{
 			GDMManager->RemoveObjectFunction(Index);
@@ -814,7 +837,7 @@ FString UGameDebugMenuFunctions::GetProjectVersionString()
 
 float UGameDebugMenuFunctions::GetWorldTimeDilation(UObject* WorldContextObject)
 {
-	if( UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObject,EGetWorldErrorMode::ReturnNull) )
+	if(const UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObject,EGetWorldErrorMode::ReturnNull) )
 	{
 		return World->GetWorldSettings()->TimeDilation;
 	}
@@ -832,7 +855,7 @@ void UGameDebugMenuFunctions::PrintLogScreen(UObject* WorldContextObject, const 
 #if !(UE_BUILD_SHIPPING)
 
 	static FLinearColor LogColor(0.15f, 0.2f, 0.2f);
-	UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::ReturnNull);
+	const UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::ReturnNull);
 	FString Prefix;
 	if (World)
 	{
@@ -891,7 +914,7 @@ void UGameDebugMenuFunctions::PrintLogScreen(UObject* WorldContextObject, const 
 
 void UGameDebugMenuFunctions::DynamicallyChangeGameDebugMenuManagerBlockInput(UObject* WorldContextObject, bool bBlockFlag)
 {
-	if(AGameDebugMenuManager* Manager = GetGameDebugMenuManager(WorldContextObject))
+	if(const AGameDebugMenuManager* Manager = GetGameDebugMenuManager(WorldContextObject))
 	{
 		if(IsValid(Manager->InputComponent))
 		{
@@ -902,13 +925,30 @@ void UGameDebugMenuFunctions::DynamicallyChangeGameDebugMenuManagerBlockInput(UO
 
 bool UGameDebugMenuFunctions::GetDebugMenuString(UObject* WorldContextObject, const FString StringKey, FString& OutString)
 {
-	if( AGameDebugMenuManager* Manager = GetGameDebugMenuManager(WorldContextObject) )
+	if(const AGameDebugMenuManager* Manager = GetGameDebugMenuManager(WorldContextObject) )
 	{
-		return Manager->GetDebugMenuString(StringKey, OutString);
+		return Manager->GetLocalizeStringComponent()->GetString(StringKey, OutString);
 	}
 
 	OutString = StringKey;
 	return false;
+}
+
+FName UGameDebugMenuFunctions::GetCurrentDebugMenuLanguage(UObject* WorldContextObject)
+{
+	if(const AGameDebugMenuManager* Manager = GetGameDebugMenuManager(WorldContextObject) )
+	{
+		return Manager->GetLocalizeStringComponent()->GetCurrentDebugMenuLanguage();
+	}
+
+	return NAME_None;
+}
+
+TArray<FName> UGameDebugMenuFunctions::GetDebugMenuLanguageKeys()
+{
+	TArray<FName> ReturnValues;
+	GetDefault<UGameDebugMenuSettings>()->GameDebugMenuStringTables.GetKeys(ReturnValues);
+	return ReturnValues;
 }
 
 FString UGameDebugMenuFunctions::GetDebugMenuLineBreakString()

@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2025 akihiko moroi
+* Copyright (c) 2020 akihiko moroi
 *
 * This software is released under the MIT License.
 * (See accompanying file LICENSE.txt or copy at http://opensource.org/licenses/MIT)
@@ -48,12 +48,11 @@ public:
 	/**
 	* 取得(Managerの参照をもつことになるので使用する場合は注意)
 	*/
-	UFUNCTION(BlueprintPure, Category = "GDM|Functions", meta = (Keywords = "DebugMenu GDM", WorldContext = "WorldContextObject"))
-	static AGameDebugMenuManager* GetGameDebugMenuManager(const UObject* WorldContextObject);
+	UFUNCTION(BlueprintPure, Category = "GDM|Functions", meta = (Keywords = "DebugMenu GDM", WorldContext = "WorldContextObject", AdvancedDisplay = "bCheckInitialize"))
+	static AGameDebugMenuManager* GetGameDebugMenuManager(const UObject* WorldContextObject, bool bCheckInitialize = true);
 
 	/**
 	* 表示
-	*
 	* @return True: 処理の正常終了
 	*/
 	UFUNCTION(BlueprintCallable, BlueprintCosmetic, Category = "GDM|Functions", meta = (Keywords = "DebugMenu GDM", WorldContext = "WorldContextObject"))
@@ -61,7 +60,6 @@ public:
 
 	/**
 	* 非表示
-	*
 	* @return True: 処理の正常終了
 	*/
 	UFUNCTION(BlueprintCallable, BlueprintCosmetic, Category = "GDM|Functions", meta = (Keywords = "DebugMenu GDM", WorldContext = "WorldContextObject"))
@@ -69,7 +67,6 @@ public:
 
 	/**
 	* (非)表示に切り替える
-	*
 	* @return True: 処理の正常終了
 	*/
 	UFUNCTION(BlueprintCallable, BlueprintCosmetic, Category = "GDM|Functions", meta = (Keywords = "DebugMenu GDM", WorldContext = "WorldContextObject"))
@@ -89,15 +86,14 @@ public:
 
 	/**
 	* DebugMenuに表示させるオブジェクトのプロパティを登録する
-	*
-	* @param TargetObject         - プロパティを所持してる対象のオブジェクト
+	* @param TargetObject - プロパティを所持してる対象のオブジェクト
 	* @param PropertyUIConfigInfo - UIでの設定情報
-	* @param PropertyName         - プロパティ名
-	* @param CategoryKey		  - カテゴリ
-	* @param PropertySaveKey	  - プロパティデータ保存用の識別キー
-	* @param DisplayPropertyName  - UI上のプロパティ名,何も指定しなければ「PropertyName」で表示
-	* @param Description          - 説明文
-	* @param DisplayPriority	　- リスト追加時の表示優先度（降順）
+	* @param PropertyName - プロパティ名
+	* @param CategoryKey - カテゴリ
+	* @param PropertySaveKey - プロパティデータ保存用の識別キー
+	* @param DisplayPropertyName - UI上のプロパティ名,何も指定しなければ「PropertyName」で表示
+	* @param Description - 説明文
+	* @param DisplayPriority - リスト追加時の表示優先度（降順）
 	* @return True: 登録成功 False: 何らかの要因で失敗した（ログに出力されてます）
 	*/
 	UFUNCTION(BlueprintCallable, BlueprintCosmetic, Category = "GDM|Functions", meta = (Keywords = "DebugMenu GDM", AdvancedDisplay = "5"))
@@ -105,13 +101,12 @@ public:
 
 	/**
 	* DebugMenuに表示させるオブジェクトの関数（カスタムイベント）を登録する
-	*
-	* @param TargetObject        - 関数（カスタムイベント）を所持してる対象のオブジェクト
-	* @param FunctionName        - 関数（カスタムイベント）名
-	* @param CategoryKey		 - カテゴリ
+	* @param TargetObject - 関数（カスタムイベント）を所持してる対象のオブジェクト
+	* @param FunctionName - 関数（カスタムイベント）名
+	* @param CategoryKey - カテゴリ
 	* @param DisplayFunctionName - UI上の関数（カスタムイベント）名,何も指定しなければ「FunctionName」
-	* @param Description         - 説明文
-	* @param DisplayPriority	　- リスト追加時の表示優先度（降順）
+	* @param Description - 説明文
+	* @param DisplayPriority - リスト追加時の表示優先度（降順）
 	* @return True: 登録成功 False: 何らかの要因で失敗した（ログに出力されてます）
 	* @memo ここで登録できるのは引数０の関数（カスタムイベント）のみ
 	*/
@@ -150,7 +145,6 @@ public:
 
 	/**
 	* 登録済みプロパティが使用できるか確認する
-	*
 	* @return True すべて問題なし　False 1つ以上使用できないものがあった
 	*/
 	UFUNCTION(BlueprintCallable, BlueprintCosmetic, Category = "GDM|Functions", meta = (Keywords = "DebugMenu GDM", WorldContext = "WorldContextObject"))
@@ -158,7 +152,6 @@ public:
 
 	/**
 	* 登録済み関数が使用できるか確認する
-	*
 	* @return True すべて問題なし　False 1つ以上使用できないものがあった
 	*/
 	UFUNCTION(BlueprintCallable, BlueprintCosmetic, Category = "GDM|Functions", meta = (Keywords = "DebugMenu GDM", WorldContext = "WorldContextObject"))
@@ -238,8 +231,7 @@ public:
 	static FString GetGDMObjectName(UObject* TargetObject);
 
 	/**
-	* DebugMenu操作オブジェクトの登録
-	*
+	* デバッグメニュー操作オブジェクトの登録
 	* @param TargetInputObject - 対象のオブジェクト。未設定で呼び出した自身がセットされる
 	* @return true:登録成功 false:失敗
 	*/
@@ -247,8 +239,7 @@ public:
 	static bool RegisterGDMInputObject(UObject* TargetInputObject);
 
 	/**
-	* DebugMenu操作オブジェクトの解除
-	*
+	* デバッグメニュー操作オブジェクトの解除
 	* @param TargetInputObject - 対象のオブジェクト。未設定で呼び出した自身がセットされる
 	* @return true:登録成功 false:失敗
 	*/
@@ -257,7 +248,6 @@ public:
 
 	/**
 	* DebugReport用UIを表示する
-	*
 	* @memo 通常の開閉は最後に操作したMenuになるがこっちはなからずDebugReport用UIを表示されキャプチャもDebugMenuが含まれない
 	*/
 	UFUNCTION(BlueprintCallable, BlueprintCosmetic, Category = "GDM|Functions", meta = (Keywords = "DebugMenu GDM", WorldContext = "WorldContextObject"))
@@ -271,7 +261,6 @@ public:
 
 	/**
 	* ビルド構成を文字列で取得
-	*
 	* @memo EBuildConfiguration(Engine\Source\Runtime\Core\Public\GenericPlatform\GenericPlatformMisc.h)参照
 	*/
 	UFUNCTION(BlueprintPure, BlueprintCosmetic, Category = "GDM|Functions", meta = (Keywords = "DebugMenu GDM"))
@@ -296,11 +285,8 @@ public:
 	static float GetWorldTimeDilation(UObject* WorldContextObject);
 
 	/**
-	* DebugMenuから切り替えできる言語を取得
+	* デバッグメニュー用のログカテゴリを使用したPrintString
 	*/
-	UFUNCTION(BlueprintPure, BlueprintCosmetic, Category = "GDM|Functions", meta = (Keywords = "DebugMenu GDM"))
-	static TArray<FString> GetGDMCultureList();
-	
 	UFUNCTION(BlueprintCallable, BlueprintCosmetic, Category = "GDM|Functions", meta = (Keywords = "DebugMenu GDM", WorldContext = "WorldContextObject", DisplayName = "PrintLogScreenGDM"))
 	static void PrintLogScreen(UObject* WorldContextObject, const FString& InString, float Duration = 0.2f, bool bPrintToLog = false);
 
@@ -311,8 +297,7 @@ public:
 	static void DynamicallyChangeGameDebugMenuManagerBlockInput(UObject* WorldContextObject, bool bBlockFlag);
 
 	/**
-	* DebugMenu用のStringTableから文字列を取得する
-	* 
+	* デバッグメニュー用のStringTableから文字列を取得する
 	* @param StringKey - DebugMenuのStringTableのキー
 	* @param OutString - キー対応する文字列
 	* @return true:成功。キーに合う文字列を取得　false:失敗。キーが存在しないかマネージャーが生成されてない
@@ -320,6 +305,24 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "GDM|Functions", meta = (Keywords = "DebugMenu GDM", WorldContext = "WorldContextObject"))
 	static bool GetDebugMenuString(UObject* WorldContextObject, const FString StringKey, FString& OutString);
 
+	/**
+	* デバッグメニューから切り替えできる言語を取得(エンジン内の言語切り替え)
+	*/
+	UFUNCTION(BlueprintPure, BlueprintCosmetic, Category = "GDM|Functions", meta = (Keywords = "DebugMenu GDM"))
+	static TArray<FString> GetGDMCultureList();
+	
+	/**
+	* デバッグメニューの現在使用中の言語を取得
+	*/
+	UFUNCTION(BlueprintPure, Category = "GDM|Functions", meta = (Keywords = "DebugMenu GDM", WorldContext = "WorldContextObject"))
+	static FName GetCurrentDebugMenuLanguage(UObject* WorldContextObject);
+	
+	/**
+	* デバッグメニューで使用できる言語を取得
+	*/
+	UFUNCTION(BlueprintCallable, Category = "GDM|Functions", meta = (Keywords = "DebugMenu GDM"))
+	static TArray<FName> GetDebugMenuLanguageKeys();
+	
 	/**
 	* デバッグメニューで使用する共通の改行判定文字を取得
 	*/

@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2025 akihiko moroi
+* Copyright (c) 2020 akihiko moroi
 *
 * This software is released under the MIT License.
 * (See accompanying file LICENSE.txt or copy at http://opensource.org/licenses/MIT)
@@ -16,6 +16,9 @@
 #include "Input/GDMInputInterface.h"
 #include "GameDebugMenuSettings.h"
 #include "GameDebugMenuManager.h"
+#include "Engine/DebugCameraController.h"
+#include "GameFramework/CheatManager.h"
+#include "Input/GDMDebugCameraInput.h"
 
 /************************************************************************/
 /* RepeatButtonInfo											   */
@@ -101,12 +104,16 @@ UGDMInputSystemComponent::UGDMInputSystemComponent()
 	, bBindingsInputComponent(false)
 	, IgnoreDebugMenuInput(0)
 	, bActionMappingBindingsAdded(false)
+	, DebugCameraInputClass(nullptr)
+	, DebugCameraInput(nullptr)
+	, bOutputDebugLog(false)
 {
-	PrimaryComponentTick.bCanEverTick                = true;
-	PrimaryComponentTick.bStartWithTickEnabled       = true;
-	PrimaryComponentTick.TickGroup                   = ETickingGroup::TG_PrePhysics;
-	PrimaryComponentTick.bTickEvenWhenPaused         = true;
-	bNeverNeedsRenderUpdate                          = true;
+	PrimaryComponentTick.bCanEverTick = true;
+	PrimaryComponentTick.bStartWithTickEnabled = true;
+	PrimaryComponentTick.TickGroup = ETickingGroup::TG_PrePhysics;
+	PrimaryComponentTick.bTickEvenWhenPaused = true;
+	bNeverNeedsRenderUpdate = true;
+	DebugCameraInputClass = AGDMDebugCameraInput::StaticClass();
 }
 
 void UGDMInputSystemComponent::BeginPlay()
@@ -121,6 +128,17 @@ void UGDMInputSystemComponent::BeginPlay()
 	else
 	{
 		SetComponentTickEnabled(false);
+	}
+}
+
+void UGDMInputSystemComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	Super::EndPlay(EndPlayReason);
+
+	if(IsValid(DebugCameraInput))
+	{
+		DebugCameraInput->K2_DestroyActor();
+		DebugCameraInput = nullptr;
 	}
 }
 
@@ -220,6 +238,36 @@ void UGDMInputSystemComponent::ResetIgnoreInput()
 bool UGDMInputSystemComponent::IsInputIgnored() const
 {
 	return (IgnoreDebugMenuInput > 0);
+}
+
+void UGDMInputSystemComponent::CreateDebugCameraInputClass()
+{
+	if(DebugCameraInputClass == nullptr)
+	{
+		return;
+	}
+
+	FActorSpawnParameters SpawnInfo;
+	SpawnInfo.Owner                          = GetOwner();
+	SpawnInfo.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	DebugCameraInput                         = GetWorld()->SpawnActor<AGDMDebugCameraInput>(DebugCameraInputClass, SpawnInfo);
+
+	bool bExistDCC        = false;
+	const APlayerController* PC = GetOwnerGameDebugMenuManager()->GetOwnerPlayerController();
+	if(IsValid(PC->CheatManager))
+	{
+		if(ADebugCameraController* DCC = PC->CheatManager->DebugCameraControllerRef)
+		{
+			bExistDCC = true;
+			DebugCameraInput->EnableInput(DCC);
+		}
+	}
+
+	if(!bExistDCC)
+	{
+		/* ないので生成するのを待つ */
+		DebugCameraInput->BindSpawnDebugCameraController();
+	}
 }
 
 void UGDMInputSystemComponent::InitializeInputMapping()

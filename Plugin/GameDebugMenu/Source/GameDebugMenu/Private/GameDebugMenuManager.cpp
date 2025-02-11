@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2025 akihiko moroi
+* Copyright (c) 2020 akihiko moroi
 *
 * This software is released under the MIT License.
 * (See accompanying file LICENSE.txt or copy at http://opensource.org/licenses/MIT)
@@ -23,6 +23,7 @@
 #include "Component/GDMScreenshotRequesterComponent.h"
 #include "Log/GDMOutputDevice.h"
 #include "Blueprint/GameViewportSubsystem.h"
+#include "Component/GDMLocalizeStringComponent.h"
 #include "Component/GDMPropertyJsonSystemComponent.h"
 #include "Component/GDMSaveSystemComponent.h"
 #include "Input/GDMDebugCameraInput.h"
@@ -42,6 +43,7 @@ AGameDebugMenuManager::AGameDebugMenuManager(const FObjectInitializer& ObjectIni
 	, ScreenshotRequesterComponent(nullptr)
 	, PropertyJsonSystemComponent(nullptr)
 	, SaveSystemComponent(nullptr)
+	, LocalizeStringComponent(nullptr)
 	, ListenerComponent(nullptr)
 	, InitializeManagerHandle()
 	, bInitializedManager(false)
@@ -55,16 +57,14 @@ AGameDebugMenuManager::AGameDebugMenuManager(const FObjectInitializer& ObjectIni
 	, DebugMenuRootWidget(nullptr)
 	, DebugMenuInstances()
 	, bGamePause(false)
-	, DebugCameraInputClass()
-	, DebugCameraInput(nullptr)
 	, DebugMenuPCProxyComponentClass()
 	, OutputLog(nullptr)
-	, DebugMenuStrings()
 {
 	DebugMenuInputSystemComponent = CreateDefaultSubobject<UGDMInputSystemComponent>(TEXT("DebugMenuInputSystemComponent"));
 	ScreenshotRequesterComponent  = CreateDefaultSubobject<UGDMScreenshotRequesterComponent>(TEXT("ScreenshotRequesterComponent"));
 	PropertyJsonSystemComponent   = CreateDefaultSubobject<UGDMPropertyJsonSystemComponent>(TEXT("PropertyJsonSystemComponent"));
 	SaveSystemComponent			  = CreateDefaultSubobject<UGDMSaveSystemComponent>(TEXT("SaveSystemComponent"));
+	LocalizeStringComponent		  = CreateDefaultSubobject<UGDMLocalizeStringComponent>(TEXT("LocalizeStringComponent"));
 	ListenerComponent             = CreateDefaultSubobject<UGDMListenerComponent>(TEXT("ListenerComponent"));
 
 	PrimaryActorTick.bCanEverTick			= true;
@@ -79,8 +79,7 @@ AGameDebugMenuManager::AGameDebugMenuManager(const FObjectInitializer& ObjectIni
 	SetReplicatingMovement(false);
 	SetNetUpdateFrequency(1);/* デフォルトのPlayerStateと同じかんじにしとく */
 	SetRemoteRoleForBackwardsCompat(ROLE_SimulatedProxy);
-
-	DebugCameraInputClass          = AGDMDebugCameraInput::StaticClass();
+	
 	DebugMenuPCProxyComponentClass = UGDMPlayerControllerProxyComponent::StaticClass();
 }
 
@@ -107,25 +106,24 @@ void AGameDebugMenuManager::BeginPlay()
 void AGameDebugMenuManager::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	UGameDebugMenuFunctions::PrintLogScreen(this, TEXT("AGameDebugMenuManager: Call EndPlay"), 4.0f);
-
+	
 	OutputLog.Reset();
 
 	if(EndPlayReason != EEndPlayReason::EndPlayInEditor && EndPlayReason != EEndPlayReason::Quit)
 	{
+		if (const UWorld* World = GetWorld())
+		{
+			World->GetTimerManager().ClearTimer(InitializeManagerHandle);
+		}
+		
 		EnabledNavigationConfigs();
 
-		DebugMenuInputSystemComponent->CallReleasedButtons();
+		GetDebugMenuInputSystemComponent()->CallReleasedButtons();
 
 		if(IsValid(DebugMenuRootWidget))
 		{
 			DebugMenuRootWidget->RemoveFromParent();
 			DebugMenuRootWidget = nullptr;
-		}
-
-		if(IsValid(DebugCameraInput))
-		{
-			DebugCameraInput->K2_DestroyActor();
-			DebugCameraInput = nullptr;
 		}
 	}
 
@@ -146,7 +144,7 @@ void AGameDebugMenuManager::EnableInput(class APlayerController* PlayerControlle
 {
 	Super::EnableInput(PlayerController);
 
-	DebugMenuInputSystemComponent->InitializeInputComponentBindings(InputComponent);
+	GetDebugMenuInputSystemComponent()->InitializeInputComponentBindings(InputComponent);
 
 	if(IsValid(PlayerController) && IsValid(PlayerController->CheatManager))
 	{
@@ -190,6 +188,11 @@ UGDMSaveSystemComponent* AGameDebugMenuManager::GetSaveSystemComponent() const
 	return SaveSystemComponent;
 }
 
+UGDMLocalizeStringComponent* AGameDebugMenuManager::GetLocalizeStringComponent() const
+{
+	return LocalizeStringComponent;
+}
+
 UGDMListenerComponent* AGameDebugMenuManager::GetListenerComponent() const
 {
 	return ListenerComponent;
@@ -202,35 +205,25 @@ bool AGameDebugMenuManager::IsInitializedManager() const
 
 void AGameDebugMenuManager::OnInitializeManager()
 {
+	if (bInitializedManager)
+	{
+		return;
+	}
+	
 	if (GetOwner() == nullptr)
 	{
 		return;
 	}
 
 	bInitializedManager = true;
-	
-	FString StringKey = TEXT("DebugMenuDirectStringKey");
-	if (!GetPropertyJsonSystemComponent()->HasStringInJson(StringKey))
-	{
-		GetPropertyJsonSystemComponent()->SetSingleStringToJson(StringKey, TEXT("False"));
-		bCurrentDebugMenuDirectStringKey = false;
-	}
-	else
-	{
-		bCurrentDebugMenuDirectStringKey = GetPropertyJsonSystemComponent()->GetSingleStringFromJson(StringKey, TEXT("False")).ToBool();
-	}
 
-	StringKey = TEXT("DebugMenuLanguage");
-	if (!GetPropertyJsonSystemComponent()->HasStringInJson(StringKey))
-	{
-		GetPropertyJsonSystemComponent()->SetSingleStringToJson(StringKey, GetDefault<UGameDebugMenuSettings>()->DefaultGameDebugMenuLanguage.ToString());
-	}
+	GetLocalizeStringComponent()->SetJsonSystemComponentValue(GetPropertyJsonSystemComponent());
 	
-	SyncLoadDebugMenuStringTables(GetCurrentDebugMenuLanguage());
+	GetLocalizeStringComponent()->SyncLoadDebugMenuStringTables();
 	
 	if( !UKismetSystemLibrary::IsDedicatedServer(this) )
 	{
-		CreateDebugCameraInputClass();
+		GetDebugMenuInputSystemComponent()->CreateDebugCameraInputClass();
 		
 		CreateDebugMenuRootWidget();
 
@@ -308,36 +301,6 @@ void AGameDebugMenuManager::DisabledNavigationConfigs()
 	FSlateApplication::Get().SetNavigationConfig(MakeShared<FGDMNavigationConfig>());
 }
 
-void AGameDebugMenuManager::CreateDebugCameraInputClass()
-{
-	if(DebugCameraInputClass == nullptr)
-	{
-		return;
-	}
-
-	FActorSpawnParameters SpawnInfo;
-	SpawnInfo.Owner                          = this;
-	SpawnInfo.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-	DebugCameraInput                         = GetWorld()->SpawnActor<AGDMDebugCameraInput>(DebugCameraInputClass, SpawnInfo);
-
-	bool bExistDCC        = false;
-	const APlayerController* PC = GetOwnerPlayerController();
-	if(IsValid(PC->CheatManager))
-	{
-		if(ADebugCameraController* DCC = PC->CheatManager->DebugCameraControllerRef)
-		{
-			bExistDCC = true;
-			DebugCameraInput->EnableInput(DCC);
-		}
-	}
-
-	if(!bExistDCC)
-	{
-		/* ないので生成するのを待つ */
-		DebugCameraInput->BindSpawnDebugCameraController();
-	}
-}
-
 void AGameDebugMenuManager::EnableShowMouseCursorFlag(APlayerController* PlayerController)
 {
 	bCachedShowMouseCursor = PlayerController->bShowMouseCursor;
@@ -400,40 +363,6 @@ void AGameDebugMenuManager::OnScreenshotRequestProcessed()
 	GetListenerComponent()->OnScreenshotRequestProcessedDispatcher.RemoveDynamic(this, &AGameDebugMenuManager::OnScreenshotRequestProcessed);
 	SetIgnoreInput(false);
 	GetDebugMenuRootWidget()->ShowDebugReport();
-}
-
-void AGameDebugMenuManager::SyncLoadDebugMenuStringTables(FName TargetDebugMenuLanguage)
-{
-	DebugMenuStrings.Reset();
-
-	if( const FGDMStringTableList* StringTableList = GetDefault<UGameDebugMenuSettings>()->GameDebugMenuStringTables.Find(TargetDebugMenuLanguage) )
-	{
-		UE_LOG(LogGDM, Verbose, TEXT("Call SyncLoadDebugMenuStringTables %s"), *TargetDebugMenuLanguage.ToString());
-
-		for( auto& StrTablePtr : StringTableList->StringTables )
-		{
-			if(const UStringTable* StringTable = StrTablePtr.LoadSynchronous() )
-			{
-				StringTable->GetStringTable()->EnumerateSourceStrings([&](const FString& InKey, const FString& InSourceString) -> bool
-				{
-					if( !DebugMenuStrings.Contains(InKey) )
-					{
-						DebugMenuStrings.Add(InKey, InSourceString);
-						UE_LOG(LogGDM, VeryVerbose, TEXT("Load string | Key %s SourceString %s"), *InKey, *InSourceString);
-					}
-					else
-					{
-						UE_LOG(LogGDM, Error, TEXT("%s -> StringKey that is already in use!!"), *InKey);
-					}
-					return true; /* すべて取得する */
-				});
-			}
-		}
-	}
-	else
-	{
-		UE_LOG(LogGDM, Error, TEXT("Failed Load DebugMenuStringTables %s"), *TargetDebugMenuLanguage.ToString());
-	}
 }
 
 void AGameDebugMenuManager::ExecuteConsoleCommand(const FString& Command, APlayerController* PC)
@@ -584,7 +513,7 @@ void AGameDebugMenuManager::HideDebugMenu()
 	RestoreGamePause();
 	GetSaveSystemComponent()->SaveDebugMenuFile();
 
-	DebugMenuInputSystemComponent->CallReleasedButtons();
+	GetDebugMenuInputSystemComponent()->CallReleasedButtons();
 
 	TArray<UGameDebugMenuWidget*> DebugMenuWidgets = GetViewportDebugMenuWidgets();
 	for(const auto ViewportWidget : DebugMenuWidgets )
@@ -1045,7 +974,7 @@ void AGameDebugMenuManager::AddDebugMenuPCProxyComponent(APlayerController* Play
 
 bool AGameDebugMenuManager::RegisterInputObject(UObject* TargetObject)
 {
-	if( DebugMenuInputSystemComponent->RegisterInputObject(TargetObject) )
+	if( GetDebugMenuInputSystemComponent()->RegisterInputObject(TargetObject) )
 	{
 		CallRegisterInputSystemEventDispatcher(TargetObject);
 		return true;
@@ -1056,7 +985,7 @@ bool AGameDebugMenuManager::RegisterInputObject(UObject* TargetObject)
 
 bool AGameDebugMenuManager::UnregisterInputObject(UObject* TargetObject)
 {
-	if( DebugMenuInputSystemComponent->UnregisterInputObject(TargetObject) )
+	if( GetDebugMenuInputSystemComponent()->UnregisterInputObject(TargetObject) )
 	{
 		CallUnregisterInputSystemEventDispatcher(TargetObject);
 		return true;
@@ -1067,24 +996,24 @@ bool AGameDebugMenuManager::UnregisterInputObject(UObject* TargetObject)
 
 void AGameDebugMenuManager::SetIgnoreInput(bool bNewInput)
 {
-	DebugMenuInputSystemComponent->SetIgnoreInput(bNewInput);
+	GetDebugMenuInputSystemComponent()->SetIgnoreInput(bNewInput);
 }
 
 void AGameDebugMenuManager::ResetIgnoreInput()
 {
-	DebugMenuInputSystemComponent->ResetIgnoreInput();
+	GetDebugMenuInputSystemComponent()->ResetIgnoreInput();
 }
 
 bool AGameDebugMenuManager::IsInputIgnored() const
 {
-	return DebugMenuInputSystemComponent->IsInputIgnored();
+	return GetDebugMenuInputSystemComponent()->IsInputIgnored();
 }
 
 void AGameDebugMenuManager::ChangeDebugMenuLanguage(FName LanguageKey, bool bForcedUpdate)
 {
 	UE_LOG(LogGDM, Verbose, TEXT("Call ChangeDebugMenuLanguage LanguageKey:%s bForcedUpdate:%d"), *LanguageKey.ToString(), bForcedUpdate);
 
-	const FName CurrentDebugMenuLanguage = GetCurrentDebugMenuLanguage();
+	const FName CurrentDebugMenuLanguage = GetLocalizeStringComponent()->GetCurrentDebugMenuLanguage();
 	
 	if( !bForcedUpdate )
 	{
@@ -1101,12 +1030,11 @@ void AGameDebugMenuManager::ChangeDebugMenuLanguage(FName LanguageKey, bool bFor
 
 	const FName Old = CurrentDebugMenuLanguage;
 
-	/* 言語を切り替えをし保存。その後テーブルを読み直す */
+	/* 言語を切り替えをして保存。その後テーブルを読み直す */
 	{
-		GetPropertyJsonSystemComponent()->SetSingleStringToJson(TEXT("DebugMenuDirectStringKey"), bCurrentDebugMenuDirectStringKey ? TEXT("True") : TEXT("False"));
-		GetPropertyJsonSystemComponent()->SetSingleStringToJson(TEXT("DebugMenuLanguage"), LanguageKey.ToString());
+		GetLocalizeStringComponent()->SetToJsonSystemComponent(GetPropertyJsonSystemComponent(), LanguageKey.ToString());
 		GetSaveSystemComponent()->SaveDebugMenuFile();
-		SyncLoadDebugMenuStringTables(LanguageKey);
+		GetLocalizeStringComponent()->SyncLoadDebugMenuStringTables();
 	}
 
 	TArray<UWidget*> ChildWidgets;
@@ -1144,45 +1072,9 @@ void AGameDebugMenuManager::ChangeDebugMenuLanguage(FName LanguageKey, bool bFor
 	CallChangeDebugMenuLanguageDispatcher(LanguageKey, Old);
 }
 
-bool AGameDebugMenuManager::GetDebugMenuString(const FString& StringKey, FString& OutString)
-{
-	if( FString* SourceString = DebugMenuStrings.Find(StringKey) )
-	{
-		if( bCurrentDebugMenuDirectStringKey )
-		{
-			/* 取得できたキーをそのまま戻す */
-			OutString = StringKey;
-		}
-		else
-		{
-			OutString = *SourceString;
-		}
-	}
-	else
-	{
-		OutString = StringKey;
-		UE_LOG(LogGDM, Verbose, TEXT("GetDebugMenuString: Not found StringKey %s"), *StringKey);
-		return false;
-	}
-
-	return true;
-}
-
-TArray<FName> AGameDebugMenuManager::GetDebugMenuLanguageKeys()
-{
-	TArray<FName> ReturnValues;
-	GetDefault<UGameDebugMenuSettings>()->GameDebugMenuStringTables.GetKeys(ReturnValues);
-	return ReturnValues;
-}
-
 TArray<UGameDebugMenuWidget*> AGameDebugMenuManager::GetViewportDebugMenuWidgets()
 {
 	return ViewportDebugMenuWidgets;
-}
-
-FName AGameDebugMenuManager::GetCurrentDebugMenuLanguage() const
-{
-	return *GetPropertyJsonSystemComponent()->GetSingleStringFromJson(TEXT("DebugMenuLanguage"), GetDefault<UGameDebugMenuSettings>()->DefaultGameDebugMenuLanguage.ToString());
 }
 
 void AGameDebugMenuManager::CallExecuteConsoleCommandDispatcher(const FString& Command)

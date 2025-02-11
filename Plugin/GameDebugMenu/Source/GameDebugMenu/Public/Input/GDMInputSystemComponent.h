@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2025 akihiko moroi
+* Copyright (c) 2020 akihiko moroi
 *
 * This software is released under the MIT License.
 * (See accompanying file LICENSE.txt or copy at http://opensource.org/licenses/MIT)
@@ -12,6 +12,7 @@
 
 class UInputComponent;
 class AGameDebugMenuManager;
+class AGDMDebugCameraInput;
 
 /**
 * DebugMenuでの入力処理を行うコンポーネント
@@ -69,6 +70,14 @@ protected:
 	/** True: マッピング追加完了 */
 	bool bActionMappingBindingsAdded;
 
+	/** デバックカメラ用のインプットアクター */
+	UPROPERTY(EditAnywhere, Category = "GDM|Config")
+	TSubclassOf<AGDMDebugCameraInput> DebugCameraInputClass;
+
+	/** デバックカメラ用のインプットアクターのインスタンス */
+	UPROPERTY(Transient)
+	TObjectPtr<AGDMDebugCameraInput> DebugCameraInput;
+	
 public:
 	UPROPERTY(BlueprintReadWrite, Category = "GDM|Debug")
 	bool bOutputDebugLog;
@@ -76,6 +85,7 @@ public:
 public:	
 	UGDMInputSystemComponent();
 	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 public:
@@ -99,6 +109,11 @@ public:
 	virtual void ResetIgnoreInput();
 
 	virtual bool IsInputIgnored() const;
+
+	/**
+	* DebugCamera用入力アクターの生成
+	*/
+	virtual void CreateDebugCameraInputClass();
 
 protected:
 	/**
