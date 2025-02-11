@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2025 akihiko moroi
+* Copyright (c) 2020 akihiko moroi
 *
 * This software is released under the MIT License.
 * (See accompanying file LICENSE.txt or copy at http://opensource.org/licenses/MIT)
@@ -12,6 +12,7 @@
 #include "GameDebugMenuTypes.h"
 #include "GameDebugMenuManager.generated.h"
 
+class UGDMLocalizeStringComponent;
 class UGDMSaveSystemComponent;
 class UGDMPropertyJsonSystemComponent;
 class UGDMListenerComponent;
@@ -20,7 +21,6 @@ class UGDMInputSystemComponent;
 class UGDMScreenshotRequesterComponent;
 class UGameDebugMenuWidgetDataAsset;
 class UGameDebugMenuRootWidget;
-class AGDMDebugCameraInput;
 class UGDMPlayerControllerProxyComponent;
 class AGDMDebugReportRequester;
 class FGDMOutputDevice;
@@ -46,9 +46,12 @@ class GAMEDEBUGMENU_API AGameDebugMenuManager : public AActor
 
 	UPROPERTY(VisibleAnywhere, Category = "GDM", meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UGDMSaveSystemComponent> SaveSystemComponent;
+
+	UPROPERTY(VisibleAnywhere, Category = "GDM", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UGDMLocalizeStringComponent> LocalizeStringComponent;
 	
 	/** DebugMenuの各イベント検知コンポーネント */
-	UPROPERTY(Transient)
+	UPROPERTY(VisibleAnywhere, Category = "GDM", meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UGDMListenerComponent> ListenerComponent;
 
 	FTimerHandle InitializeManagerHandle;
@@ -92,14 +95,6 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GDM|Config")
 	bool bGamePause;
 
-	/** デバックカメラ用のインプットアクター */
-	UPROPERTY(EditAnywhere, Category = "GDM|Config")
-	TSubclassOf<AGDMDebugCameraInput> DebugCameraInputClass;
-
-	/** デバックカメラ用のインプットアクターのインスタンス */
-	UPROPERTY(Transient)
-	TObjectPtr<AGDMDebugCameraInput> DebugCameraInput;
-
 	/** PlayerControllerに自動追加されるプロキシコンポーネント */
 	UPROPERTY(EditAnywhere, Category = "GDM|Config")
 	TSubclassOf<UGDMPlayerControllerProxyComponent> DebugMenuPCProxyComponentClass;
@@ -108,15 +103,8 @@ protected:
 	TSharedPtr<FGDMOutputDevice> OutputLog;
 	
 	UPROPERTY(Transient)
-	TMap<FString, FString> DebugMenuStrings;
-	
-	UPROPERTY(Transient)
 	TArray<TObjectPtr<UGameDebugMenuWidget>> ViewportDebugMenuWidgets;
 
-	/** True: デバックメニュー用の StringKey を指定してる箇所をそのまま表示する */
-	UPROPERTY(Transient)
-	bool bCurrentDebugMenuDirectStringKey;
-	
 public:
 	AGameDebugMenuManager(const FObjectInitializer& ObjectInitializer);
 	
@@ -128,7 +116,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	virtual void EnableInput(class APlayerController* PlayerController) override;
 	virtual void DisableInput(class APlayerController* PlayerController) override;
-
+	
 public:
 	UFUNCTION(BlueprintPure)
 	UGDMInputSystemComponent* GetDebugMenuInputSystemComponent() const;
@@ -141,6 +129,9 @@ public:
 
 	UFUNCTION(BlueprintPure)
 	UGDMSaveSystemComponent* GetSaveSystemComponent() const;
+
+	UFUNCTION(BlueprintPure)
+	UGDMLocalizeStringComponent* GetLocalizeStringComponent() const;
 	
 	UFUNCTION(BlueprintPure)
 	UGDMListenerComponent* GetListenerComponent() const;
@@ -164,11 +155,6 @@ protected:
 	*/
 	virtual void EnabledNavigationConfigs();
 	virtual void DisabledNavigationConfigs();
-	
-	/**
-	* DebugCamera用入力アクターの生成
-	*/
-	virtual void CreateDebugCameraInputClass();
 
 	/**
 	* マウスカーソルのオン・オフ（Menu開く前の状態にする）
@@ -187,8 +173,6 @@ protected:
 	*/
 	UFUNCTION()
 	virtual void OnScreenshotRequestProcessed();
-
-	virtual void SyncLoadDebugMenuStringTables(FName TargetDebugMenuLanguage);
 
 public:
 	/**
@@ -302,21 +286,9 @@ public:
 	*/
 	UFUNCTION(BlueprintCallable, Category = "GDM")
 	virtual void ChangeDebugMenuLanguage(FName LanguageKey, bool bForcedUpdate);
-
-	/**
-	* DebugMenu用のStringTableから文字列を取得する
-	*/
-	UFUNCTION(BlueprintPure, Category = "GDM")
-	virtual bool GetDebugMenuString(const FString& StringKey, FString& OutString);
-
-	UFUNCTION(BlueprintCallable, Category = "GDM")
-	virtual TArray<FName> GetDebugMenuLanguageKeys();
 	
 	UFUNCTION(BlueprintCallable, Category = "GDM")
 	TArray<UGameDebugMenuWidget*> GetViewportDebugMenuWidgets();
-
-	UFUNCTION(BlueprintPure)
-	FName GetCurrentDebugMenuLanguage() const;
 
 protected:
 	virtual void CallExecuteConsoleCommandDispatcher(const FString& Command);

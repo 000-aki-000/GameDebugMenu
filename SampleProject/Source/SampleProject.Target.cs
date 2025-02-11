@@ -8,7 +8,9 @@ public class SampleProjectTarget : TargetRules
 	public SampleProjectTarget(TargetInfo Target) : base(Target)
 	{
 		Type = TargetType.Game;
-		DefaultBuildSettings = BuildSettingsVersion.V2;
+		DefaultBuildSettings = BuildSettingsVersion.Latest;
+		IncludeOrderVersion = EngineIncludeOrderVersion.Latest;
+		CppStandard = CppStandardVersion.Latest;
 
 		ExtraModuleNames.AddRange( new string[] { "SampleProject" } );
 	}

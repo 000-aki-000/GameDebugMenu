@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2025 akihiko moroi
+* Copyright (c) 2020 akihiko moroi
 *
 * This software is released under the MIT License.
 * (See accompanying file LICENSE.txt or copy at http://opensource.org/licenses/MIT)
@@ -14,7 +14,7 @@
 /**
  * DebugMenu全体で管理するJsonへの読み書きを管理するコンポーネント
  */
-UCLASS()
+UCLASS(NotBlueprintable, NotBlueprintType)
 class GAMEDEBUGMENU_API UGDMPropertyJsonSystemComponent : public UActorComponent
 {
 	GENERATED_BODY()

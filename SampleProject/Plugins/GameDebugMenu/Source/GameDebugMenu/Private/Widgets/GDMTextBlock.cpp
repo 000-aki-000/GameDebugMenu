@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2025 akihiko moroi
+* Copyright (c) 2020 akihiko moroi
 *
 * This software is released under the MIT License.
 * (See accompanying file LICENSE.txt or copy at http://opensource.org/licenses/MIT)
@@ -9,6 +9,7 @@
 #include "GameDebugMenuFunctions.h"
 #include "GameDebugMenuSettings.h"
 #include "GameDebugMenuManager.h"
+#include "Component/GDMLocalizeStringComponent.h"
 #include "Engine/Engine.h"
 #include "Widgets/GameDebugMenuRootWidget.h"
 #include "Widgets/Text/STextBlock.h"
@@ -80,7 +81,7 @@ void UGDMTextBlock::SetText(FText InText)
 			}
 			else if( AGameDebugMenuManager* Manager = UGameDebugMenuFunctions::GetGameDebugMenuManager(World) )
 			{
-				if( Manager->GetDebugMenuString(StringKey, DebugMenuStr) )
+				if( Manager->GetLocalizeStringComponent()->GetString(StringKey, DebugMenuStr) )
 				{
 					DebugMenuStringKey = InText.ToString();
 					InText = FText::FromString(DebugMenuStr);
