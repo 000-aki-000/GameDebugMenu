@@ -80,7 +80,7 @@ protected:
 	TArray<TSharedPtr<FGDMObjectFunctionInfo>> ObjectFunctions;
 
 	/** デバックメニュー用UIアセット */
-	UPROPERTY(EditAnywhere, Category = "GDM|Config")
+	UPROPERTY(EditAnywhere, Category = "GDM")
 	TObjectPtr<UGameDebugMenuWidgetDataAsset> WidgetDataAsset;
 
 	/** Viewport上に追加されてるメインWidget */
@@ -92,11 +92,11 @@ protected:
 	TMap<FString, TObjectPtr<UGameDebugMenuWidget>> DebugMenuInstances;
 
 	/** True : デバックメニュー操作中ポーズする */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GDM|Config")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GDM")
 	bool bGamePause;
 
 	/** PlayerControllerに自動追加されるプロキシコンポーネント */
-	UPROPERTY(EditAnywhere, Category = "GDM|Config")
+	UPROPERTY(EditAnywhere, Category = "GDM")
 	TSubclassOf<UGDMPlayerControllerProxyComponent> DebugMenuPCProxyComponentClass;
 
 	/** DebugMenuのログデバイス（レポート送信用） */

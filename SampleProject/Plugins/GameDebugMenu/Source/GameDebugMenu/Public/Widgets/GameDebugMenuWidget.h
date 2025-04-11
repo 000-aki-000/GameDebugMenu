@@ -36,7 +36,7 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category = "GDM", Meta = (ExposeOnSpawn = true))
 	UGameDebugMenuWidget* ParentGameDebugMenuWidget;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GDM|Config")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GDM")
 	FString GameDebugMenuName;
 
 public:
@@ -56,7 +56,7 @@ public:
 	* UIを表示するときのイベント
 	*
 	* @param bRequestDebugMenuManager - マネージャーから呼び出された場合trueになる。
-	* @memo 呼ばれるのはActivateされてるときのみ
+	* @note 呼ばれるのはActivateされてるときのみ
 	*/
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category = "GDM|Event")
 	void OnShowingMenu(bool bRequestDebugMenuManager);
@@ -65,7 +65,7 @@ public:
 	* UIを非表示にするときのイベント
 	* 
 	* @param bRequestDebugMenuManager - マネージャーから呼び出された場合trueになる。
-	* @memo 呼ばれるのはActivateされてるときのみ
+	* @note 呼ばれるのはActivateされてるときのみ
 	*/
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category = "GDM|Event")
 	void OnHidingMenu(bool bRequestDebugMenuManager);
@@ -73,7 +73,7 @@ public:
 	/**
 	* アクティベート化をするときに呼ばれるイベント
 	* 
-	* @memo ここで表示したり、操作できる状態に移行する
+	* @note ここで表示したり、操作できる状態に移行する
 	*/	
 	UFUNCTION(BlueprintImplementableEvent, Category = "GDM|Event")
 	void OnActivateDebugMenu(bool bAlwaysExecute);
@@ -81,7 +81,7 @@ public:
 	/**
 	* ディアクティベート化をするときに呼ばれるイベント
 	* 
-	* @memo ここで非表示にしたり、メニューの終了処理を行う
+	* @note ここで非表示にしたり、メニューの終了処理を行う
 	*/
 	UFUNCTION(BlueprintImplementableEvent, Category = "GDM|Event")
 	void OnDeactivateDebugMenu();

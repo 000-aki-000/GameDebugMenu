@@ -1592,34 +1592,77 @@ void UGameDebugMenuSettings::SetupCategorySound()
 
 void UGameDebugMenuSettings::SetupCategoryAbilitySystem()
 {
+	/* https://dev.epicgames.com/community/learning/tutorials/Y477/unreal-engine-gameplay-ability-system-debugging-tools */
+	
 	FGDMConsoleCommandSingle Single;
 	Single.CategoryIndex = 12; /* Ability System */
 	Single.CommandNetType = EGDMConsoleCommandNetType::LocalOnly;
 
 	Single.Title              = FText::FromString(TEXT("Show abilitysystem"));
-	Single.Description        = FText::FromString(TEXT("GameplayAbilitySystemのデバック表示をする"));
+	Single.Description        = FText::FromString(TEXT("AbilitySystemのデバック表示をする"));
 	Single.ConsoleCommandName = TEXT("showdebug abilitysystem");
 	ConsoleCommandNames.Add(Single);
 
 	Single.Title              = FText::FromString(TEXT("Close abilitysystem"));
-	Single.Description        = FText::FromString(TEXT("GameplayAbilitySystemの非表示"));
+	Single.Description        = FText::FromString(TEXT("AbilitySystemの非表示にする"));
 	Single.ConsoleCommandName = TEXT("showdebug");
 	ConsoleCommandNames.Add(Single);
 
 	Single.Title              = FText::FromString(TEXT("AbilitySystem NextCategory"));
-	Single.Description        = FText::FromString(TEXT("GameplayAbilitySystemのデバック表示がされてる場合表示内容を切り替える"));
+	Single.Description        = FText::FromString(TEXT("AbilitySystemのデバック表示がされてる場合表示内容（所持アビリティ、エフェクトなど）を切り替える"));
 	Single.ConsoleCommandName = TEXT("abilitySystem.debug.nextCategory");
 	ConsoleCommandNames.Add(Single);
 
 	Single.Title              = FText::FromString(TEXT("AbilitySystem NextTarget"));
-	Single.Description        = FText::FromString(TEXT("デバック表示を対象を変更する(次へ移る)"));
-	Single.ConsoleCommandName = TEXT("abilitysystem.debug.nexttarget");
+	Single.Description        = FText::FromString(TEXT("AbilitySystemのデバック表示対象を変更する(次へ移る)"));
+//	Single.ConsoleCommandName = TEXT("abilitysystem.debug.nexttarget");
+	Single.ConsoleCommandName = TEXT("NextDebugTarget");
 	ConsoleCommandNames.Add(Single);
 
 	Single.Title              = FText::FromString(TEXT("AbilitySystem PrevTarget"));
-	Single.Description        = FText::FromString(TEXT("デバック表示を対象を変更する(１つ戻る)"));
-	Single.ConsoleCommandName = TEXT("abilitysystem.debug.prevtarget");
+	Single.Description        = FText::FromString(TEXT("AbilitySystemのデバック表示を対象を変更する(１つ戻る)"));
+//	Single.ConsoleCommandName = TEXT("abilitysystem.debug.prevtarget");
+	Single.ConsoleCommandName = TEXT("PreviousDebugTarget");
 	ConsoleCommandNames.Add(Single);
+
+	Single.Title              = FText::FromString(TEXT("AbilitySystem DebugBasicHUD"));
+	Single.Description        = FText::FromString(TEXT("操作キャラのAttribute情報を表示"));
+	Single.ConsoleCommandName = TEXT("AbilitySystem.DebugBasicHUD");
+	ConsoleCommandNames.Add(Single);
+
+	Single.Title              = FText::FromString(TEXT("AbilitySystem DebugAbilityTags"));
+	Single.Description        = FText::FromString(TEXT("AbilitySystemで所持するタグ情報をアクター位置にすべて表示"));
+	Single.ConsoleCommandName = TEXT("AbilitySystem.DebugAbilityTags");
+	ConsoleCommandNames.Add(Single);
+	
+	Single.Title              = FText::FromString(TEXT("AbilitySystem DebugAttribute"));
+	Single.Description        = FText::FromString(TEXT("AbilitySystemで所持するAttribute情報をアクター位置にすべて表示"));
+	Single.ConsoleCommandName = TEXT("AbilitySystem.DebugAttribute");
+	ConsoleCommandNames.Add(Single);
+	
+	Single.Title              = FText::FromString(TEXT("AbilitySystem ClearDebugAttributes"));
+	Single.Description        = FText::FromString(TEXT("AbilitySystemで所持するAttribute情報をクリアする"));
+	Single.ConsoleCommandName = TEXT("AbilitySystem.ClearDebugAttributes");
+	ConsoleCommandNames.Add(Single);
+	
+	FGDMConsoleCommandNumber Number;
+	Number.CategoryIndex = 12; /* Ability System */
+
+	Number.Title                            = FText::FromString(TEXT("AbilitySystem.DebugDrawMaxDistance"));
+	Number.Description                      = FText::FromString(TEXT("アクター位置に表示するAbilitySystemのデバック情報の表示距離を設定する"));
+	Number.PreConsoleCommandName            = TEXT("");
+	Number.ConsoleCommandName               = TEXT("AbilitySystem.DebugDrawMaxDistance");
+	Number.PostConsoleCommandName           = TEXT(" ");
+	Number.DefaultValue						= 2048.0f;
+	Number.ConsoleVariableName				= TEXT("AbilitySystem.DebugDrawMaxDistance");
+	Number.CommandNetType                   = EGDMConsoleCommandNetType::LocalOnly;
+	Number.UIConfigInfo.Range.bUseMax       = false;
+	Number.UIConfigInfo.Range.bUseMin       = true;
+	Number.UIConfigInfo.Range.MinValue      = 10.0f;
+	Number.UIConfigInfo.Range.MaxValue      = 0.0f;
+	Number.UIConfigInfo.DefaultChangeAmount = 10;
+	Number.UIConfigInfo.MaxChangeAmount     = 100;
+	ConsoleCommandNumbers.Add(Number);
 }
 
 void UGameDebugMenuSettings::SetupCategoryOther()

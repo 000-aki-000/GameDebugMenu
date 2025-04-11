@@ -18,7 +18,7 @@ class AGDMDebugReportRequester;
 /**
 * DebugMenu用設定クラス
 */
-UCLASS(config=Game, defaultconfig)
+UCLASS(config=Game)
 class GAMEDEBUGMENU_API UGameDebugMenuSettings : public UDeveloperSettings
 {
 	GENERATED_BODY()

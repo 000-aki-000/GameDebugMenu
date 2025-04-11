@@ -108,7 +108,7 @@ public:
 	* @param Description - 説明文
 	* @param DisplayPriority - リスト追加時の表示優先度（降順）
 	* @return True: 登録成功 False: 何らかの要因で失敗した（ログに出力されてます）
-	* @memo ここで登録できるのは引数０の関数（カスタムイベント）のみ
+	* @note ここで登録できるのは引数０の関数（カスタムイベント）のみ
 	*/
 	UFUNCTION(BlueprintCallable, BlueprintCosmetic, Category = "GDM|Functions", meta = (Keywords = "DebugMenu GDM", AdvancedDisplay = "3"))
 	static bool RegisterGDMObjectFunction(UObject* TargetObject,FName FunctionName,const FGDMGameplayCategoryKey CategoryKey,const FText DisplayFunctionName,const FText Description, const int32 DisplayPriority);
@@ -248,7 +248,7 @@ public:
 
 	/**
 	* DebugReport用UIを表示する
-	* @memo 通常の開閉は最後に操作したMenuになるがこっちはなからずDebugReport用UIを表示されキャプチャもDebugMenuが含まれない
+	* @note 通常の開閉は最後に操作したMenuになるがこっちはなからずDebugReport用UIを表示されキャプチャもDebugMenuが含まれない
 	*/
 	UFUNCTION(BlueprintCallable, BlueprintCosmetic, Category = "GDM|Functions", meta = (Keywords = "DebugMenu GDM", WorldContext = "WorldContextObject"))
 	static bool ShowDebugReport(UObject* WorldContextObject);
@@ -261,7 +261,7 @@ public:
 
 	/**
 	* ビルド構成を文字列で取得
-	* @memo EBuildConfiguration(Engine\Source\Runtime\Core\Public\GenericPlatform\GenericPlatformMisc.h)参照
+	* @note EBuildConfiguration(Engine\Source\Runtime\Core\Public\GenericPlatform\GenericPlatformMisc.h)参照
 	*/
 	UFUNCTION(BlueprintPure, BlueprintCosmetic, Category = "GDM|Functions", meta = (Keywords = "DebugMenu GDM"))
 	static FString GetBuildConfigurationString();
