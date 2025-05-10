@@ -231,21 +231,20 @@ public:
 	static FString GetGDMObjectName(UObject* TargetObject);
 
 	/**
-	* デバッグメニュー操作オブジェクトの登録
-	* @param TargetInputObject - 対象のオブジェクト。未設定で呼び出した自身がセットされる
-	* @return true:登録成功 false:失敗
+	* デバッグメニュー操作用のInputComponentを登録する
 	*/
-	UFUNCTION(BlueprintCallable, Category = "GDM|Functions", meta = (DefaultToSelf = "TargetInputObject", Keywords = "DebugMenu GDM"))
-	static bool RegisterGDMInputObject(UObject* TargetInputObject);
-
+	UFUNCTION(BlueprintCallable, BlueprintCosmetic, Category = "GDM|Functions", meta = (Keywords = "DebugMenu GDM", WorldContext = "WorldContextObject"))
+	static void RegisterInputComponentForGameDebugMenu(UObject* WorldContextObject, UInputComponent* InputComponent);
+	
 	/**
-	* デバッグメニュー操作オブジェクトの解除
-	* @param TargetInputObject - 対象のオブジェクト。未設定で呼び出した自身がセットされる
-	* @return true:登録成功 false:失敗
+	* デバッグメニュー操作用のInputComponentを解除する
 	*/
-	UFUNCTION(BlueprintCallable, Category = "GDM|Functions", meta = (DefaultToSelf = "TargetInputObject", Keywords = "DebugMenu GDM"))
-	static bool UnregisterGDMInputObject(UObject* TargetInputObject);
+	UFUNCTION(BlueprintCallable, BlueprintCosmetic, Category = "GDM|Functions", meta = (Keywords = "DebugMenu GDM", WorldContext = "WorldContextObject"))
+	static void UnregisterInputComponentForGameDebugMenu(UObject* WorldContextObject, UInputComponent* InputComponent);
 
+	UFUNCTION(BlueprintCallable, BlueprintCosmetic, Category = "GDM|Functions", meta = (Keywords = "DebugMenu GDM", WorldContext = "WorldContextObject"))
+	static void SwitchInputComponentGroupForGameDebugMenu(UObject* WorldContextObject, const FName NewGroupName);
+	
 	/**
 	* DebugReport用UIを表示する
 	* @note 通常の開閉は最後に操作したMenuになるがこっちはなからずDebugReport用UIを表示されキャプチャもDebugMenuが含まれない

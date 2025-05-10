@@ -14,8 +14,9 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "TimerManager.h"
-#include <Internationalization/StringTableCore.h>
 #include "Blueprint/WidgetBlueprintLibrary.h"
+#include "Framework/Application/SlateApplication.h"
+
 #include "GameDebugMenuSettings.h"
 #include "GameDebugMenuFunctions.h"
 #include "Component/GDMListenerComponent.h"
@@ -26,12 +27,11 @@
 #include "Component/GDMLocalizeStringComponent.h"
 #include "Component/GDMPropertyJsonSystemComponent.h"
 #include "Component/GDMSaveSystemComponent.h"
-#include "Input/GDMDebugCameraInput.h"
 #include "Input/GDMInputSystemComponent.h"
 #include "Widgets/GameDebugMenuRootWidget.h"
 #include "Widgets/GDMTextBlock.h"
-#include "Data/GameDebugMenuWidgetDataAsset.h"
-#include "Framework/Application/SlateApplication.h"
+#include "Data/GameDebugMenuDataAsset.h"
+
 
 /********************************************************************/
 /* AGameDebugMenuManager										*/
@@ -56,8 +56,6 @@ AGameDebugMenuManager::AGameDebugMenuManager(const FObjectInitializer& ObjectIni
 	, ObjectFunctions()
 	, DebugMenuRootWidget(nullptr)
 	, DebugMenuInstances()
-	, bGamePause(false)
-	, DebugMenuPCProxyComponentClass()
 	, OutputLog(nullptr)
 {
 	DebugMenuInputSystemComponent = CreateDefaultSubobject<UGDMInputSystemComponent>(TEXT("DebugMenuInputSystemComponent"));
@@ -72,15 +70,13 @@ AGameDebugMenuManager::AGameDebugMenuManager(const FObjectInitializer& ObjectIni
 	PrimaryActorTick.bTickEvenWhenPaused	= true;
 	SetCanBeDamaged(false);
 	SetHidden(true);
-	InputPriority                           = 999;
-	bBlockInput                             = true;
+	InputPriority                           = MAX_int32;
+	bBlockInput                             = false;
 	bReplicates                             = true;
 	bAlwaysRelevant                         = true;
 	SetReplicatingMovement(false);
 	SetNetUpdateFrequency(1);/* デフォルトのPlayerStateと同じかんじにしとく */
 	SetRemoteRoleForBackwardsCompat(ROLE_SimulatedProxy);
-	
-	DebugMenuPCProxyComponentClass = UGDMPlayerControllerProxyComponent::StaticClass();
 }
 
 void AGameDebugMenuManager::BeginPlay()
@@ -117,9 +113,7 @@ void AGameDebugMenuManager::EndPlay(const EEndPlayReason::Type EndPlayReason)
 		}
 		
 		EnabledNavigationConfigs();
-
-		GetDebugMenuInputSystemComponent()->CallReleasedButtons();
-
+		
 		if(IsValid(DebugMenuRootWidget))
 		{
 			DebugMenuRootWidget->RemoveFromParent();
@@ -138,34 +132,6 @@ void AGameDebugMenuManager::Tick(float DeltaTime)
 	DeltaTime /= GetWorldSettings()->GetEffectiveTimeDilation();
 
 	Super::Tick(DeltaTime);
-}
-
-void AGameDebugMenuManager::EnableInput(class APlayerController* PlayerController)
-{
-	Super::EnableInput(PlayerController);
-
-	GetDebugMenuInputSystemComponent()->InitializeInputComponentBindings(InputComponent);
-
-	if(IsValid(PlayerController) && IsValid(PlayerController->CheatManager))
-	{
-		if(ADebugCameraController* DCC = PlayerController->CheatManager->DebugCameraControllerRef)
-		{
-			Super::EnableInput(DCC);
-		}
-	}
-}
-
-void AGameDebugMenuManager::DisableInput(class APlayerController* PlayerController)
-{
-	Super::DisableInput(PlayerController);
-
-	if(IsValid(PlayerController) && IsValid(PlayerController->CheatManager))
-	{
-		if(ADebugCameraController* DCC = PlayerController->CheatManager->DebugCameraControllerRef)
-		{
-			Super::DisableInput(DCC);
-		}
-	}
 }
 
 UGDMInputSystemComponent* AGameDebugMenuManager::GetDebugMenuInputSystemComponent() const
@@ -207,11 +173,26 @@ void AGameDebugMenuManager::OnInitializeManager()
 {
 	if (bInitializedManager)
 	{
+		UGameDebugMenuFunctions::PrintLogScreen(this, TEXT("AGameDebugMenuManager: The manager has already been initialized"), 0.6f);
 		return;
 	}
 	
 	if (GetOwner() == nullptr)
 	{
+		UGameDebugMenuFunctions::PrintLogScreen(this, TEXT("AGameDebugMenuManager: Not found Owner"), 0.6f);
+		return;
+	}
+
+	APlayerController* PC = Cast<APlayerController>(GetOwner());
+	if (!IsValid(PC))
+	{
+		UGameDebugMenuFunctions::PrintLogScreen(this, TEXT("AGameDebugMenuManager: The owner is not a PlayerController"), 0.6f);
+		return;
+	}
+
+	if (!IsValid(PC->GetLocalPlayer()))
+	{
+		UGameDebugMenuFunctions::PrintLogScreen(this, TEXT("AGameDebugMenuManager: No LocalPlayer"), 0.6f);
 		return;
 	}
 
@@ -222,10 +203,10 @@ void AGameDebugMenuManager::OnInitializeManager()
 	GetLocalizeStringComponent()->SyncLoadDebugMenuStringTables();
 	
 	if( !UKismetSystemLibrary::IsDedicatedServer(this) )
-	{
-		GetDebugMenuInputSystemComponent()->CreateDebugCameraInputClass();
-		
+	{		
 		CreateDebugMenuRootWidget();
+		
+		GetDebugMenuInputSystemComponent()->Initialize(MenuAsset);
 
 		TArray<UUserWidget*> FoundWidgets;
 		UWidgetBlueprintLibrary::GetAllWidgetsOfClass(this, FoundWidgets, UGameDebugMenuWidget::StaticClass(), true);
@@ -242,9 +223,7 @@ void AGameDebugMenuManager::OnInitializeManager()
 			}
 		}
 	}
-
-	APlayerController* PC = Cast<APlayerController>(GetOwner());
-
+	
 	if (!IsValid(PC->CheatManager))
 	{
 		if (GetNetMode() == NM_Client)
@@ -261,25 +240,28 @@ void AGameDebugMenuManager::OnInitializeManager()
 	}
 
 	GetWorld()->GetTimerManager().ClearTimer(InitializeManagerHandle);
+
+	EnableInput(PC);
 }
 
 void AGameDebugMenuManager::CreateDebugMenuRootWidget()
 {
-	if( !IsValid(WidgetDataAsset) )
+	if( !IsValid(MenuAsset) )
 	{
-		UE_LOG(LogGDM, Warning, TEXT("CreateDebugMenuRootWidget: Not found WidgetDataAsset"));
+		UE_LOG(LogGDM, Warning, TEXT("CreateDebugMenuRootWidget: Not found MenuAsset"));
 		return;
 	}
-
+	
 	if( IsValid(DebugMenuRootWidget) )
 	{
 		DebugMenuRootWidget->RemoveFromParent();
 	}
 
-	DebugMenuRootWidget = Cast<UGameDebugMenuRootWidget>(UWidgetBlueprintLibrary::Create(this, WidgetDataAsset->DebugMenuRootWidgetClass, GetOwnerPlayerController()));
+	DebugMenuRootWidget = Cast<UGameDebugMenuRootWidget>(UWidgetBlueprintLibrary::Create(this, MenuAsset->DebugMenuRootWidgetClass, GetOwnerPlayerController()));
 	DebugMenuRootWidget->DebugMenuManager = this;
-	DebugMenuRootWidget->AddToViewport(WidgetDataAsset->WidgetZOrder);
+	DebugMenuRootWidget->AddToViewport(MenuAsset->RootWidgetZOrder);
 	DebugMenuRootWidget->SetVisibility(ESlateVisibility::Collapsed);
+	DebugMenuRootWidget->InitializeInputComponent();
 	DebugMenuRootWidget->InitializeRootWidget();
 }
 
@@ -341,7 +323,8 @@ void AGameDebugMenuManager::RestoreShowMouseCursorFlag(APlayerController* Player
 
 void AGameDebugMenuManager::TryEnableGamePause()
 {
-	if(bGamePause)
+	check(IsValid(MenuAsset));
+	if(MenuAsset->bGamePause)
 	{
 		bCachedGamePaused = UGameplayStatics::IsGamePaused(this);
 		UGameplayStatics::SetGamePaused(this, true);
@@ -350,7 +333,8 @@ void AGameDebugMenuManager::TryEnableGamePause()
 
 void AGameDebugMenuManager::RestoreGamePause() const
 {
-	if(bGamePause)
+	check(IsValid(MenuAsset));
+	if(MenuAsset->bGamePause)
 	{
 		UGameplayStatics::SetGamePaused(this, bCachedGamePaused);
 	}
@@ -361,8 +345,23 @@ void AGameDebugMenuManager::OnScreenshotRequestProcessed()
 	bWaitToCaptureBeforeOpeningDebugReportMenu = false;
 
 	GetListenerComponent()->OnScreenshotRequestProcessedDispatcher.RemoveDynamic(this, &AGameDebugMenuManager::OnScreenshotRequestProcessed);
+
 	SetIgnoreInput(false);
+
+	GetDebugMenuInputSystemComponent()->OnOpenMenu();
+	
+	TArray<UGameDebugMenuWidget*> DebugMenuWidgets = GetViewportDebugMenuWidgets();
+	for(const auto ViewportWidget : DebugMenuWidgets )
+	{
+		if( ViewportWidget->IsActivateDebugMenu() )
+		{
+			ViewportWidget->OnShowingMenu(/* bRequestDebugMenuManager */true);
+		}
+	}
+	
 	GetDebugMenuRootWidget()->ShowDebugReport();
+
+	CallShowDispatcher();
 }
 
 void AGameDebugMenuManager::ExecuteConsoleCommand(const FString& Command, APlayerController* PC)
@@ -430,7 +429,6 @@ bool AGameDebugMenuManager::ShowDebugMenu(bool bWaitToCaptureBeforeOpeningMenuFl
 	bShowDebugMenu = true;
 
 	APlayerController* PC = GetOwnerPlayerController();
-	EnableInput(PC);
 	DisabledNavigationConfigs();
 	EnableShowMouseCursorFlag(PC);
 	TryEnableGamePause();
@@ -460,6 +458,8 @@ bool AGameDebugMenuManager::ShowDebugMenu(bool bWaitToCaptureBeforeOpeningMenuFl
 
 	if( bShow )
 	{
+		GetDebugMenuInputSystemComponent()->OnOpenMenu();
+		
 		TArray<UGameDebugMenuWidget*> DebugMenuWidgets = GetViewportDebugMenuWidgets();
 		for(const auto ViewportWidget : DebugMenuWidgets )
 		{
@@ -468,11 +468,12 @@ bool AGameDebugMenuManager::ShowDebugMenu(bool bWaitToCaptureBeforeOpeningMenuFl
 				ViewportWidget->OnShowingMenu(/* bRequestDebugMenuManager */true);
 			}
 		}
+
+		CallShowDispatcher();
+
+		UE_LOG(LogGDM, Log, TEXT("ShowDebugMenu"));
 	}
 
-	CallShowDispatcher();
-
-	UE_LOG(LogGDM, Log, TEXT("ShowDebugMenu"));
 	return true;
 }
 
@@ -503,18 +504,17 @@ void AGameDebugMenuManager::HideDebugMenu()
 		UGameDebugMenuFunctions::PrintLogScreen(this, TEXT("HideDebugMenu: Not found DebugMenuWidget"), 4.0f);
 		return;
 	}
-
+	
+	GetDebugMenuInputSystemComponent()->OnCloseMenu();
+	
 	bShowDebugMenu = false;
 
 	APlayerController* PC = GetOwnerPlayerController();
-	DisableInput(PC);
 	EnabledNavigationConfigs();
 	RestoreShowMouseCursorFlag(PC);
 	RestoreGamePause();
 	GetSaveSystemComponent()->SaveDebugMenuFile();
-
-	GetDebugMenuInputSystemComponent()->CallReleasedButtons();
-
+	
 	TArray<UGameDebugMenuWidget*> DebugMenuWidgets = GetViewportDebugMenuWidgets();
 	for(const auto ViewportWidget : DebugMenuWidgets )
 	{
@@ -548,13 +548,13 @@ UGameDebugMenuRootWidget* AGameDebugMenuManager::GetDebugMenuRootWidget()
 
 int32 AGameDebugMenuManager::GetAllDebugMenuKeys(TArray<FString>& OutKeys)
 {
-	if( IsValid(WidgetDataAsset) )
+	if( IsValid(MenuAsset) )
 	{
-		OutKeys = WidgetDataAsset->DebugMenuRegistrationOrder;
+		OutKeys = MenuAsset->DebugMenuRegistrationOrder;
 	}
 	else
 	{
-		UE_LOG(LogGDM, Warning, TEXT("GetAllDebugMenuKeys: Not found WidgetDataAsset"));
+		UE_LOG(LogGDM, Warning, TEXT("GetAllDebugMenuKeys: Not found MenuAsset"));
 	}
 
 	return OutKeys.Num();
@@ -562,19 +562,32 @@ int32 AGameDebugMenuManager::GetAllDebugMenuKeys(TArray<FString>& OutKeys)
 
 TSubclassOf<UGameDebugMenuWidget> AGameDebugMenuManager::GetDebugMenuWidgetClass(const FString& Key)
 {
-	if( IsValid(WidgetDataAsset) )
+	if( IsValid(MenuAsset) )
 	{
-		if(const TSubclassOf<UGameDebugMenuWidget>* WidgetClass = WidgetDataAsset->DebugMenuClasses.Find(Key) )
+		if(const TSubclassOf<UGameDebugMenuWidget>* WidgetClass = MenuAsset->DebugMenuClasses.Find(Key) )
 		{
 			return (*WidgetClass);
 		}
 	}
 	else
 	{
-		UE_LOG(LogGDM, Warning, TEXT("GetAllDebugMenuKeys: Not found WidgetDataAsset"));
+		UE_LOG(LogGDM, Warning, TEXT("GetAllDebugMenuKeys: Not found MenuAsset"));
 	}
 
 	return nullptr;
+}
+
+FString AGameDebugMenuManager::GetDebugMenuWidgetKey(const UGameDebugMenuWidget* Widget)
+{
+	for (const auto& Pair : DebugMenuInstances)
+	{
+		if( Pair.Value == Widget )
+		{
+			return Pair.Key;
+		}
+	}
+
+	return TEXT("");
 }
 
 bool AGameDebugMenuManager::GetDebugMenuWidgetInstances(TArray<UGameDebugMenuWidget*>& OutInstances)
@@ -960,38 +973,18 @@ int32 AGameDebugMenuManager::GetNumObjectFunctions() const
 
 void AGameDebugMenuManager::AddDebugMenuPCProxyComponent(APlayerController* PlayerController)
 {
-	if (!IsValid(DebugMenuPCProxyComponentClass))
+	check(IsValid(MenuAsset));
+	
+	if (!IsValid(MenuAsset->DebugMenuPCProxyComponentClass))
 	{
 		UE_LOG(LogGDM, Warning, TEXT("AddDebugMenuPCProxyComponent: Not found DebugMenuPCProxyComponentClass"));
 		return;
 	}
 
-	UGDMPlayerControllerProxyComponent* NewComponent = Cast<UGDMPlayerControllerProxyComponent>( PlayerController->AddComponentByClass(DebugMenuPCProxyComponentClass, false, FTransform::Identity, true));
+	UGDMPlayerControllerProxyComponent* NewComponent = Cast<UGDMPlayerControllerProxyComponent>( PlayerController->AddComponentByClass(MenuAsset->DebugMenuPCProxyComponentClass, false, FTransform::Identity, true));
 	check(IsValid(NewComponent));
 	NewComponent->DebugMenuManager = this;
 	PlayerController->FinishAddComponent(NewComponent, false, FTransform::Identity);
-}
-
-bool AGameDebugMenuManager::RegisterInputObject(UObject* TargetObject)
-{
-	if( GetDebugMenuInputSystemComponent()->RegisterInputObject(TargetObject) )
-	{
-		CallRegisterInputSystemEventDispatcher(TargetObject);
-		return true;
-	}
-
-	return false;
-}
-
-bool AGameDebugMenuManager::UnregisterInputObject(UObject* TargetObject)
-{
-	if( GetDebugMenuInputSystemComponent()->UnregisterInputObject(TargetObject) )
-	{
-		CallUnregisterInputSystemEventDispatcher(TargetObject);
-		return true;
-	}
-
-	return false;
 }
 
 void AGameDebugMenuManager::SetIgnoreInput(bool bNewInput)
@@ -1110,28 +1103,6 @@ void AGameDebugMenuManager::CallHideDispatcher()
 	}
 }
 
-void AGameDebugMenuManager::CallRegisterInputSystemEventDispatcher(UObject* TargetObject)
-{
-	TArray<UGDMListenerComponent*> ListenerComponents;
-	UGDMListenerComponent::GetAllListenerComponents(GetWorld(), ListenerComponents);
-
-	for(const auto& Component : ListenerComponents )
-	{
-		Component->OnRegisterInputSystemDispatcher.Broadcast(TargetObject);
-	}
-}
-
-void AGameDebugMenuManager::CallUnregisterInputSystemEventDispatcher(UObject* TargetObject)
-{
-	TArray<UGDMListenerComponent*> ListenerComponents;
-	UGDMListenerComponent::GetAllListenerComponents(GetWorld(), ListenerComponents);
-
-	for(const auto& Component : ListenerComponents )
-	{
-		Component->OnUnregisterInputSystemDispatcher.Broadcast(TargetObject);
-	}
-}
-
 void AGameDebugMenuManager::OnWidgetAdded(UWidget* AddWidget, ULocalPlayer* Player)
 {
 	if(UGameDebugMenuWidget* W = Cast<UGameDebugMenuWidget>(AddWidget))
@@ -1244,17 +1215,6 @@ void AGameDebugMenuManager::CallChangePropertyRotatorDispatcher(const FName& Pro
 	for(const auto& Component : ListenerComponents )
 	{
 		Component->OnChangePropertyRotatorDispatcher.Broadcast(PropertyName, PropertyOwnerObject, New, Old, PropertySaveKey);
-	}
-}
-
-void AGameDebugMenuManager::CallChangeActiveInputObjectDispatcher(UObject* NewTargetObject, UObject* OldTargetObject)
-{
-	TArray<UGDMListenerComponent*> ListenerComponents;
-	UGDMListenerComponent::GetAllListenerComponents(GetWorld(), ListenerComponents);
-
-	for(const auto& Component : ListenerComponents )
-	{
-		Component->OnChangeActiveInputObjectDispatcher.Broadcast(NewTargetObject, OldTargetObject);
 	}
 }
 

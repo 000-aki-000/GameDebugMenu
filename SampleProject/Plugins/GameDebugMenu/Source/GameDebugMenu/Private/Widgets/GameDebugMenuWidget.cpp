@@ -7,11 +7,106 @@
 
 #include "Widgets/GameDebugMenuWidget.h"
 #include <Blueprint/WidgetTree.h>
-#include "TimerManager.h"
 #include "GameDebugMenuManager.h"
 #include "Component/GDMPlayerControllerProxyComponent.h"
 #include "Engine/DebugCameraController.h"
-#include "Engine/LocalPlayer.h"
+#include "EnhancedInputComponent.h"
+#include "GameDebugMenuFunctions.h"
+#include "GameDebugMenuSettings.h"
+
+UGameDebugMenuWidget::UGameDebugMenuWidget(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
+	, OnSendWidgetEventDispatcher()
+	, ParentGameDebugMenuWidget(nullptr)
+	, bActivateMenu(false)
+	, InputHandles()
+{
+}
+
+void UGameDebugMenuWidget::InitializeInputComponent()
+{
+//	Super::InitializeInputComponent();
+
+	if (IsValid(InputComponent))
+	{
+		return;
+	}
+	
+	if ( APlayerController* Controller = GetOwningPlayer() )
+	{
+		InputComponent = NewObject<UInputComponent>( this, UEnhancedInputComponent::StaticClass(), TEXT("GameDebugMenuWidget_InputComponent"), RF_Transient);
+
+		/* TODO ↓セッター経由だとInputComponentがないと更新できないんだが。。。。 */
+		{
+			/* 最後に追加されたUI用InputComponentだけ処理したい（アンバインド処理をしなくてもいいように）のでブロック指定にする */
+			SetInputActionBlocking(true);
+
+			/* DebugMenuはEnhancedInputを利用するので他のInputComponentより優先度は高くなるような値を指定 */
+			SetInputActionPriority(GetDefault<UGameDebugMenuSettings>()->WidgetInputActionPriority);
+		}
+	}
+}
+
+UInputComponent* UGameDebugMenuWidget::GetMyInputComponent() const
+{
+	return InputComponent;
+}
+
+bool UGameDebugMenuWidget::RegisterDebugMenuWidgetInputFunction(const UInputAction* Action, const FName FunctionName, const ETriggerEvent TriggerEvent, UObject* FunctionObject)
+{
+	InitializeInputComponent();
+	
+	if (UEnhancedInputComponent* InputComp = Cast<UEnhancedInputComponent>(InputComponent))
+	{
+		if (!IsValid(FunctionObject))
+		{
+			FunctionObject = this;
+		}
+
+		InputHandles.Add(InputComp->BindAction(Action, TriggerEvent, FunctionObject, FunctionName).GetHandle());
+		return true;
+	}
+
+	return false;
+}
+
+bool UGameDebugMenuWidget::RegisterDebugMenuWidgetInputEvent(const UInputAction* Action, FOnGameDebugMenuWidgetInputAction Callback, const ETriggerEvent TriggerEvent)
+{
+	InitializeInputComponent();
+	
+	if (UEnhancedInputComponent* InputComp = Cast<UEnhancedInputComponent>(InputComponent))
+	{
+		const FEnhancedInputActionEventBinding& Binding =
+		InputComp->BindActionInstanceLambda(
+			Action,
+			TriggerEvent,
+			[WeakThis = TWeakObjectPtr<UGameDebugMenuWidget>(this), Callback](const FInputActionInstance& Instance)
+			{
+				if (WeakThis.IsValid() && Callback.IsBound())
+				{
+					Callback.Execute();
+				}
+			});
+
+		InputHandles.Add(Binding.GetHandle());
+		return true;
+	}
+
+	return false;
+}
+
+void UGameDebugMenuWidget::UnregisterDebugMenuWidgetInputs()
+{
+	if (UEnhancedInputComponent* InputComp = Cast<UEnhancedInputComponent>(InputComponent))
+	{
+		for (const auto Handle : InputHandles)
+		{
+			InputComp->RemoveBindingByHandle(Handle);
+		}
+
+		InputHandles.Reset();
+	}
+}
 
 void UGameDebugMenuWidget::SendSelfEvent(FName EventName)
 {
@@ -34,18 +129,18 @@ bool UGameDebugMenuWidget::IsActivateDebugMenu()
 	return bActivateMenu;
 }
 
-void UGameDebugMenuWidget::ActivateDebugMenu(bool bAlwaysExecute)
+void UGameDebugMenuWidget::ActivateDebugMenu()
 {
-	if (!bAlwaysExecute)
+	if (bActivateMenu)
 	{
-		if (bActivateMenu)
-		{
-			return;
-		}
+		return;
 	}
 
 	bActivateMenu = true;
-	OnActivateDebugMenu(bAlwaysExecute);
+
+	UGameDebugMenuFunctions::RegisterInputComponentForGameDebugMenu(this, InputComponent);
+	
+	OnActivateDebugMenu();
 }
 
 void UGameDebugMenuWidget::DeactivateDebugMenu()
@@ -56,6 +151,9 @@ void UGameDebugMenuWidget::DeactivateDebugMenu()
 	}
 
 	bActivateMenu = false;
+
+	UGameDebugMenuFunctions::UnregisterInputComponentForGameDebugMenu(this, InputComponent);
+	
 	OnDeactivateDebugMenu();
 }
 

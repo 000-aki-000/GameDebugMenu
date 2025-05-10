@@ -63,23 +63,11 @@ public:
 	/** Gameplayメニューのカテゴリ名表示順(最大255) */
 	UPROPERTY(EditAnywhere, config, Category = "Gameplay")
 	TArray<FGDMOrderMenuCategoryTitle> OrderGameplayCategoryTitles;
-
-	/** UI操作アクションマッピング */
+	
+	/** DebugMenuのWidgetの入力優先度 */
 	UPROPERTY(EditAnywhere, config, Category = "Input")
-	TMap<FName, FGDMActionMappingKey> ActionMappingKeys;
-
-	/** UI操作Axisマッピング */
-	UPROPERTY(EditAnywhere, config, Category = "Input")
-	TMap<FName, FGDMAxisMappingKey> AxisMappingKeys;
-
-	/** ボタンが押されてからリピート処理をするまでの時間 */
-	UPROPERTY(EditAnywhere, config, Category = "Input")	
-	float ButtonRepeatDelay;
-
-	/** リピート間隔 */
-	UPROPERTY(EditAnywhere, config, Category = "Input")
-	float ButtonRepeatInterval;
-
+	int32 WidgetInputActionPriority;
+	
 	/** デバックメニューのUMG使用フォント */
 	UPROPERTY(EditAnywhere, config, Category = "Font", meta = (AllowedClasses = "Font", DisplayName = "Font Family"))
 	FSoftObjectPath FontName;
@@ -197,6 +185,5 @@ private:
 	void SetupCategoryAbilitySystem();
 	void SetupCategoryOther();
 	void SetupCategoryLogVerbosity();
-	void SetupInputActions();
 
 };

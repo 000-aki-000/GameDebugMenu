@@ -83,18 +83,6 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "GDM|Dispatcher")
 	FGDMOnChangePropertyRotatorDelegate OnChangePropertyRotatorDispatcher;
 
-	/** インプットシステムに登録されたときに呼ばれるイベント */
-	UPROPERTY(BlueprintAssignable, Category = "GDM|Dispatcher")
-	FGDMOnInputSystemDelegate OnRegisterInputSystemDispatcher;
-
-	/** インプットシステムから解除されたときに呼ばれるイベント */
-	UPROPERTY(BlueprintAssignable, Category = "GDM|Dispatcher")
-	FGDMOnInputSystemDelegate OnUnregisterInputSystemDispatcher;
-
-	/** インプットシステムでアクティブなオブジェクトが変更されたときに呼ばれるイベント */
-	UPROPERTY(BlueprintAssignable, Category = "GDM|Dispatcher")
-	FGDMOnInputSystemChangeInputObjectDelegate OnChangeActiveInputObjectDispatcher;
-
 	/** DebugMenuの使用言語が変更されたときに呼ばれるイベント */
 	UPROPERTY(BlueprintAssignable, Category = "GDM|Dispatcher")
 	FGDMOnChangeDebugMenuLanguageDelegate OnChangeDebugMenuLanguageDispatcher;
