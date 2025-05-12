@@ -14,8 +14,8 @@
 #include "ImageUtils.h"
 #include "Engine/Texture2D.h"
 
-UGDMDebugReportWidget::UGDMDebugReportWidget()
-	: Super()
+UGDMDebugReportWidget::UGDMDebugReportWidget(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
 	, OnReceivedReportDispatcher()
 	, ScreenshotTexture(nullptr)
 	, ScreenshotImageData()

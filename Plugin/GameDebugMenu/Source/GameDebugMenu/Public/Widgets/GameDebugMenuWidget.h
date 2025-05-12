@@ -8,12 +8,17 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "EnhancedInputComponent.h"
 #include "Blueprint/UserWidget.h"
 #include "GameDebugMenuTypes.h"
-#include "Input/GDMInputInterface.h"
 #include "GameDebugMenuWidget.generated.h"
 
+class UInputAction;
+class UEnhancedInputComponent;
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FGDMWidgetDelegate, UGameDebugMenuWidget*, TargetWidget, FName, EventName);
+
+DECLARE_DYNAMIC_DELEGATE( FOnGameDebugMenuWidgetInputAction );
 
 /**
  * DebugMenu用Widgetの基底クラス
@@ -21,25 +26,57 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FGDMWidgetDelegate, UGameDebugMenuW
  */
 UCLASS(Abstract, Blueprintable, BlueprintType)
 class GAMEDEBUGMENU_API UGameDebugMenuWidget : public UUserWidget
-	, public IGDMInputInterface
 {
 	GENERATED_BODY()
-
-protected:
-	bool bActivateMenu;
 
 public:
 	/** イベント通知ディスパッチャー */
 	UPROPERTY(BlueprintAssignable)
 	FGDMWidgetDelegate OnSendWidgetEventDispatcher;
 
-	UPROPERTY(BlueprintReadOnly, Category = "GDM", Meta = (ExposeOnSpawn = true))
-	UGameDebugMenuWidget* ParentGameDebugMenuWidget;
+	UPROPERTY(BlueprintReadWrite, Category = "GDM", Meta = (ExposeOnSpawn = true))
+	TObjectPtr<UGameDebugMenuWidget> ParentGameDebugMenuWidget;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GDM")
-	FString GameDebugMenuName;
+protected:
+	bool bActivateMenu;
+	TArray<uint32> InputHandles;
 
 public:
+	UGameDebugMenuWidget(const FObjectInitializer& ObjectInitializer);
+	virtual void InitializeInputComponent() override;
+
+public:
+	/**
+	 * Widgetが所持するInputComponentを返す 
+	 */
+	UFUNCTION(BlueprintPure, Category = "GDM|Input")
+	UInputComponent* GetMyInputComponent() const;
+	
+	/**
+	* 指定のInputActionが入力されたときに呼び出される関数名を登録する
+	* @param Action - 対象となる入力アクション
+	* @param FunctionName - 呼び出される関数名
+	* @param TriggerEvent - 入力イベント
+	* @param FunctionObject - 関数名を持つオブジェクト。nullなら自分自身
+	*/
+	UFUNCTION(BlueprintCallable, Category = "GDM|Input", meta = (AdvancedDisplay = "2"))
+	bool RegisterDebugMenuWidgetInputFunction(const UInputAction* Action, const FName FunctionName, const ETriggerEvent TriggerEvent = ETriggerEvent::Triggered, UObject* FunctionObject = nullptr);
+
+	/**
+	* 指定のInputActionが入力されたときに呼び出されるイベントを登録する
+	* @param Action - 対象となる入力アクション
+	* @param Callback - 入力時に呼び出されるイベント
+	* @param TriggerEvent - 入力イベント
+	*/
+	UFUNCTION(BlueprintCallable, Category = "GDM|Input", meta = (AdvancedDisplay = "2"))
+	bool RegisterDebugMenuWidgetInputEvent(const UInputAction* Action, FOnGameDebugMenuWidgetInputAction Callback, const ETriggerEvent TriggerEvent = ETriggerEvent::Triggered);
+
+	/**
+	 * 登録した入力イベントを解除する
+	 */
+	UFUNCTION(BlueprintCallable, Category = "GDM|Input")
+	void UnregisterDebugMenuWidgetInputs();
+	
 	/**
 	* イベント通知
 	*/
@@ -76,7 +113,7 @@ public:
 	* @note ここで表示したり、操作できる状態に移行する
 	*/	
 	UFUNCTION(BlueprintImplementableEvent, Category = "GDM|Event")
-	void OnActivateDebugMenu(bool bAlwaysExecute);
+	void OnActivateDebugMenu();
 
 	/**
 	* ディアクティベート化をするときに呼ばれるイベント
@@ -94,11 +131,9 @@ public:
 
 	/**
 	* UIのアクティベート化をする(表示、操作できる状態になる)
-	* 
-	* @param bAlwaysExecute - 基本Activate済みの場合無視するので必ず処理させる場合Trueにする
 	*/
 	UFUNCTION(BlueprintCallable, Category = "GDM|Event")
-	virtual void ActivateDebugMenu(bool bAlwaysExecute);
+	virtual void ActivateDebugMenu();
 
 	/**
 	* UIのディアクティベート化をする(非表示、操作不可状態になる)
@@ -106,19 +141,13 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "GDM|Event")
 	virtual void DeactivateDebugMenu();
 
-	/**
-	* 選択状態かの判定（何をもって選択状態かの判断はWidget側に）
-	*/
-	UFUNCTION(BlueprintCallable,BlueprintImplementableEvent, Category = "GDM")
-	bool IsSelectedDebugMenu(UObject* TargetObject);
-
 	UFUNCTION()
 	virtual void OnChangeDebugMenuLanguage(const FName& NewLanguageKey, const FName& OldLanguageKey);
 
 	/**
 	* デバックメニューの使用言語が変更されたら呼ばれる
 	*/
-	UFUNCTION(BlueprintImplementableEvent, Category = "GDM|Event")
+	UFUNCTION(BlueprintImplementableEvent, Category = "GDM|Language")
 	void OnChangeDebugMenuLanguageBP(const FName& NewLanguageKey, const FName& OldLanguageKey);
 
 	/**
@@ -132,5 +161,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "GDM", meta = (DeterminesOutputType = "WidgetClass", DynamicOutputParam = "OutChildWidgets"))
 	virtual bool GetWidgetChildrenOfClass(TSubclassOf<UWidget> WidgetClass, TArray<UWidget*>& OutChildWidgets, bool bEndSearchAsYouFind);
 
+	/**
+	 * ローカルのコントローラーを取得（DebugCamera操作中でも取得できるもの）
+	 */
+	UFUNCTION(BlueprintPure, Category = "GDM")
 	APlayerController* GetOriginalPlayerController() const;
 };

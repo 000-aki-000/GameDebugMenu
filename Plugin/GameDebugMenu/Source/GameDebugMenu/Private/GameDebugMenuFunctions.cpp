@@ -50,7 +50,6 @@ UGameDebugMenuFunctions::UGameDebugMenuFunctions(const FObjectInitializer& Objec
 		{
 			ConsoleManager.RegisterConsoleCommand(*ToggleInputCommand, TEXT("Toggle Game Debug Menu InputSystem Log"), FConsoleCommandDelegate::CreateStatic(UGameDebugMenuFunctions::ToggleInputSystemLog), ECVF_Default);
 		}
-
 	}
 }
 
@@ -769,28 +768,28 @@ FString UGameDebugMenuFunctions::GetGDMObjectName(UObject* TargetObject)
 #endif
 }
 
-bool UGameDebugMenuFunctions::RegisterGDMInputObject(UObject* TargetInputObject)
+void UGameDebugMenuFunctions::RegisterInputComponentForGameDebugMenu(UObject* WorldContextObject, UInputComponent* InputComponent)
 {
-	AGameDebugMenuManager* GDMManager = UGameDebugMenuFunctions::GetGameDebugMenuManager(TargetInputObject);
-	if(!IsValid(GDMManager))
+	if (AGameDebugMenuManager* GDMManager = GetGameDebugMenuManager(WorldContextObject))
 	{
-		UE_LOG(LogGDM, Warning, TEXT("RegisterGDMInputObject: Not found DebugMenuManager"));
-		return false;
+		GDMManager->GetDebugMenuInputSystemComponent()->RegisterInputComponent(InputComponent);
 	}
-
-	return GDMManager->RegisterInputObject(TargetInputObject);
 }
 
-bool UGameDebugMenuFunctions::UnregisterGDMInputObject(UObject* TargetInputObject)
+void UGameDebugMenuFunctions::UnregisterInputComponentForGameDebugMenu(UObject* WorldContextObject, UInputComponent* InputComponent)
 {
-	AGameDebugMenuManager* GDMManager = UGameDebugMenuFunctions::GetGameDebugMenuManager(TargetInputObject);
-	if(!IsValid(GDMManager))
+	if (AGameDebugMenuManager* GDMManager = GetGameDebugMenuManager(WorldContextObject))
 	{
-		UE_LOG(LogGDM, Warning, TEXT("UnregisterGDMInputObject: Not found DebugMenuManager"));
-		return false;
+		GDMManager->GetDebugMenuInputSystemComponent()->UnregisterInputComponent(InputComponent);
 	}
+}
 
-	return GDMManager->UnregisterInputObject(TargetInputObject);
+void UGameDebugMenuFunctions::SwitchInputComponentGroupForGameDebugMenu(UObject* WorldContextObject , const FName NewGroupName)
+{
+	if (AGameDebugMenuManager* GDMManager = GetGameDebugMenuManager(WorldContextObject))
+	{
+		GDMManager->GetDebugMenuInputSystemComponent()->SwitchToInputGroup(NewGroupName);
+	}
 }
 
 bool UGameDebugMenuFunctions::ShowDebugReport(UObject* WorldContextObject)

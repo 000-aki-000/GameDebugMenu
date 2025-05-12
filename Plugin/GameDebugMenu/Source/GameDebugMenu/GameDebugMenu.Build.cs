@@ -33,7 +33,8 @@ public class GameDebugMenu : ModuleRules
                 "JsonUtilities",
                 "ImageDownload",
 				"ImageWrapper",
-				"EngineSettings"
+				"EngineSettings",
+				"EnhancedInput"
 			}
             );
 			

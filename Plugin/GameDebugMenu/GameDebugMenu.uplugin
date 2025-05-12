@@ -1,7 +1,7 @@
 {
 	"FileVersion": 3,
 	"Version": 2,
-	"VersionName": "1.25",
+	"VersionName": "1.26",
 	"FriendlyName": "GameDebugMenu",
 	"Description": "DebugMenu for UnrealEngine5",
 	"Category": "Debug",
@@ -23,6 +23,12 @@
 			"Name": "GameDebugMenuEditor",
 			"Type": "Editor",
 			"LoadingPhase": "PreLoadingScreen"
+		}
+	],
+	"Plugins": [
+		{
+			"Name": "EnhancedInput",
+			"Enabled": true
 		}
 	],
 	"IsExperimentalVersion": false

@@ -42,7 +42,7 @@ protected:
 	TWeakObjectPtr<AGDMDebugReportRequester> CurrentDebugReportRequester;
 
 public:
-	UGDMDebugReportWidget();
+	UGDMDebugReportWidget(const FObjectInitializer& ObjectInitializer);
 
 	UFUNCTION(BlueprintCallable)
 	virtual void SendDebugReport(const FString& Subject, const FString& Description,int32 IssueCategoryIndex, int32 PriorityIndex, int32 AssigneeIndex, bool bSendLogs, bool bSendScreenshotCapture);

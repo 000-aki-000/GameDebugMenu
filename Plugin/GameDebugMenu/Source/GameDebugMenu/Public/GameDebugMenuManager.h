@@ -19,7 +19,7 @@ class UGDMListenerComponent;
 class UGameDebugMenuWidget;
 class UGDMInputSystemComponent;
 class UGDMScreenshotRequesterComponent;
-class UGameDebugMenuWidgetDataAsset;
+class UGameDebugMenuDataAsset;
 class UGameDebugMenuRootWidget;
 class UGDMPlayerControllerProxyComponent;
 class AGDMDebugReportRequester;
@@ -58,6 +58,10 @@ class GAMEDEBUGMENU_API AGameDebugMenuManager : public AActor
 	bool bInitializedManager = false;
 	
 protected:
+	/** デバックメニュー用UIアセット */
+	UPROPERTY(EditAnywhere, Category = "GDM")
+	TObjectPtr<UGameDebugMenuDataAsset> MenuAsset;
+	
 	/** True：UI表示中 */
 	bool bShowDebugMenu;
 
@@ -78,11 +82,7 @@ protected:
 
 	/** 登録済み関数群 */
 	TArray<TSharedPtr<FGDMObjectFunctionInfo>> ObjectFunctions;
-
-	/** デバックメニュー用UIアセット */
-	UPROPERTY(EditAnywhere, Category = "GDM")
-	TObjectPtr<UGameDebugMenuWidgetDataAsset> WidgetDataAsset;
-
+	
 	/** Viewport上に追加されてるメインWidget */
 	UPROPERTY(Transient)
 	TObjectPtr<UGameDebugMenuRootWidget> DebugMenuRootWidget;
@@ -90,20 +90,12 @@ protected:
 	/** 生成した各メニューWidgetのインスタンス */
 	UPROPERTY(Transient,BlueprintReadOnly, Category = "GDM")
 	TMap<FString, TObjectPtr<UGameDebugMenuWidget>> DebugMenuInstances;
-
-	/** True : デバックメニュー操作中ポーズする */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GDM")
-	bool bGamePause;
-
-	/** PlayerControllerに自動追加されるプロキシコンポーネント */
-	UPROPERTY(EditAnywhere, Category = "GDM")
-	TSubclassOf<UGDMPlayerControllerProxyComponent> DebugMenuPCProxyComponentClass;
-
-	/** DebugMenuのログデバイス（レポート送信用） */
-	TSharedPtr<FGDMOutputDevice> OutputLog;
 	
 	UPROPERTY(Transient)
 	TArray<TObjectPtr<UGameDebugMenuWidget>> ViewportDebugMenuWidgets;
+
+	/** DebugMenuのログデバイス（レポート送信用） */
+	TSharedPtr<FGDMOutputDevice> OutputLog;
 
 public:
 	AGameDebugMenuManager(const FObjectInitializer& ObjectInitializer);
@@ -114,8 +106,6 @@ protected:
 public:
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void Tick(float DeltaTime) override;
-	virtual void EnableInput(class APlayerController* PlayerController) override;
-	virtual void DisableInput(class APlayerController* PlayerController) override;
 	
 public:
 	UFUNCTION(BlueprintPure)
@@ -219,6 +209,12 @@ public:
 	TSubclassOf<UGameDebugMenuWidget> GetDebugMenuWidgetClass(const FString& Key);
 
 	/**
+	* 各Debug画面となるWidgetのインスタンスからキーを取得
+	*/
+	UFUNCTION(BlueprintCallable, Category = "GDM")
+	FString GetDebugMenuWidgetKey(const UGameDebugMenuWidget* Widget);
+	
+	/**
 	* 生成済みのDebug画面となるWidgetを取得
 	*/
 	UFUNCTION(BlueprintCallable, Category = "GDM")
@@ -251,13 +247,7 @@ public:
 	* ProxyComponentを対象PlayerControllerに追加する
 	*/
 	virtual void AddDebugMenuPCProxyComponent(APlayerController* PlayerController);
-
-	/**
-	* 入力イベントするオブジェクトの登録/解除
-	*/
-	virtual bool RegisterInputObject(UObject* TargetObject);
-	virtual bool UnregisterInputObject(UObject* TargetObject);
-
+	
 	/**
 	* DebugMenuの入力無視フラグの設定
 	* (AControllerのSetIgnoreMoveInputと同様呼び出し回数を揃える必要がある)
@@ -294,8 +284,6 @@ protected:
 	virtual void CallExecuteConsoleCommandDispatcher(const FString& Command);
 	virtual void CallShowDispatcher();
 	virtual void CallHideDispatcher();
-	virtual void CallRegisterInputSystemEventDispatcher(UObject* TargetObject);
-	virtual void CallUnregisterInputSystemEventDispatcher(UObject* TargetObject);
 
 	UFUNCTION()
 	virtual void OnWidgetAdded(UWidget* AddWidget, ULocalPlayer* Player);
@@ -313,7 +301,6 @@ public:
 	virtual void CallChangePropertyVectorDispatcher(const FName& PropertyName, UObject* PropertyOwnerObject, FVector New, FVector Old, const FString& PropertySaveKey);
 	virtual void CallChangePropertyVector2DDispatcher(const FName& PropertyName, UObject* PropertyOwnerObject, FVector2D New, FVector2D Old, const FString& PropertySaveKey);
 	virtual void CallChangePropertyRotatorDispatcher(const FName& PropertyName, UObject* PropertyOwnerObject, FRotator New, FRotator Old, const FString& PropertySaveKey);
-	virtual void CallChangeActiveInputObjectDispatcher(UObject* NewTargetObject, UObject* OldTargetObject);
 	virtual void CallChangeDebugMenuLanguageDispatcher(const FName& NewLanguageKey, const FName& OldLanguageKey);
 	virtual void CallStartScreenshotRequestDispatcher();
 	virtual void CallScreenshotRequestProcessedDispatcher();

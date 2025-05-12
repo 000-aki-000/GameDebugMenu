@@ -20,7 +20,7 @@ void UGameDebugMenuRootWidget::NativeDestruct()
 	Super::NativeDestruct();
 }
 
-void UGameDebugMenuRootWidget::ActivateDebugMenu(bool bAlwaysExecute)
+void UGameDebugMenuRootWidget::ActivateDebugMenu()
 {
 	/* ルートは使用しない */
 }

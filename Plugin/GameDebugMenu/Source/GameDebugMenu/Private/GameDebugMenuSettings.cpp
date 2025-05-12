@@ -9,7 +9,6 @@
 #include "Performance/EnginePerformanceTargets.h"
 #include <Internationalization/StringTableCore.h>
 #include "GameDebugMenuTypes.h"
-#include "Input/GDMInputEventFunctions.h"
 #include "Reports/GDMRequesterJira.h"
 #include "Reports/GDMRequesterRedmine.h"
 #include "Reports/GDMRequesterTrello.h"
@@ -31,7 +30,6 @@ UGameDebugMenuSettings::UGameDebugMenuSettings()
 	SetupCategoryAbilitySystem();
 	SetupCategoryOther();
 	SetupCategoryLogVerbosity();
-	SetupInputActions();
 
 	OrderConsoleCommandCategoryTitles.Add(FGDMOrderMenuCategoryTitle(TEXT("Resets"),0));
 	OrderConsoleCommandCategoryTitles.Add(FGDMOrderMenuCategoryTitle(TEXT("Slomo"),1));
@@ -50,9 +48,8 @@ UGameDebugMenuSettings::UGameDebugMenuSettings()
 	OrderConsoleCommandCategoryTitles.Add(FGDMOrderMenuCategoryTitle(TEXT("Log Verbosity"),14));
 
 	OrderGameplayCategoryTitles.Add(FGDMOrderMenuCategoryTitle(TEXT("Other"),0));
-
-	ButtonRepeatDelay = 0.34f;
-	ButtonRepeatInterval = 0.04f;
+	
+	WidgetInputActionPriority = 10000;
 
 	FontName.SetPath(TEXT("/Engine/EngineFonts/Roboto.Roboto"));
 
@@ -94,6 +91,7 @@ UGameDebugMenuSettings::UGameDebugMenuSettings()
 	NoSaveConsoleCommands.Add(TEXT("LoadTimes."));
 	NoSaveConsoleCommands.Add(TEXT("CsvProfile "));
 	NoSaveConsoleCommands.Add(TEXT("Obj "));
+	NoSaveConsoleCommands.Add(TEXT("Freeze"));
 	LineBreakString = TEXT("\n");
 	bDisableGameDebugMenu = false;
 }
@@ -1772,106 +1770,112 @@ void UGameDebugMenuSettings::SetupCategoryLogVerbosity()
 	ConsoleCommandNames.Add(Single);
 }
 
-void UGameDebugMenuSettings::SetupInputActions()
-{
-	FGDMActionMappingKey ActionKey;
-	ActionKey.Keys.Add(EKeys::Up);
-	ActionKey.Keys.Add(EKeys::Gamepad_DPad_Up);
-	ActionKey.Keys.Add(EKeys::Gamepad_LeftStick_Up);
-	ActionKey.Keys.Add(EKeys::W);
-	ActionKey.bRepeat = true;
-	ActionMappingKeys.Add(GDMInputEventNames::Up,ActionKey);
-
-	ActionKey.Keys.Reset();
-	ActionKey.Keys.Add(EKeys::Down);
-	ActionKey.Keys.Add(EKeys::Gamepad_DPad_Down);
-	ActionKey.Keys.Add(EKeys::Gamepad_LeftStick_Down);
-	ActionKey.Keys.Add(EKeys::S);
-	ActionKey.bRepeat = true;
-	ActionMappingKeys.Add(GDMInputEventNames::Down,ActionKey);
-
-	ActionKey.Keys.Reset();
-	ActionKey.Keys.Add(EKeys::Left);
-	ActionKey.Keys.Add(EKeys::Gamepad_DPad_Left);
-	ActionKey.Keys.Add(EKeys::Gamepad_LeftStick_Left);
-	ActionKey.Keys.Add(EKeys::A);
-	ActionKey.bRepeat = true;
-	ActionMappingKeys.Add(GDMInputEventNames::Left,ActionKey);
-
-	ActionKey.Keys.Reset();
-	ActionKey.Keys.Add(EKeys::Right);
-	ActionKey.Keys.Add(EKeys::Gamepad_DPad_Right);
-	ActionKey.Keys.Add(EKeys::Gamepad_LeftStick_Right);
-	ActionKey.Keys.Add(EKeys::D);
-	ActionKey.bRepeat = true;
-	ActionMappingKeys.Add(GDMInputEventNames::Right,ActionKey);
-
-	ActionKey.Keys.Reset();
-	ActionKey.Keys.Add(EKeys::Gamepad_FaceButton_Bottom);
-	ActionKey.Keys.Add(EKeys::Enter);
-	ActionKey.Keys.Add(EKeys::SpaceBar);
-	ActionKey.Keys.Add(EKeys::ThumbMouseButton2);	
-	ActionKey.bRepeat = false;
-	ActionMappingKeys.Add(GDMInputEventNames::Decide,ActionKey);
-
-	ActionKey.Keys.Reset();
-	ActionKey.Keys.Add(EKeys::Gamepad_FaceButton_Right);
-	ActionKey.Keys.Add(EKeys::BackSpace);
-	ActionKey.Keys.Add(EKeys::C);
-	ActionKey.Keys.Add(EKeys::ThumbMouseButton);
-	ActionKey.bRepeat = false;
-	ActionMappingKeys.Add(GDMInputEventNames::Cancel,ActionKey);
-
-	ActionKey.Keys.Reset();
-	ActionKey.Keys.Add(EKeys::Gamepad_Special_Left);
-	ActionKey.Keys.Add(EKeys::Zero);
-	ActionKey.Keys.Add(EKeys::NumPadZero);
-	ActionKey.bRepeat = false;
-	ActionMappingKeys.Add(GDMInputEventNames::MenuOpenAndClose,ActionKey);
-
-	ActionKey.Keys.Reset();
-	ActionKey.Keys.Add(EKeys::R);
-	ActionKey.bRepeat = false;
-	ActionMappingKeys.Add(GDMInputEventNames::DebugReport, ActionKey);
-
-	/* ADebugCameraController側ではパッドに割り当ててないので
-	カメラ操作時使用してない左トリガーに追加 */
-	ActionKey.Keys.Reset();
-	ActionKey.Keys.Add(EKeys::Gamepad_LeftTrigger);
-	ActionKey.bRepeat = false;
-	ActionMappingKeys.Add(GDMInputEventNames::OrbitHitPoint, ActionKey);
-
-	/* ---Axis--- */
-
-	FGDMAxisMappingKey AxisMappingKey;
-	AxisMappingKey.Keys.Add(EKeys::Gamepad_LeftY);
-	AxisMappingKey.Scale.Add(1.0f);
-	AxisMappingKey.Keys.Add(EKeys::W);
-	AxisMappingKey.Scale.Add(1.0f);
-	AxisMappingKey.Keys.Add(EKeys::S);
-	AxisMappingKey.Scale.Add(-1.0f);
-	AxisMappingKeys.Add(GDMInputEventNames::AxisMoveForward, AxisMappingKey);
-
-	AxisMappingKey.Keys.Reset();
-	AxisMappingKey.Scale.Reset();
-	AxisMappingKey.Keys.Add(EKeys::Gamepad_LeftX);
-	AxisMappingKey.Scale.Add(1.0f);
-	AxisMappingKey.Keys.Add(EKeys::D);
-	AxisMappingKey.Scale.Add(1.0f);
-	AxisMappingKey.Keys.Add(EKeys::A);
-	AxisMappingKey.Scale.Add(-1.0f);
-	AxisMappingKeys.Add(GDMInputEventNames::AxisMoveRight, AxisMappingKey);
-
-	AxisMappingKey.Keys.Reset();
-	AxisMappingKey.Scale.Reset();
-	AxisMappingKey.Keys.Add(EKeys::Gamepad_RightX);
-	AxisMappingKey.Scale.Add(1.0f);
-	AxisMappingKeys.Add(GDMInputEventNames::AxisLookRight, AxisMappingKey);
-
-	AxisMappingKey.Keys.Reset();
-	AxisMappingKey.Scale.Reset();
-	AxisMappingKey.Keys.Add(EKeys::Gamepad_RightY);
-	AxisMappingKey.Scale.Add(1.0f);
-	AxisMappingKeys.Add(GDMInputEventNames::AxisLookUp, AxisMappingKey);
-}
+// void UGameDebugMenuSettings::SetupInputActions()
+// {
+// 	FGDMActionMappingKey ActionKey;
+// 	// ActionKey.Keys.Add(EKeys::Up);
+// 	// ActionKey.Keys.Add(EKeys::Gamepad_DPad_Up);
+// 	// ActionKey.Keys.Add(EKeys::Gamepad_LeftStick_Up);
+// 	// ActionKey.Keys.Add(EKeys::W);
+// 	// ActionKey.bRepeat = true;
+// 	// ActionMappingKeys.Add(GDMInputEventNames::Up,ActionKey);
+// 	//
+// 	// ActionKey.Keys.Reset();
+// 	// ActionKey.Keys.Add(EKeys::Down);
+// 	// ActionKey.Keys.Add(EKeys::Gamepad_DPad_Down);
+// 	// ActionKey.Keys.Add(EKeys::Gamepad_LeftStick_Down);
+// 	// ActionKey.Keys.Add(EKeys::S);
+// 	// ActionKey.bRepeat = true;
+// 	// ActionMappingKeys.Add(GDMInputEventNames::Down,ActionKey);
+// 	//
+// 	// ActionKey.Keys.Reset();
+// 	// ActionKey.Keys.Add(EKeys::Left);
+// 	// ActionKey.Keys.Add(EKeys::Gamepad_DPad_Left);
+// 	// ActionKey.Keys.Add(EKeys::Gamepad_LeftStick_Left);
+// 	// ActionKey.Keys.Add(EKeys::A);
+// 	// ActionKey.bRepeat = true;
+// 	// ActionMappingKeys.Add(GDMInputEventNames::Left,ActionKey);
+// 	//
+// 	// ActionKey.Keys.Reset();
+// 	// ActionKey.Keys.Add(EKeys::Right);
+// 	// ActionKey.Keys.Add(EKeys::Gamepad_DPad_Right);
+// 	// ActionKey.Keys.Add(EKeys::Gamepad_LeftStick_Right);
+// 	// ActionKey.Keys.Add(EKeys::D);
+// 	// ActionKey.bRepeat = true;
+// 	// ActionMappingKeys.Add(GDMInputEventNames::Right,ActionKey);
+// 	//
+// 	// ActionKey.Keys.Reset();
+// 	// ActionKey.Keys.Add(EKeys::Gamepad_FaceButton_Bottom);
+// 	// ActionKey.Keys.Add(EKeys::Enter);
+// 	// ActionKey.Keys.Add(EKeys::SpaceBar);
+// 	// ActionKey.Keys.Add(EKeys::ThumbMouseButton2);	
+// 	// ActionKey.bRepeat = false;
+// 	// ActionMappingKeys.Add(GDMInputEventNames::Decide,ActionKey);
+// 	//
+// 	// ActionKey.Keys.Reset();
+// 	// ActionKey.Keys.Add(EKeys::Gamepad_FaceButton_Right);
+// 	// ActionKey.Keys.Add(EKeys::BackSpace);
+// 	// ActionKey.Keys.Add(EKeys::C);
+// 	// ActionKey.Keys.Add(EKeys::ThumbMouseButton);
+// 	// ActionKey.bRepeat = false;
+// 	// ActionMappingKeys.Add(GDMInputEventNames::Cancel,ActionKey);
+//
+// 	ActionKey.Keys.Reset();
+// 	ActionKey.Keys.Add(EKeys::Gamepad_Special_Left);
+// 	ActionKey.Keys.Add(EKeys::Zero);
+// 	ActionKey.Keys.Add(EKeys::NumPadZero);
+// 	ActionKey.bRepeat = false;
+// 	ActionMappingKeys.Add(FName("DebugCamera_MenuOpenAndClose"),ActionKey);
+//
+// 	ActionKey.Keys.Reset();
+// 	ActionKey.Keys.Add(EKeys::R);
+// 	ActionKey.bRepeat = false;
+// 	ActionMappingKeys.Add(FName("DebugCamera_DebugReport"), ActionKey);
+//
+// 	/* ADebugCameraController側ではパッドに割り当ててないので
+// 	カメラ操作時使用してない左トリガーに追加 */
+// 	ActionKey.Keys.Reset();
+// 	ActionKey.Keys.Add(EKeys::Gamepad_LeftTrigger);
+// 	ActionKey.bRepeat = false;
+// 	ActionMappingKeys.Add(FName("DebugCamera_OrbitHitPoint"), ActionKey);
+//
+// 	/* ADebugCameraControllerでパッドのBボタン（XBox）に操作キャラのテレポートを割り当てる */
+// 	ActionKey.Keys.Reset();
+// 	ActionKey.Keys.Add(EKeys::Gamepad_FaceButton_Right);
+// 	ActionKey.bRepeat = false;
+// 	ActionMappingKeys.Add(FName("DebugCamera_PawnTeleport"), ActionKey);
+// 	
+// 	// /* ---Axis--- */
+// 	//
+// 	// FGDMAxisMappingKey AxisMappingKey;
+// 	// AxisMappingKey.Keys.Add(EKeys::Gamepad_LeftY);
+// 	// AxisMappingKey.Scale.Add(1.0f);
+// 	// AxisMappingKey.Keys.Add(EKeys::W);
+// 	// AxisMappingKey.Scale.Add(1.0f);
+// 	// AxisMappingKey.Keys.Add(EKeys::S);
+// 	// AxisMappingKey.Scale.Add(-1.0f);
+// 	// AxisMappingKeys.Add(GDMInputEventNames::AxisMoveForward, AxisMappingKey);
+// 	//
+// 	// AxisMappingKey.Keys.Reset();
+// 	// AxisMappingKey.Scale.Reset();
+// 	// AxisMappingKey.Keys.Add(EKeys::Gamepad_LeftX);
+// 	// AxisMappingKey.Scale.Add(1.0f);
+// 	// AxisMappingKey.Keys.Add(EKeys::D);
+// 	// AxisMappingKey.Scale.Add(1.0f);
+// 	// AxisMappingKey.Keys.Add(EKeys::A);
+// 	// AxisMappingKey.Scale.Add(-1.0f);
+// 	// AxisMappingKeys.Add(GDMInputEventNames::AxisMoveRight, AxisMappingKey);
+// 	//
+// 	// AxisMappingKey.Keys.Reset();
+// 	// AxisMappingKey.Scale.Reset();
+// 	// AxisMappingKey.Keys.Add(EKeys::Gamepad_RightX);
+// 	// AxisMappingKey.Scale.Add(1.0f);
+// 	// AxisMappingKeys.Add(GDMInputEventNames::AxisLookRight, AxisMappingKey);
+// 	//
+// 	// AxisMappingKey.Keys.Reset();
+// 	// AxisMappingKey.Scale.Reset();
+// 	// AxisMappingKey.Keys.Add(EKeys::Gamepad_RightY);
+// 	// AxisMappingKey.Scale.Add(1.0f);
+// 	// AxisMappingKeys.Add(GDMInputEventNames::AxisLookUp, AxisMappingKey);
+// }
 

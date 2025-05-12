@@ -10,67 +10,33 @@
 #include "Engine/DebugCameraController.h"
 #include "GameDebugMenuManager.h"
 #include <GameDebugMenuFunctions.h>
-#include "Input/GDMInputEventFunctions.h"
 
 AGDMDebugCameraInput::AGDMDebugCameraInput()
 	: Super()
-	, ActorSpawnedDelegateHandle()
 	, DebugCameraController(nullptr)
-	, bBindingsInputComponent(false)
 {
 	PrimaryActorTick.bCanEverTick = false;
 	PrimaryActorTick.bStartWithTickEnabled = false;
 }
 
-void AGDMDebugCameraInput::EnableInput(class APlayerController* PlayerController)
-{
-	/* DebugCameraControllerに対して有効にする */
-	Super::EnableInput(PlayerController);
-
-	if (bBindingsInputComponent == false)
-	{
-		bBindingsInputComponent = true;
-
-		/* メニュー開閉イベントをバインドしてDebugCamera操作中メニューを出せるように */
-		FInputActionBinding* InputActionBinding = &InputComponent->BindAction(GDMInputEventNames::MenuOpenAndClose, EInputEvent::IE_Pressed, this, &AGDMDebugCameraInput::OnPressedToggleMenu);
-		InputActionBinding->bExecuteWhenPaused = true;
-		InputActionBinding = &InputComponent->BindAction(GDMInputEventNames::DebugReport, EInputEvent::IE_Pressed, this, &AGDMDebugCameraInput::OnPressedDebugReport);
-		InputActionBinding->bExecuteWhenPaused = true;
- 		InputActionBinding = &InputComponent->BindAction(GDMInputEventNames::OrbitHitPoint, IE_Pressed, this, &AGDMDebugCameraInput::ToggleOrbitHitPoint);
- 		InputActionBinding->bExecuteWhenPaused = true;
-	}
-}
-
-AGameDebugMenuManager* AGDMDebugCameraInput::GetOwnerGameDebugMenuManager()
+AGameDebugMenuManager* AGDMDebugCameraInput::GetOwnerGameDebugMenuManager() const
 {
 	return Cast<AGameDebugMenuManager>(GetOwner());
 }
 
-void AGDMDebugCameraInput::BindSpawnDebugCameraController()
+ADebugCameraController* AGDMDebugCameraInput::GetDebugCameraController() const
 {
-	if (!IsValid(GetWorld()))
-	{
-		UE_LOG(LogGDM, Warning, TEXT("AGDMDebugCameraInput::BindSpawnDebugCameraController Not Found GetWorld"));
-		return;
-	}
-
-	ActorSpawnedDelegateHandle = GetWorld()->AddOnActorSpawnedHandler(FOnActorSpawned::FDelegate::CreateUObject(this, &AGDMDebugCameraInput::OnActorSpawned));
+	return DebugCameraController.Get();
 }
 
-void AGDMDebugCameraInput::UnbindSpawnDebugCameraController()
+void AGDMDebugCameraInput::SetDebugCameraController(ADebugCameraController* DCC)
 {
-	if (!IsValid(GetWorld()))
-	{
-		UE_LOG(LogGDM, Warning, TEXT("AGDMDebugCameraInput::UnbindSpawnDebugCameraController Not Found GetWorld"));
-		return;
-	}
-
-	GetWorld()->RemoveOnActorSpawnedHandler(ActorSpawnedDelegateHandle);
+	DebugCameraController = DCC;
 }
 
-void AGDMDebugCameraInput::OnPressedToggleMenu()
+void AGDMDebugCameraInput::ToggleOrbitHitPoint()
 {
-	UE_LOG(LogGDM, Log, TEXT("AGDMDebugCameraInput::OnPressedToggleMenu Call"));
+	UE_LOG(LogGDM, Log, TEXT("AGDMDebugCameraInput::ToggleOrbitHitPoint Call"));
 
 	AGameDebugMenuManager* DebugMenuManager = GetOwnerGameDebugMenuManager();
 	if (!IsValid(DebugMenuManager))
@@ -78,55 +44,31 @@ void AGDMDebugCameraInput::OnPressedToggleMenu()
 		return;
 	}
 
-	if(DebugMenuManager->IsInputIgnored())
+	if (DebugMenuManager->IsInputIgnored())
 	{
 		return;
 	}
-
-	if (DebugMenuManager->IsShowingDebugMenu())
-	{
-		DebugMenuManager->HideDebugMenu();
-	}
-	else
-	{
-		DebugMenuManager->ShowDebugMenu();
-	}
-}
-
-void AGDMDebugCameraInput::OnPressedDebugReport()
-{
-	UE_LOG(LogGDM, Log, TEXT("AGDMDebugCameraInput::OnPressedDebugReport Call"));
-
-	UGameDebugMenuFunctions::ShowDebugReport(this);
-}
-
-void AGDMDebugCameraInput::ToggleOrbitHitPoint()
-{
-	UE_LOG(LogGDM, Log, TEXT("AGDMDebugCameraInput::ToggleOrbitHitPoint Call"));
-
+	
 	if(DebugCameraController.IsValid())
 	{
 		DebugCameraController->ToggleOrbitHitPoint();
 	}
 }
 
-void AGDMDebugCameraInput::OnActorSpawned(AActor* SpawnActor)
+void AGDMDebugCameraInput::PawnTeleport()
 {
-	DebugCameraController = Cast<ADebugCameraController>(SpawnActor);
-	if (!DebugCameraController.IsValid())
+	UE_LOG(LogGDM, Log, TEXT("AGDMDebugCameraInput::PawnTeleport Call"));
+	
+	AGameDebugMenuManager* DebugMenuManager = GetOwnerGameDebugMenuManager();
+	if (!IsValid(DebugMenuManager))
 	{
 		return;
 	}
 
-	/* Debugカメラが生成されたら入力を有効にする */
-	UnbindSpawnDebugCameraController();
-	EnableInput(DebugCameraController.Get());
-}
-
-void AGDMDebugCameraInput::ChangeDynamicBlockInput(bool bNewBlockInput)
-{
-	if(IsValid(InputComponent))
+	if (DebugMenuManager->IsInputIgnored())
 	{
-		InputComponent->bBlockInput = bNewBlockInput;
+		return;
 	}
+
+	DebugMenuManager->ExecuteConsoleCommand(TEXT("Teleport"), DebugMenuManager->GetOwnerPlayerController());
 }

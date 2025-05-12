@@ -15,7 +15,7 @@ class ADebugCameraController;
 class AGameDebugMenuManager;
 
 /**
-* DebugCameraController有効時にメニューの操作をできるようにするための入力クラス
+* DebugCameraController有効時に入力クラス
 */
 UCLASS(Blueprintable, NotBlueprintType, notplaceable)
 class GAMEDEBUGMENU_API AGDMDebugCameraInput : public AActor
@@ -26,28 +26,21 @@ class GAMEDEBUGMENU_API AGDMDebugCameraInput : public AActor
 
 	TWeakObjectPtr<ADebugCameraController> DebugCameraController;
 
-	bool bBindingsInputComponent;
-
 public:	
 	AGDMDebugCameraInput();
 
-public:	
-	virtual void EnableInput(class APlayerController* PlayerController) override;
+public:
+	UFUNCTION(BlueprintPure)
+	AGameDebugMenuManager* GetOwnerGameDebugMenuManager() const;
 
-	virtual AGameDebugMenuManager* GetOwnerGameDebugMenuManager();
-
-	virtual void BindSpawnDebugCameraController();
-
-	virtual void UnbindSpawnDebugCameraController();
-
-	virtual void OnPressedToggleMenu();
-
-	virtual void OnPressedDebugReport();
-
-	virtual void ToggleOrbitHitPoint();
-
-	virtual void OnActorSpawned(AActor* SpawnActor);
+	UFUNCTION(BlueprintPure)
+	ADebugCameraController* GetDebugCameraController() const;
+	
+	void SetDebugCameraController(ADebugCameraController* DCC);
 
 	UFUNCTION(BlueprintCallable)
-	void ChangeDynamicBlockInput(bool bNewBlockInput);
+	virtual void ToggleOrbitHitPoint();
+
+	UFUNCTION(BlueprintCallable)
+	virtual void PawnTeleport();
 };
