@@ -1,5 +1,9 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
+/**
+* Copyright (c) 2020 akihiko moroi
+*
+* This software is released under the MIT License.
+* (See accompanying file LICENSE.txt or copy at http://opensource.org/licenses/MIT)
+*/
 
 #include "Component/GDMSaveSystemComponent.h"
 
@@ -44,7 +48,7 @@ void UGDMSaveSystemComponent::SaveDebugMenuFile()
 		Manager->GetOutputCommandHistoryString(CommandHistory);
 	}
 	
-	JsonSystemComponent->SetStringArrayToJson(TEXT("CommandHistory"), CommandHistory);
+	JsonSystemComponent->SetCustomStringArray(TEXT("CommandHistory"), CommandHistory);
 	
 	const FString JsonString = JsonSystemComponent->GetJsonAsString();
 	if (JsonString.IsEmpty())

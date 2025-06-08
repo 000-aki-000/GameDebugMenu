@@ -69,7 +69,7 @@ public:
 	int32 WidgetInputActionPriority;
 	
 	/** デバックメニューのUMG使用フォント */
-	UPROPERTY(EditAnywhere, config, Category = "Font", meta = (AllowedClasses = "Font", DisplayName = "Font Family"))
+	UPROPERTY(EditAnywhere, config, Category = "Font", meta = (AllowedClasses = "/Script/Engine.Font", DisplayName = "Font Family"))
 	FSoftObjectPath FontName;
 
 	/** バグレポート連携ツール */

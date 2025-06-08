@@ -5,5 +5,4 @@
 * (See accompanying file LICENSE.txt or copy at http://opensource.org/licenses/MIT)
 */
 
-#include "Widgets/GDMRuntimePropertyWatcherWidget.h"
-
+#include "ConsoleCommand/GDMConsoleCommandValueProvider.h"

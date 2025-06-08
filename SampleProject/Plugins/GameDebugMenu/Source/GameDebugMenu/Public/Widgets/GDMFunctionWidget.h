@@ -29,6 +29,9 @@ public:
 	UPROPERTY(BlueprintReadWrite, Category = "GDM|Functions")
 	FName FunctionName;
 
+	UPROPERTY(BlueprintReadWrite, Category = "GDM|Functions")
+	FString FunctionSaveKey;
+	
 public:
 	UFUNCTION(BlueprintCallable)
 	bool TryCallObjectFunction(FName EventName);

@@ -12,6 +12,8 @@
 #include "GameDebugMenuTypes.h"
 #include "GameDebugMenuFunctions.generated.h"
 
+class UWidget;
+
 UCLASS()
 class GAMEDEBUGMENU_API UGameDebugMenuFunctions : public UBlueprintFunctionLibrary
 {
@@ -104,6 +106,7 @@ public:
 	* @param TargetObject - 関数（カスタムイベント）を所持してる対象のオブジェクト
 	* @param FunctionName - 関数（カスタムイベント）名
 	* @param CategoryKey - カテゴリ
+	* @param FunctionSaveKey - 関数保存用の識別キー
 	* @param DisplayFunctionName - UI上の関数（カスタムイベント）名,何も指定しなければ「FunctionName」
 	* @param Description - 説明文
 	* @param DisplayPriority - リスト追加時の表示優先度（降順）
@@ -111,7 +114,7 @@ public:
 	* @note ここで登録できるのは引数０の関数（カスタムイベント）のみ
 	*/
 	UFUNCTION(BlueprintCallable, BlueprintCosmetic, Category = "GDM|Functions", meta = (Keywords = "DebugMenu GDM", AdvancedDisplay = "3"))
-	static bool RegisterGDMObjectFunction(UObject* TargetObject,FName FunctionName,const FGDMGameplayCategoryKey CategoryKey,const FText DisplayFunctionName,const FText Description, const int32 DisplayPriority);
+	static bool RegisterGDMObjectFunction(UObject* TargetObject, FName FunctionName, const FGDMGameplayCategoryKey CategoryKey, const FString FunctionSaveKey, const FText DisplayFunctionName,const FText Description, const int32 DisplayPriority);
 
 	/**
 	* 対象のオブジェクトが登録したプロパティ＆関数を解除する
@@ -129,7 +132,7 @@ public:
 	* 登録済み関数（カスタムイベント）を取得する
 	*/
 	UFUNCTION(BlueprintCallable, BlueprintCosmetic, Category = "GDM|Functions", meta = (Keywords = "DebugMenu GDM", WorldContext = "WorldContextObject"))
-	static UObject* GetGDMObjectFunction(UObject* WorldContextObject,const int32 Index, FGDMGameplayCategoryKey& OutCategoryKey, FText& OutDisplayFunctionName, FText& OutDescription, FName& OutFunctionName);
+	static UObject* GetGDMObjectFunction(UObject* WorldContextObject,const int32 Index, FGDMGameplayCategoryKey& OutCategoryKey, FString& OutFunctionSaveKey, FText& OutDisplayFunctionName, FText& OutDescription, FName& OutFunctionName);
 
 	/**
 	* 登録済みプロパティ数を取得
@@ -278,12 +281,6 @@ public:
 	static FString GetProjectVersionString();
 
 	/**
-	* ワールドのTimeDilationを取得
-	*/
-	UFUNCTION(BlueprintPure,Category = "GDM|Functions",meta = ( Keywords = "DebugMenu GDM",WorldContext = "WorldContextObject" ))
-	static float GetWorldTimeDilation(UObject* WorldContextObject);
-
-	/**
 	* デバッグメニュー用のログカテゴリを使用したPrintString
 	*/
 	UFUNCTION(BlueprintCallable, BlueprintCosmetic, Category = "GDM|Functions", meta = (Keywords = "DebugMenu GDM", WorldContext = "WorldContextObject", DisplayName = "PrintLogScreenGDM"))
@@ -327,7 +324,14 @@ public:
 	*/
 	UFUNCTION(BlueprintPure, Category = "GDM|Functions", meta = (Keywords = "DebugMenu GDM"))
 	static FString GetDebugMenuLineBreakString();
-	
+
+	/**
+	 * Widgetのプロパティをコピーするユーティリティ関数
+	 * （あくまでプロパティのみでSlate側は考慮しない）
+	 */
+	UFUNCTION(BlueprintCallable, Category = "GDM|Functions", meta = (Keywords = "DebugMenu GDM"))
+	static void CopyWidgetProperties(UWidget* Source, UWidget* Target);
+
 public:
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "Equal (GDMMenuCategoryKey)", CompactNodeTitle = "=="), Category = "GDM|Functions")
 	static bool EqualEqual_GDMMenuCategoryKey(const FGDMMenuCategoryKey& A, const FGDMMenuCategoryKey& B);

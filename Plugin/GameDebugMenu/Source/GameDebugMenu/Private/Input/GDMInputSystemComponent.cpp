@@ -8,7 +8,6 @@
 #include "Input/GDMInputSystemComponent.h"
 #include <Engine/World.h>
 #include "EnhancedInputSubsystems.h"
-#include "GameFramework/WorldSettings.h"
 #include "Engine/DebugCameraController.h"
 #include "GameFramework/CheatManager.h"
 
@@ -46,8 +45,7 @@ void UGDMInputSystemComponent::TickComponent(float DeltaTime, enum ELevelTick Ti
 	if (bOutputDebugLog)
 	{
 		FString DebugText;
-
-
+		
 		const AGameDebugMenuManager* Manager = GetOwnerGameDebugMenuManager();
 		FString GroupName;
 		Manager->GetLocalizeStringComponent()->GetString(CurrentInputGroupName.ToString(), GroupName);
@@ -144,7 +142,7 @@ void UGDMInputSystemComponent::RegisterInputComponentToGroup(UInputComponent* In
 {
 	if ( !IsValid(InputComponent) || (InputComponent == RootWidgetInputComponent) )
 	{
-		UE_LOG(LogGDM, Warning, TEXT("RegisterInputComponent failed: Not found InputComponent"));
+		UE_LOG(LogGDM, Verbose, TEXT("RegisterInputComponent failed: Not found InputComponent"));
 		return;
 	}
 	
@@ -180,7 +178,7 @@ void UGDMInputSystemComponent::UnregisterInputComponentFromGroup(UInputComponent
 {
 	if ( !IsValid(InputComponent) || (InputComponent == RootWidgetInputComponent) )
 	{
-		UE_LOG(LogGDM, Warning, TEXT("UnregisterInputComponent failed: Not found InputComponent"));
+		UE_LOG(LogGDM, Verbose, TEXT("UnregisterInputComponent failed: Not found InputComponent"));
 		return;
 	}
 	

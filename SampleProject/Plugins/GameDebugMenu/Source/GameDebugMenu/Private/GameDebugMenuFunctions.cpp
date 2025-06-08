@@ -13,9 +13,12 @@
 #include "Misc/ConfigCacheIni.h"
 #include <GeneralProjectSettings.h>
 
+#include "Blueprint/UserWidget.h"
 #include "Component/GDMLocalizeStringComponent.h"
 #include "GameFramework/WorldSettings.h"
 #include "Input/GDMInputSystemComponent.h"
+#include "Serialization/ObjectReader.h"
+#include "Serialization/ObjectWriter.h"
 
 TArray< TWeakObjectPtr<AGameDebugMenuManager> > GGameDebugMenuManagers;
 TWeakObjectPtr<AGameDebugMenuManager> UGameDebugMenuFunctions::CurrentGameDebugMenuManager = nullptr;
@@ -168,7 +171,7 @@ bool UGameDebugMenuFunctions::TryCreateDebugMenuManager(APlayerController* Playe
 					,PendingData.ConfigInfo
 					,PendingData.TargetName
 					,PendingData.CategoryKey
-					,PendingData.PropertySaveKey
+					,PendingData.SaveKey
 					,PendingData.DisplayPropertyName
 					,PendingData.Description
 					,PendingData.DisplayPriority
@@ -188,6 +191,7 @@ bool UGameDebugMenuFunctions::TryCreateDebugMenuManager(APlayerController* Playe
 				RegisterGDMObjectFunction(PendingData.TargetObject.Get(),
 										  PendingData.TargetName,
 										  PendingData.CategoryKey,
+										  PendingData.SaveKey,
 										  PendingData.DisplayPropertyName,
 										  PendingData.Description,
 										  PendingData.DisplayPriority
@@ -398,7 +402,7 @@ bool UGameDebugMenuFunctions::RegisterGDMObjectProperty(UObject* TargetObject, c
 		PendingData.TargetObject        = TargetObject;
 		PendingData.TargetName          = PropertyName;
 		PendingData.CategoryKey			= CategoryKey;
-		PendingData.PropertySaveKey		= PropertySaveKey;
+		PendingData.SaveKey				= PropertySaveKey;
 		PendingData.DisplayPropertyName = DisplayPropertyName;
 		PendingData.Description         = Description;
 		PendingData.ConfigInfo          = PropertyUIConfigInfo;
@@ -410,7 +414,7 @@ bool UGameDebugMenuFunctions::RegisterGDMObjectProperty(UObject* TargetObject, c
 	return GDMManager->RegisterObjectProperty(TargetObject, PropertyName, CategoryKey, PropertySaveKey, DisplayPropertyName, Description, PropertyUIConfigInfo, DisplayPriority);
 }
 
-bool UGameDebugMenuFunctions::RegisterGDMObjectFunction(UObject* TargetObject,FName FunctionName,const FGDMGameplayCategoryKey CategoryKey,const FText DisplayFunctionName,const FText Description, const int32 DisplayPriority)
+bool UGameDebugMenuFunctions::RegisterGDMObjectFunction(UObject* TargetObject, FName FunctionName, const FGDMGameplayCategoryKey CategoryKey, const FString FunctionSaveKey, const FText DisplayFunctionName,const FText Description, const int32 DisplayPriority)
 {
 	if(GetDefault<UGameDebugMenuSettings>()->bDisableGameDebugMenu)
 	{
@@ -425,6 +429,7 @@ bool UGameDebugMenuFunctions::RegisterGDMObjectFunction(UObject* TargetObject,FN
 		PendingData.TargetObject        = TargetObject;
 		PendingData.TargetName          = FunctionName;
 		PendingData.CategoryKey			= CategoryKey;
+		PendingData.SaveKey				= FunctionSaveKey;
 		PendingData.DisplayPropertyName = DisplayFunctionName;
 		PendingData.Description         = Description;
 		PendingData.DisplayPriority		= DisplayPriority;
@@ -432,7 +437,7 @@ bool UGameDebugMenuFunctions::RegisterGDMObjectFunction(UObject* TargetObject,FN
 		return false;
 	}
 	
-	return GDMManager->RegisterObjectFunction(TargetObject,FunctionName, CategoryKey, DisplayFunctionName, Description, DisplayPriority);
+	return GDMManager->RegisterObjectFunction(TargetObject, FunctionName, CategoryKey, FunctionSaveKey, DisplayFunctionName, Description, DisplayPriority);
 }
 
 void UGameDebugMenuFunctions::UnregisterGDMObject(UObject* TargetObject)
@@ -465,7 +470,7 @@ void UGameDebugMenuFunctions::UnregisterGDMObject(UObject* TargetObject)
 	FName FunctionName;
 	for(int32 Index = GDMManager->GetNumObjectFunctions() - 1; Index >= 0; --Index)
 	{
-		UObject* RegisterObject = GDMManager->GetObjectFunction(Index, CategoryKey, DisplayFunctionName, Description, FunctionName);
+		UObject* RegisterObject = GDMManager->GetObjectFunction(Index, CategoryKey, PropertySaveKey, DisplayFunctionName, Description, FunctionName);
 		if(!IsValid(RegisterObject) || (TargetObject == RegisterObject))
 		{
 			GDMManager->RemoveObjectFunction(Index);
@@ -483,14 +488,14 @@ UObject* UGameDebugMenuFunctions::GetGDMObjectProperty(UObject* WorldContextObje
 	return GDMManager->GetObjectProperty(Index, OutCategoryKey, OutPropertySaveKey, OutDisplayPropertyName, OutDescription, OutPropertyName, OutPropertyType, OutEnumPathName, PropertyUIConfigInfo);
 }
 
-UObject* UGameDebugMenuFunctions::GetGDMObjectFunction(UObject* WorldContextObject,const int32 Index, FGDMGameplayCategoryKey& OutCategoryKey, FText& OutDisplayFunctionName, FText& OutDescription, FName& OutFunctionName)
+UObject* UGameDebugMenuFunctions::GetGDMObjectFunction(UObject* WorldContextObject,const int32 Index, FGDMGameplayCategoryKey& OutCategoryKey, FString& OutFunctionSaveKey, FText& OutDisplayFunctionName, FText& OutDescription, FName& OutFunctionName)
 {
 	AGameDebugMenuManager* GDMManager = GetGameDebugMenuManager(WorldContextObject);
 	if(!IsValid(GDMManager))
 	{
 		return nullptr;
 	}
-	return GDMManager->GetObjectFunction(Index, OutCategoryKey, OutDisplayFunctionName, OutDescription, OutFunctionName);
+	return GDMManager->GetObjectFunction(Index, OutCategoryKey, OutFunctionSaveKey, OutDisplayFunctionName, OutDescription, OutFunctionName);
 }
 
 int32 UGameDebugMenuFunctions::GetGDMNumObjectProperties(UObject* WorldContextObject)
@@ -561,6 +566,7 @@ bool UGameDebugMenuFunctions::VerifyGDMNumObjectFunctions(UObject* WorldContextO
 	const int32 Num = GetGDMNumObjectFunctions(WorldContextObject);
 
 	FGDMGameplayCategoryKey CategoryKey;
+	FString FunctionSaveKey;
 	FText DisplayFunctionName;
 	FText Description;
 	FName FunctionName;
@@ -568,7 +574,7 @@ bool UGameDebugMenuFunctions::VerifyGDMNumObjectFunctions(UObject* WorldContextO
 
 	for(int32 Index = Num - 1; Index >= 0; --Index)
 	{
-		const UObject* FunctionOwnerObj = GetGDMObjectFunction(WorldContextObject,Index,CategoryKey,DisplayFunctionName,Description,FunctionName);
+		const UObject* FunctionOwnerObj = GetGDMObjectFunction(WorldContextObject,Index, CategoryKey,FunctionSaveKey, DisplayFunctionName,Description,FunctionName);
 		if(!IsValid(FunctionOwnerObj))
 		{
 			GDMManager->RemoveObjectFunction(Index);
@@ -834,16 +840,6 @@ FString UGameDebugMenuFunctions::GetProjectVersionString()
 	return *ProjectSettings.ProjectVersion;
 }
 
-float UGameDebugMenuFunctions::GetWorldTimeDilation(UObject* WorldContextObject)
-{
-	if(const UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObject,EGetWorldErrorMode::ReturnNull) )
-	{
-		return World->GetWorldSettings()->TimeDilation;
-	}
-
-	return 1.0f;
-}
-
 TArray<FString> UGameDebugMenuFunctions::GetGDMCultureList()
 {
 	return GetDefault<UGameDebugMenuSettings>()->CultureList;
@@ -955,6 +951,26 @@ FString UGameDebugMenuFunctions::GetDebugMenuLineBreakString()
 	return GetDefault<UGameDebugMenuSettings>()->LineBreakString;
 }
 
+void UGameDebugMenuFunctions::CopyWidgetProperties(UWidget* Source, UWidget* Target)
+{
+	if (!IsValid(Source) || !IsValid(Target))
+	{
+		return;
+	}
+
+	if (Source->GetClass() != Target->GetClass())
+	{
+		/* 型が一致している必要あり */
+		UE_LOG(LogGDM, Warning, TEXT("CopyWidgetProperties: クラスが一致していません"));
+		return;
+	}
+
+	/* シリアライズでコピー */
+	TArray<uint8> Buffer;
+	FObjectWriter Writer(Source, Buffer);
+	FObjectReader Reader(Target, Buffer);
+}
+
 bool UGameDebugMenuFunctions::EqualEqual_GDMMenuCategoryKey(const FGDMMenuCategoryKey& A, const FGDMMenuCategoryKey& B)
 {
 	return A.Index == B.Index;
@@ -990,7 +1006,7 @@ void UGameDebugMenuFunctions::OnActorSpawnedClientWaitManager(AGameDebugMenuMana
 					,PendingData.ConfigInfo
 					,PendingData.TargetName
 					,PendingData.CategoryKey
-					,PendingData.PropertySaveKey
+					,PendingData.SaveKey
 					,PendingData.DisplayPropertyName
 					,PendingData.Description
 					,PendingData.DisplayPriority
@@ -1009,6 +1025,7 @@ void UGameDebugMenuFunctions::OnActorSpawnedClientWaitManager(AGameDebugMenuMana
 				RegisterGDMObjectFunction(PendingData.TargetObject.Get()
 					,PendingData.TargetName
 					,PendingData.CategoryKey
+					,PendingData.SaveKey
 					,PendingData.DisplayPropertyName
 					,PendingData.Description
 					,PendingData.DisplayPriority

@@ -12,6 +12,8 @@
 #include "GameDebugMenuTypes.h"
 #include "GameDebugMenuManager.generated.h"
 
+class UGDMFavoriteSystemComponent;
+class UGDMConsoleCommandValueProviderComponent;
 class UGDMLocalizeStringComponent;
 class UGDMSaveSystemComponent;
 class UGDMPropertyJsonSystemComponent;
@@ -47,6 +49,12 @@ class GAMEDEBUGMENU_API AGameDebugMenuManager : public AActor
 	UPROPERTY(VisibleAnywhere, Category = "GDM", meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UGDMSaveSystemComponent> SaveSystemComponent;
 
+	UPROPERTY(VisibleAnywhere, Category = "GDM", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UGDMFavoriteSystemComponent> FavoriteSystemComponent;
+
+	UPROPERTY(VisibleAnywhere, Category = "GDM", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UGDMConsoleCommandValueProviderComponent> ConsoleCommandValueProviderComponent;
+	
 	UPROPERTY(VisibleAnywhere, Category = "GDM", meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UGDMLocalizeStringComponent> LocalizeStringComponent;
 	
@@ -90,7 +98,8 @@ protected:
 	/** 生成した各メニューWidgetのインスタンス */
 	UPROPERTY(Transient,BlueprintReadOnly, Category = "GDM")
 	TMap<FString, TObjectPtr<UGameDebugMenuWidget>> DebugMenuInstances;
-	
+
+	/** Viewport上に追加されてるメニューWidgetのインスタンス */
 	UPROPERTY(Transient)
 	TArray<TObjectPtr<UGameDebugMenuWidget>> ViewportDebugMenuWidgets;
 
@@ -121,6 +130,12 @@ public:
 	UGDMSaveSystemComponent* GetSaveSystemComponent() const;
 
 	UFUNCTION(BlueprintPure)
+	UGDMFavoriteSystemComponent* GetFavoriteSystemComponent() const;
+
+	UFUNCTION(BlueprintPure)
+	UGDMConsoleCommandValueProviderComponent* GetConsoleCommandValueProviderComponent() const;
+	
+	UFUNCTION(BlueprintPure)
 	UGDMLocalizeStringComponent* GetLocalizeStringComponent() const;
 	
 	UFUNCTION(BlueprintPure)
@@ -134,6 +149,9 @@ protected:
 	* マネージャーの初期化
 	*/
 	virtual void OnInitializeManager();
+
+	UFUNCTION(BlueprintImplementableEvent, Category="GDM", meta=(DisplayName="OnInitializeManager", ScriptName="OnInitializeManager"))
+	void OnInitializeManagerBP();
 	
 	/**
 	* UIのルートWidgetの生成
@@ -229,19 +247,22 @@ public:
 	* ゲーム中実行したコンソールコマンドの履歴を取得
 	*/
 	virtual void GetOutputCommandHistoryString(TArray<FString>& OutCommandHistory);
-
-	/** 
-	* プロパティ＆関数の登録、取得、イベントの通知
-	*/
-	virtual EGDMPropertyType GetPropertyType(FProperty* TargetProperty);
+	
+	virtual EGDMPropertyType GetPropertyType(const FProperty* TargetProperty) const;
 	virtual bool RegisterObjectProperty(UObject* TargetObject, const FName PropertyName, const FGDMGameplayCategoryKey& CategoryKey, const FString& PropertySaveKey, const FText& DisplayPropertyName, const FText& Description, const FGDMPropertyUIConfigInfo& PropertyUIConfigInfo, const int32& DisplayPriority);
-	virtual bool RegisterObjectFunction(UObject* TargetObject, const FName FunctionName, const FGDMGameplayCategoryKey& CategoryKey, const FText& DisplayFunctionName, const FText& Description, const int32& DisplayPriority);
-	virtual UObject* GetObjectProperty(const int32 Index, FGDMGameplayCategoryKey& OutCategoryKey, FString& OutPropertySaveKey, FText& OutDisplayPropertyName, FText& OutDescription, FName& OutPropertyName, EGDMPropertyType& OutPropertyType, FString& OutEnumPathName, FGDMPropertyUIConfigInfo& PropertyUIConfigInfo);
+	virtual bool RegisterObjectFunction(UObject* TargetObject, const FName FunctionName, const FGDMGameplayCategoryKey& CategoryKey, const FString& FunctionSaveKey, const FText& DisplayFunctionName, const FText& Description, const int32& DisplayPriority);
+	virtual UObject* GetObjectProperty(const int32 Index, FGDMGameplayCategoryKey& OutCategoryKey, FString& OutPropertySaveKey, FText& OutDisplayPropertyName, FText& OutDescription, FName& OutPropertyName, EGDMPropertyType& OutPropertyType, FString& OutEnumPathName, FGDMPropertyUIConfigInfo& OutPropertyUIConfigInfo);
 	virtual void RemoveObjectProperty(const int32 Index);
-	virtual UObject* GetObjectFunction(const int32 Index, FGDMGameplayCategoryKey& OutCategoryKey, FText& OutDisplayFunctionName, FText& OutDescription, FName& OutFunctionName);
+	virtual UObject* GetObjectFunction(const int32 Index, FGDMGameplayCategoryKey& OutCategoryKey, FString& OutFunctionSaveKey, FText& OutDisplayFunctionName, FText& OutDescription, FName& OutFunctionName);
 	void RemoveObjectFunction(const int32 Index);
 	int32 GetNumObjectProperties() const;
 	int32 GetNumObjectFunctions() const;
+
+	UFUNCTION(BlueprintCallable, BlueprintPure=false)
+	UObject* TryGetObjectProperty(const FString& InPropertySaveKey, const FString& InPropertyName, FGDMGameplayCategoryKey& OutCategoryKey, FText& OutDisplayPropertyName, FText& OutDescription, EGDMPropertyType& OutPropertyType, FString& OutEnumPathName, FGDMPropertyUIConfigInfo& OutPropertyUIConfigInfo) const;
+
+	UFUNCTION(BlueprintCallable, BlueprintPure=false)
+	UObject* TryGetObjectFunction(const FString& InFunctionSaveKey, const FString& InFunctionName, FGDMGameplayCategoryKey& OutCategoryKey, FText& OutDisplayFunctionName, FText& OutDescription) const;
 
 	/**
 	* ProxyComponentを対象PlayerControllerに追加する

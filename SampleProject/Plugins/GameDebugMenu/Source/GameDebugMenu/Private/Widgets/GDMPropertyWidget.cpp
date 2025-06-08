@@ -23,45 +23,57 @@ void UGDMPropertyWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTi
 {
 	Super::NativeTick(MyGeometry, InDeltaTime);
 
-	if(bStartChangeAmount)
+	/* 無操作状態からリセットまでの猶予（秒） */
+	constexpr float InactiveResetThreshold = 0.18f; 
+	
+	if (bStartChangeAmount)
 	{
-		if(!bChangedMaxChangeAmount)
+		/* 変化量の時間計測 */
+		if (!bChangedMaxChangeAmount)
 		{
 			ElapsedTime -= InDeltaTime;
-
-			if(ElapsedTime <= 0.0f)
+			if (ElapsedTime <= 0.0f)
 			{
 				ElapsedTime = 0.0f;
 				ChangeAmount = PropertyConfigInfo.MaxChangeAmount;
 				bChangedMaxChangeAmount = true;
 			}
 		}
+
+		InactiveElapsedTime += InDeltaTime;
+		if (InactiveElapsedTime >= InactiveResetThreshold)
+		{
+			/* 一定時間StartChangeAmountTimeが呼ばれなくなったのでもう数値が変動してないと判断し戻す */
+			ResetChangeAmountTime();
+		}
 	}
 }
 
 void UGDMPropertyWidget::StartChangeAmountTime()
 {
-	if(bStartChangeAmount)
+	if (!bStartChangeAmount)
 	{
-		return;
+		bStartChangeAmount = true;
+		bChangedMaxChangeAmount = false;
+		ChangeAmount = PropertyConfigInfo.DefaultChangeAmount;
+		ElapsedTime = PropertyConfigInfo.MaxChangeAmountTime;
 	}
 
-	bStartChangeAmount      = true;
-	bChangedMaxChangeAmount = false;
-	ChangeAmount            = PropertyConfigInfo.DefaultChangeAmount;
-	ElapsedTime             = PropertyConfigInfo.MaxChangeAmountTime;
+	/* 呼ばれるたびに無操作時間をリセット */ 
+	InactiveElapsedTime = 0.0f;
 }
 
 void UGDMPropertyWidget::ResetChangeAmountTime()
 {
-	if(!bStartChangeAmount)
+	if (!bStartChangeAmount)
 	{
 		return;
 	}
 
-	bStartChangeAmount      = false;
+	bStartChangeAmount = false;
 	bChangedMaxChangeAmount = false;
-	ChangeAmount            = PropertyConfigInfo.DefaultChangeAmount;
+	ChangeAmount = PropertyConfigInfo.DefaultChangeAmount;
+	InactiveElapsedTime = 0.0f;
 }
 
 bool UGDMPropertyWidget::GetPropertyValue_Bool(bool& bHasProperty)

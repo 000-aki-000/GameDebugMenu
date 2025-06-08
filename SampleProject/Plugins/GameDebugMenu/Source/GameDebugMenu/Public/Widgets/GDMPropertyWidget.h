@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "EngineMinimal.h"
+#include "CoreMinimal.h"
 #include "GameDebugMenuWidget.h"
 #include "GameDebugMenuTypes.h"
 #include "GDMPropertyWidget.generated.h"
@@ -24,7 +24,7 @@ public:
 
 	/** プロパティ所持オブジェクト */
 	UPROPERTY(BlueprintReadWrite, Category = "GDM|Properties")
-	UObject* TargetObject;
+	TObjectPtr<UObject> TargetObject;
 
 	/** プロパティ名 */
 	UPROPERTY(BlueprintReadWrite, Category = "GDM|Properties")
@@ -49,6 +49,7 @@ protected:
 	bool bStartChangeAmount;
 	bool bChangedMaxChangeAmount;
 	float ElapsedTime;
+	float InactiveElapsedTime = 0.0f;
 
 public:
 	virtual void NativeConstruct() override;

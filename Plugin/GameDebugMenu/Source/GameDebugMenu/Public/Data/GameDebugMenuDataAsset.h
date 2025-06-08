@@ -8,7 +8,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "InputMappingContext.h"
+#include "GameDebugMenuTypes.h"
 #include "Engine/DataAsset.h"
 #include "GameDebugMenuDataAsset.generated.h"
 
@@ -16,18 +16,7 @@ class AGDMDebugCameraInput;
 class UGDMPlayerControllerProxyComponent;
 class UGameDebugMenuRootWidget;
 class UGameDebugMenuWidget;
-
-USTRUCT(BlueprintType)
-struct FGameDebugMenuWidgetInputMappingContextData
-{
-	GENERATED_BODY()
-	
-	UPROPERTY(Editanywhere, BlueprintReadWrite)
-	TObjectPtr<UInputMappingContext> InputMappingContext = nullptr;
-
-	UPROPERTY(Editanywhere, BlueprintReadWrite)
-	int32 Priority = 1000000;
-};
+class UGDMFavoriteItemDefinition;
 
 /**
  * 
@@ -50,7 +39,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly,Category = "Widget")
 	TArray<FString> DebugMenuRegistrationOrder;
 
-	/** RootのDebugWidgetのZオーダー値 */
+	/** メインとなるデバックメニューのWidgetのZオーダー値 */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Widget")
 	int32 RootWidgetZOrder;
 
@@ -66,6 +55,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	TSubclassOf<AGDMDebugCameraInput> DebugCameraInputClass;
 
+	/** お気に入りデータの定義 */
+	UPROPERTY(EditAnywhere, Instanced, category = "Favorite")
+	TArray<TObjectPtr<UGDMFavoriteItemDefinition>> FavoriteItemDefinitions;
+	
 	/** PlayerControllerに自動追加されるコンポーネント */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Other")
 	TSubclassOf<UGDMPlayerControllerProxyComponent> DebugMenuPCProxyComponentClass;

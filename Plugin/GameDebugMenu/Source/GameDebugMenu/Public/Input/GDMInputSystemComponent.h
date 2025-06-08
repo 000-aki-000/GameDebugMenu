@@ -17,7 +17,7 @@ class AGameDebugMenuManager;
 class AGDMDebugCameraInput;
 
 /**
-* DebugMenuでの入力処理を行うコンポーネント
+* DebugMenuでの入力処理を管理するコンポーネント
 */
 UCLASS()
 class GAMEDEBUGMENU_API UGDMInputSystemComponent : public UActorComponent
@@ -32,20 +32,20 @@ protected:
 	UPROPERTY(Transient)
 	TObjectPtr<AGDMDebugCameraInput> DebugCameraInput;
 
-	/**  */
+	/** 登録中のInputComponent郡 */
 	TMap<FName, TArray<TWeakObjectPtr<UInputComponent>>> RegisteredInputGroups;
 
-	/**  */
+	/** 利用中のInputComponent郡 */
 	TMap<FName, TArray<TWeakObjectPtr<UInputComponent>>> ActiveInputStacks;
 
-	/**  */
+	/** 現在アクティブなInputComponentのグループ名 */
 	FName CurrentInputGroupName;
 	
-	/**  */
+	/** メニューの開閉状態の識別フラグ */
 	UPROPERTY(Transient)
 	bool bMenuOpen;
 
-	/**  */
+	/** ルートのWidgetが持つInputComponent */
 	UPROPERTY(Transient)
 	TObjectPtr<UInputComponent> RootWidgetInputComponent;
 
@@ -57,11 +57,13 @@ protected:
 	UPROPERTY(Transient)
 	TArray<FGameDebugMenuWidgetInputMappingContextData> AddInputMappingContextWhenDebugMenuIsShow;
 
+	/** ADebugCameraController生成チェック用のハンドル */
 	FDelegateHandle ActorSpawnedDelegateHandle;
 
 	TWeakObjectPtr<ADebugCameraController> DebugCameraController;
 	
 public:
+	/** 入力判定用ログ */
 	UPROPERTY(BlueprintReadWrite, Category = "GDM|Debug")
 	bool bOutputDebugLog;
 
@@ -72,35 +74,47 @@ public:
 
 public:
 	virtual void SetIgnoreInput(bool bNewInput);
-
 	virtual void ResetIgnoreInput();
-
 	virtual bool IsInputIgnored() const;
 
+	/**
+	 * 初期化
+	 */
 	virtual void Initialize(UGameDebugMenuDataAsset* MenuDataAsset);
 
+	/**
+	 * 現在アクティブなグループにInputComponentを登録/解除をする
+	 */
 	virtual void RegisterInputComponent(UInputComponent* InputComponent);
-	
 	virtual void UnregisterInputComponent(UInputComponent* InputComponent);
 	
+	/**
+	 * 指定したグループにInputComponentを登録/解除をする
+	 */
 	virtual void RegisterInputComponentToGroup(UInputComponent* InputComponent, const FName GroupName);
 	virtual void UnregisterInputComponentFromGroup(UInputComponent* InputComponent, const FName GroupName);
 
-	void SwitchToInputGroup(const FName NewGroupName);
-	
-	// メニューを開く
+	/**
+	 * 入力グループを変更する
+	 * @param NewGroupName - 新しいグループ名
+	*/
+	virtual void SwitchToInputGroup(const FName NewGroupName);
+
+	/**
+	 * デバックメニューが開くと呼ばれる
+	 * @note アクティブなメニューのInputComponentをPlayerControllerに追加する
+	 */
 	virtual void OnOpenMenu();
 
-	// メニューを閉じる
+	/**
+	 * デバックメニューが閉じると呼ばれる
+	 * @note アクティブなメニューのInputComponentをPlayerControllerに削除する
+	 */
 	virtual void OnCloseMenu();
 
 protected:
-	
 	virtual void CreateDebugCameraInputClass(TSubclassOf<AGDMDebugCameraInput> DebugCameraInputClass);
-	
 	AGameDebugMenuManager* GetOwnerGameDebugMenuManager() const;
-
 	TArray<APlayerController*> GetPlayerControllers() const;
-
 	virtual void OnActorSpawned(AActor* SpawnActor);
 };

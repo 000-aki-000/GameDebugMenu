@@ -24,30 +24,30 @@ void UGDMLocalizeStringComponent::SetJsonSystemComponentValue(UGDMPropertyJsonSy
 {
 	FString StringKey = TEXT("DebugMenuDirectStringKey");
 	{
-		if (!PropertyJsonSystemComponent->HasStringInJson(StringKey))
+		if (!PropertyJsonSystemComponent->HasCustomString(StringKey))
 		{
-			PropertyJsonSystemComponent->SetSingleStringToJson(StringKey, TEXT("False"));
+			PropertyJsonSystemComponent->SetCustomString(StringKey, TEXT("False"));
 		}
 
-		bCurrentDebugMenuDirectStringKey = PropertyJsonSystemComponent->GetSingleStringFromJson(StringKey, TEXT("False")).ToBool();
+		bCurrentDebugMenuDirectStringKey = PropertyJsonSystemComponent->GetCustomString(StringKey, TEXT("False")).ToBool();
 	}
 	
 	StringKey = TEXT("DebugMenuLanguage");
 	{
-		if (!PropertyJsonSystemComponent->HasStringInJson(StringKey))
+		if (!PropertyJsonSystemComponent->HasCustomString(StringKey))
 		{
-			PropertyJsonSystemComponent->SetSingleStringToJson(StringKey, GetDefault<UGameDebugMenuSettings>()->DefaultGameDebugMenuLanguage.ToString());
+			PropertyJsonSystemComponent->SetCustomString(StringKey, GetDefault<UGameDebugMenuSettings>()->DefaultGameDebugMenuLanguage.ToString());
 		}
 
-		CurrentLanguage = *PropertyJsonSystemComponent->GetSingleStringFromJson(StringKey, GetDefault<UGameDebugMenuSettings>()->DefaultGameDebugMenuLanguage.ToString());
+		CurrentLanguage = *PropertyJsonSystemComponent->GetCustomString(StringKey, GetDefault<UGameDebugMenuSettings>()->DefaultGameDebugMenuLanguage.ToString());
 	}
 }
 
 void UGDMLocalizeStringComponent::SetToJsonSystemComponent(UGDMPropertyJsonSystemComponent* PropertyJsonSystemComponent, const FString& Language)
 {
 	CurrentLanguage = *Language;
-	PropertyJsonSystemComponent->SetSingleStringToJson(TEXT("DebugMenuDirectStringKey"), bCurrentDebugMenuDirectStringKey ? TEXT("True") : TEXT("False"));
-	PropertyJsonSystemComponent->SetSingleStringToJson(TEXT("DebugMenuLanguage"), Language);
+	PropertyJsonSystemComponent->SetCustomString(TEXT("DebugMenuDirectStringKey"), bCurrentDebugMenuDirectStringKey ? TEXT("True") : TEXT("False"));
+	PropertyJsonSystemComponent->SetCustomString(TEXT("DebugMenuLanguage"), Language);
 }
 
 void UGDMLocalizeStringComponent::SyncLoadDebugMenuStringTables()

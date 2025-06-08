@@ -9,6 +9,7 @@
 
 #include "CoreMinimal.h"
 #include "InputCoreTypes.h"
+#include "InputMappingContext.h"
 #include "Framework/Application/NavigationConfig.h"
 #include <Internationalization/StringTable.h>
 #include "GameDebugMenuTypes.generated.h"
@@ -294,52 +295,6 @@ struct GAMEDEBUGMENU_API FGDMConsoleCommandNumber : public FGDMConsoleCommand
 };
 
 /**
-* DebugMenuの入力イベントのキー
-*/
-USTRUCT(BlueprintType)
-struct GAMEDEBUGMENU_API FGDMActionMappingKey
-{
-	GENERATED_BODY()
-
-	/* 入力のリピート処理に対応するか */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, config)
-	bool bRepeat;
-
-	/* 入力キー */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, config)
-	TArray<FKey> Keys;
-
-	FGDMActionMappingKey()
-		:bRepeat(false)
-		,Keys()
-	{
-	}
-};
-
-/**
-* DebugMenuの入力イベントのキー（Axis版）
-*/
-USTRUCT(BlueprintType)
-struct GAMEDEBUGMENU_API FGDMAxisMappingKey
-{
-	GENERATED_BODY()
-
-	/** Scaleと数が必ず一致してること */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, config)
-	TArray<FKey> Keys;
-
-	/** Keysと数が必ず一致してること */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, config)
-	TArray<float> Scale;
-
-	FGDMAxisMappingKey()
-		:Keys()
-		,Scale()
-	{
-	}
-};
-
-/**
  *
  */
 USTRUCT(BlueprintType)
@@ -424,6 +379,7 @@ public:
 	TWeakObjectPtr<UFunction> TargetFunction;
 	FName FunctionName;
 	int32 DisplayPriority;
+	FString FunctionSaveKey;
 
 	FGDMObjectFunctionInfo()
 		: CategoryKey()
@@ -433,6 +389,7 @@ public:
 		, TargetFunction(nullptr)
 		, FunctionName(NAME_None)
 		, DisplayPriority(0)
+		, FunctionSaveKey()
 	{
 	}
 };
@@ -449,7 +406,7 @@ struct GAMEDEBUGMENU_API FGDMPendingObjectData
 	FText Description;
 	FGDMPropertyUIConfigInfo ConfigInfo;
 	int32 DisplayPriority;
-	FString PropertySaveKey;
+	FString SaveKey;
 
 	FGDMPendingObjectData()
 		: TargetObject(nullptr)
@@ -459,7 +416,7 @@ struct GAMEDEBUGMENU_API FGDMPendingObjectData
 		, Description(FText::GetEmpty())
 		, ConfigInfo()
 		, DisplayPriority(0)
-		, PropertySaveKey()
+		, SaveKey()
 	{
 	}
 };
@@ -723,4 +680,34 @@ struct GAMEDEBUGMENU_API FGDMOrderMenuCategoryTitle
 #endif
 	{
 	}
+};
+
+/**
+ * 
+ */
+USTRUCT(BlueprintType)
+struct FGameDebugMenuWidgetInputMappingContextData
+{
+	GENERATED_BODY()
+	
+	UPROPERTY(Editanywhere, BlueprintReadWrite)
+	TObjectPtr<UInputMappingContext> InputMappingContext = nullptr;
+
+	UPROPERTY(Editanywhere, BlueprintReadWrite)
+	int32 Priority = 1000000;
+};
+
+/**
+ * お気に入り項目の登録情報
+ */
+USTRUCT(BlueprintType)
+struct FGDMFavoriteEntry
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString DefinitionName;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString SaveKey;
 };

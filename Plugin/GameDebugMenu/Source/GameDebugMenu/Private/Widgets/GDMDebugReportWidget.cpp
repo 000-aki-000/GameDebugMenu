@@ -91,18 +91,21 @@ void UGDMDebugReportWidget::OnScreenshotCaptured(int32 Width, int32 Height, cons
 	const TArray<FColor> BitmapCopy(Bitmap);
 	FImageUtils::ThumbnailCompressImageArray(Width, Height, BitmapCopy, ScreenshotImageData);
 
-	/* テクスチャを生成 */
-	UTexture2D* NewTexture = UTexture2D::CreateTransient(Width, Height, EPixelFormat::PF_B8G8R8A8);
+	UTexture2D* NewTexture = FImageUtils::ImportBufferAsTexture2D(ScreenshotImageData);
 	NewTexture->SRGB = true;
-
-	/* テクスチャをコピーする */
-	void* TextureData = NewTexture->GetPlatformData()->Mips[0].BulkData.Lock(LOCK_READ_WRITE);
-	const int32 TextureDataSize = Bitmap.Num() * 4;
-	FMemory::Memcpy(TextureData, Bitmap.GetData(), TextureDataSize);
-	NewTexture->GetPlatformData()->Mips[0].BulkData.Unlock();
-
-	/* 更新 */
-	NewTexture->UpdateResource();
+	
+	// /* テクスチャを生成 */
+	// UTexture2D* NewTexture = UTexture2D::CreateTransient(Width, Height, EPixelFormat::PF_B8G8R8A8);
+	// NewTexture->SRGB = true;
+	//
+	// /* テクスチャをコピーする */
+	// void* TextureData = NewTexture->GetPlatformData()->Mips[0].BulkData.Lock(LOCK_READ_WRITE);
+	// const int32 TextureDataSize = Bitmap.Num() * 4;
+	// FMemory::Memcpy(TextureData, Bitmap.GetData(), TextureDataSize);
+	// NewTexture->GetPlatformData()->Mips[0].BulkData.Unlock();
+	//
+	// /* 更新 */
+	// NewTexture->UpdateResource();
 
 	ScreenshotTexture = NewTexture;
 

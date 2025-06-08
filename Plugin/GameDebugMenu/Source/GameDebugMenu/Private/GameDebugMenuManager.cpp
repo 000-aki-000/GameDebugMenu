@@ -27,10 +27,12 @@
 #include "Component/GDMLocalizeStringComponent.h"
 #include "Component/GDMPropertyJsonSystemComponent.h"
 #include "Component/GDMSaveSystemComponent.h"
+#include "ConsoleCommand/GDMConsoleCommandValueProviderComponent.h"
 #include "Input/GDMInputSystemComponent.h"
 #include "Widgets/GameDebugMenuRootWidget.h"
 #include "Widgets/GDMTextBlock.h"
 #include "Data/GameDebugMenuDataAsset.h"
+#include "Favorite/GDMFavoriteSystemComponent.h"
 
 
 /********************************************************************/
@@ -62,6 +64,8 @@ AGameDebugMenuManager::AGameDebugMenuManager(const FObjectInitializer& ObjectIni
 	ScreenshotRequesterComponent  = CreateDefaultSubobject<UGDMScreenshotRequesterComponent>(TEXT("ScreenshotRequesterComponent"));
 	PropertyJsonSystemComponent   = CreateDefaultSubobject<UGDMPropertyJsonSystemComponent>(TEXT("PropertyJsonSystemComponent"));
 	SaveSystemComponent			  = CreateDefaultSubobject<UGDMSaveSystemComponent>(TEXT("SaveSystemComponent"));
+	FavoriteSystemComponent		  = CreateDefaultSubobject<UGDMFavoriteSystemComponent>(TEXT("FavoriteSystemComponent"));
+	ConsoleCommandValueProviderComponent = CreateDefaultSubobject<UGDMConsoleCommandValueProviderComponent>(TEXT("ConsoleCommandValueProviderComponent"));;
 	LocalizeStringComponent		  = CreateDefaultSubobject<UGDMLocalizeStringComponent>(TEXT("LocalizeStringComponent"));
 	ListenerComponent             = CreateDefaultSubobject<UGDMListenerComponent>(TEXT("ListenerComponent"));
 
@@ -70,7 +74,7 @@ AGameDebugMenuManager::AGameDebugMenuManager(const FObjectInitializer& ObjectIni
 	PrimaryActorTick.bTickEvenWhenPaused	= true;
 	SetCanBeDamaged(false);
 	SetHidden(true);
-	InputPriority                           = MAX_int32;
+	InputPriority                           = TNumericLimits<int32>::Max();
 	bBlockInput                             = false;
 	bReplicates                             = true;
 	bAlwaysRelevant                         = true;
@@ -154,6 +158,16 @@ UGDMSaveSystemComponent* AGameDebugMenuManager::GetSaveSystemComponent() const
 	return SaveSystemComponent;
 }
 
+UGDMFavoriteSystemComponent* AGameDebugMenuManager::GetFavoriteSystemComponent() const
+{
+	return FavoriteSystemComponent;
+}
+
+UGDMConsoleCommandValueProviderComponent* AGameDebugMenuManager::GetConsoleCommandValueProviderComponent() const
+{
+	return ConsoleCommandValueProviderComponent;
+}
+
 UGDMLocalizeStringComponent* AGameDebugMenuManager::GetLocalizeStringComponent() const
 {
 	return LocalizeStringComponent;
@@ -203,11 +217,13 @@ void AGameDebugMenuManager::OnInitializeManager()
 	GetLocalizeStringComponent()->SyncLoadDebugMenuStringTables();
 	
 	if( !UKismetSystemLibrary::IsDedicatedServer(this) )
-	{		
+	{
+		GetFavoriteSystemComponent()->Initialize(MenuAsset);
+		
 		CreateDebugMenuRootWidget();
 		
 		GetDebugMenuInputSystemComponent()->Initialize(MenuAsset);
-
+		
 		TArray<UUserWidget*> FoundWidgets;
 		UWidgetBlueprintLibrary::GetAllWidgetsOfClass(this, FoundWidgets, UGameDebugMenuWidget::StaticClass(), true);
 						
@@ -233,7 +249,7 @@ void AGameDebugMenuManager::OnInitializeManager()
 		}
 	}
 	
-	TArray<FString> CommandHistory = GetPropertyJsonSystemComponent()->GetStringArrayFromJson(TEXT("CommandHistory"));
+	TArray<FString> CommandHistory = GetPropertyJsonSystemComponent()->GetCustomStringArray(TEXT("CommandHistory"));
 	for(const auto& Command : CommandHistory )
 	{
 		PC->ConsoleCommand(Command);
@@ -242,6 +258,8 @@ void AGameDebugMenuManager::OnInitializeManager()
 	GetWorld()->GetTimerManager().ClearTimer(InitializeManagerHandle);
 
 	EnableInput(PC);
+
+	OnInitializeManagerBP();
 }
 
 void AGameDebugMenuManager::CreateDebugMenuRootWidget()
@@ -616,7 +634,7 @@ void AGameDebugMenuManager::GetOutputCommandHistoryString(TArray<FString>& OutCo
 	OutCommandHistory = OutputLog->GetCommandHistory();
 }
 
-EGDMPropertyType AGameDebugMenuManager::GetPropertyType(FProperty* TargetProperty)
+EGDMPropertyType AGameDebugMenuManager::GetPropertyType(const FProperty* TargetProperty) const
 {
 	if(TargetProperty != nullptr)
 	{
@@ -805,7 +823,7 @@ bool AGameDebugMenuManager::RegisterObjectProperty(UObject* TargetObject, const 
 		}
 		
 		/* 保存キーを指定してるため、既に一致する情報があればそれをプロパティにセットを試みる */
-		if (!GetPropertyJsonSystemComponent()->ApplyJsonToObject(PropertySaveKey, TargetObject, PropertyName.ToString()))
+		if (!GetPropertyJsonSystemComponent()->ApplyJsonToObjectProperty(PropertySaveKey, TargetObject, PropertyName.ToString()))
 		{
 			/* 失敗、データがないので現状の値をJsonに書き込み */
 			GetPropertyJsonSystemComponent()->AddPropertyToJson(PropertySaveKey, TargetObject, PropertyName.ToString());
@@ -832,7 +850,7 @@ bool AGameDebugMenuManager::RegisterObjectProperty(UObject* TargetObject, const 
 	return true;
 }
 
-bool AGameDebugMenuManager::RegisterObjectFunction(UObject* TargetObject, const FName FunctionName, const FGDMGameplayCategoryKey& CategoryKey,const FText& DisplayFunctionName,const FText& Description,const int32& DisplayPriority)
+bool AGameDebugMenuManager::RegisterObjectFunction(UObject* TargetObject, const FName FunctionName, const FGDMGameplayCategoryKey& CategoryKey, const FString& FunctionSaveKey, const FText& DisplayFunctionName,const FText& Description,const int32& DisplayPriority)
 {
 	if(!IsValid(TargetObject))
 	{
@@ -861,7 +879,8 @@ bool AGameDebugMenuManager::RegisterObjectFunction(UObject* TargetObject, const 
 	FunctionInfo->TargetFunction                           = Function;
 	FunctionInfo->Description						       = Description;
 	FunctionInfo->DisplayPriority					       = DisplayPriority;
-
+	FunctionInfo->FunctionSaveKey					       = FunctionSaveKey;
+	
 	ObjectFunctions.Add(FunctionInfo);
 
 	ObjectFunctions.Sort([](const TSharedPtr<FGDMObjectFunctionInfo>& A,const TSharedPtr<FGDMObjectFunctionInfo>& B)
@@ -869,6 +888,16 @@ bool AGameDebugMenuManager::RegisterObjectFunction(UObject* TargetObject, const 
 		return A->DisplayPriority >= B->DisplayPriority;
 	});
 
+	if (!FunctionSaveKey.IsEmpty())
+	{
+		/* 保存キーを指定してるため、既に一致する情報があればそれをプロパティにセットを試みる */
+		if (!GetPropertyJsonSystemComponent()->HaveFunctionInJson(FunctionSaveKey, TargetObject, FunctionName.ToString()))
+		{
+			/* 失敗、データがないので現状の値をJsonに書き込み */
+			GetPropertyJsonSystemComponent()->AddFunctionToJson(FunctionSaveKey, TargetObject, FunctionName.ToString());
+		}
+	}
+	
 	return true;
 }
 
@@ -926,7 +955,7 @@ void AGameDebugMenuManager::RemoveObjectProperty(const int32 Index)
 	ObjectProperties.RemoveAt(Index);
 }
 
-UObject* AGameDebugMenuManager::GetObjectFunction(const int32 Index, FGDMGameplayCategoryKey& OutCategoryKey, FText& OutDisplayFunctionName, FText& OutDescription, FName& OutFunctionName)
+UObject* AGameDebugMenuManager::GetObjectFunction(const int32 Index, FGDMGameplayCategoryKey& OutCategoryKey, FString& OutFunctionSaveKey, FText& OutDisplayFunctionName, FText& OutDescription, FName& OutFunctionName)
 {
 	if(!ObjectFunctions.IsValidIndex(Index))
 	{
@@ -952,7 +981,8 @@ UObject* AGameDebugMenuManager::GetObjectFunction(const int32 Index, FGDMGamepla
 	OutDisplayFunctionName = ObjFunc->Name;
 	OutDescription         = ObjFunc->Description;
 	OutFunctionName		   = ObjFunc->FunctionName;
-
+	OutFunctionSaveKey	   = ObjFunc->FunctionSaveKey;
+	
 	return ObjFunc->TargetObject.Get();
 }
 
@@ -969,6 +999,84 @@ int32 AGameDebugMenuManager::GetNumObjectProperties() const
 int32 AGameDebugMenuManager::GetNumObjectFunctions() const
 {
 	return ObjectFunctions.Num();
+}
+
+UObject* AGameDebugMenuManager::TryGetObjectProperty(const FString& InPropertySaveKey, const FString& InPropertyName, FGDMGameplayCategoryKey& OutCategoryKey, FText& OutDisplayPropertyName, FText& OutDescription, EGDMPropertyType& OutPropertyType, FString& OutEnumPathName, FGDMPropertyUIConfigInfo& OutPropertyUIConfigInfo) const
+{
+	OutPropertyType = EGDMPropertyType::GDM_Null;
+	
+	for (const auto& ObjProp : ObjectProperties)
+	{
+		if(!ObjProp->TargetObject.IsValid())
+		{
+			continue;
+		}
+
+		const auto Property = ObjProp->TargetProperty;
+		if(Property == nullptr)
+		{
+			continue;
+		}
+
+		if (ObjProp->PropertySaveKey != InPropertySaveKey || ObjProp->PropertyName != InPropertyName)
+		{
+			continue;
+		}
+		
+		OutCategoryKey			= ObjProp->CategoryKey;
+		OutDisplayPropertyName	= ObjProp->Name;
+		OutDescription			= ObjProp->Description;
+		OutPropertyUIConfigInfo = ObjProp->ConfigInfo;
+		OutPropertyType			= GetPropertyType(Property);
+
+		if(OutPropertyType == EGDMPropertyType::GDM_Enum)
+		{
+			OutEnumPathName = ObjProp->EnumType->GetPathName();
+		}
+		else if(OutPropertyType == EGDMPropertyType::GDM_Byte)
+		{
+			if(ObjProp->EnumType.IsValid())
+			{
+				/* Enumならセット */
+				OutPropertyType = EGDMPropertyType::GDM_Enum;
+				OutEnumPathName = ObjProp->EnumType->GetPathName();
+			}
+		}
+
+		return ObjProp->TargetObject.Get();
+	}
+
+	return nullptr;
+}
+
+UObject* AGameDebugMenuManager::TryGetObjectFunction(const FString& InFunctionSaveKey, const FString& InFunctionName, FGDMGameplayCategoryKey& OutCategoryKey, FText& OutDisplayFunctionName, FText& OutDescription) const
+{
+	for (const auto& ObjFunc : ObjectFunctions)
+	{
+		if(!ObjFunc->TargetObject.IsValid())
+		{
+			continue;
+		}
+
+		const auto Function = ObjFunc->TargetFunction;
+		if(!Function.IsValid())
+		{
+			continue;
+		}
+
+		if (ObjFunc->FunctionSaveKey != InFunctionSaveKey || ObjFunc->FunctionName != InFunctionName)
+		{
+			continue;
+		}
+		
+		OutCategoryKey			= ObjFunc->CategoryKey;
+		OutDisplayFunctionName	= ObjFunc->Name;
+		OutDescription			= ObjFunc->Description;
+		
+		return ObjFunc->TargetObject.Get();
+	}
+
+	return nullptr;
 }
 
 void AGameDebugMenuManager::AddDebugMenuPCProxyComponent(APlayerController* PlayerController)

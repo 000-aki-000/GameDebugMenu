@@ -19,6 +19,9 @@ UGDMButton::UGDMButton(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
 	InitIsFocusable(false);
+
+	/* デフォのDownAndUpだと別UserWidget上でボタンをクリックしたときに１度無視され２回クリックしないと応答しないことがあるため変更 */
+	SetClickMethod(EButtonClickMethod::Type::MouseDown);
 }
 
 #if WITH_EDITOR

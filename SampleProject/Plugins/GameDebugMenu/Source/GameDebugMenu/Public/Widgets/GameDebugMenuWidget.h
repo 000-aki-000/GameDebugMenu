@@ -8,7 +8,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "EnhancedInputComponent.h"
 #include "Blueprint/UserWidget.h"
 #include "GameDebugMenuTypes.h"
 #include "GameDebugMenuWidget.generated.h"
@@ -84,32 +83,29 @@ public:
 	void SendSelfEvent(FName EventName);
 
 	/**
-	* コマンドを実行する
+	* コンソールコマンドを実行する
 	*/
 	UFUNCTION(BlueprintCallable, Category = "GDM|Command")
 	void ExecuteGDMConsoleCommand(const FString Command, const EGDMConsoleCommandNetType CommandNetType);
 
 	/**
 	* UIを表示するときのイベント
-	*
 	* @param bRequestDebugMenuManager - マネージャーから呼び出された場合trueになる。
 	* @note 呼ばれるのはActivateされてるときのみ
 	*/
-	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category = "GDM|Event")
+	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category = "GDM|Event", meta = (AdvancedDisplay ="bRequestDebugMenuManager"))
 	void OnShowingMenu(bool bRequestDebugMenuManager);
 
 	/**
 	* UIを非表示にするときのイベント
-	* 
 	* @param bRequestDebugMenuManager - マネージャーから呼び出された場合trueになる。
 	* @note 呼ばれるのはActivateされてるときのみ
 	*/
-	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category = "GDM|Event")
+	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category = "GDM|Event", meta = (AdvancedDisplay ="bRequestDebugMenuManager"))
 	void OnHidingMenu(bool bRequestDebugMenuManager);
 
 	/**
 	* アクティベート化をするときに呼ばれるイベント
-	* 
 	* @note ここで表示したり、操作できる状態に移行する
 	*/	
 	UFUNCTION(BlueprintImplementableEvent, Category = "GDM|Event")
@@ -117,12 +113,18 @@ public:
 
 	/**
 	* ディアクティベート化をするときに呼ばれるイベント
-	* 
 	* @note ここで非表示にしたり、メニューの終了処理を行う
 	*/
 	UFUNCTION(BlueprintImplementableEvent, Category = "GDM|Event")
 	void OnDeactivateDebugMenu();
 
+	/**
+	 * 画面を最新の状態し直したいときに呼ばれるイベント
+	 * @note UI上で参照するデータを取得し直すなどをここでする
+	 */
+	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category = "GDM|Event")
+	void OnRefreshDataAndDisplay();
+	
 	/**
 	* アクティベート状態であればTrue
 	*/
@@ -152,7 +154,6 @@ public:
 
 	/**
 	* 指定クラスの子供Widgetをすべて取得する
-	* 
 	* @param WidgetClass         - 対象のクラス
 	* @param OutChildWidgets     - 取得できたWidget
 	* @param bEndSearchAsYouFind - 最初に見つけた時点で終了する

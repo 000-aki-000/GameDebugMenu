@@ -8,6 +8,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameDebugMenuTypes.h"
 #include "Components/ActorComponent.h"
 #include "GDMPropertyJsonSystemComponent.generated.h"
 
@@ -20,6 +21,13 @@ class GAMEDEBUGMENU_API UGDMPropertyJsonSystemComponent : public UActorComponent
 	GENERATED_BODY()
 
 private:
+    static const FString JsonField_RootProperty;
+    static const FString JsonField_RootFunction;
+    static const FString JsonField_RootCustom;
+    static const FString JsonField_RootFavorite;
+    static const FString JsonField_FavoriteDefinitionName;
+    static const FString JsonField_FavoriteSaveKey;
+    
     TSharedPtr<FJsonObject> RootJsonObject;
 
 public:
@@ -29,63 +37,84 @@ public:
 public:
     /**
      * 対象のオブジェクトのプロパティをJsonに追加する
-     * @param ObjectKey 
-     * @param TargetObject 
-     * @param PropertyName 
      */
     UFUNCTION(BlueprintCallable)
     void AddPropertyToJson(const FString& ObjectKey, UObject* TargetObject, const FString& PropertyName) const;
     
     /**
      * Jsonから指定プロパティを削除する
-     * @param ObjectKey 
-     * @param PropertyName 
      */
     UFUNCTION(BlueprintCallable)
     void RemovePropertyFromJson(const FString& ObjectKey, const FString& PropertyName) const;
 
     /**
-     * Json内の指定プロパティ情報を対象のオブジェクトに反映する
-     * @param ObjectKey 
-     * @param TargetObject 
-     * @param PropertyName
+     * Json内のプロパティ情報を対象オブジェクトに反映する
      * @return true: 反映に成功 false: データがなかったか取得に失敗した
      */
+    bool ApplyJsonToObjectProperty(const FString& ObjectKey, UObject* TargetObject, const FString& PropertyName) const;
+
     UFUNCTION(BlueprintCallable)
-    bool ApplyJsonToObject(const FString& ObjectKey, UObject* TargetObject, const FString& PropertyName);
+    void AddFunctionToJson(const FString& ObjectKey, UObject* TargetObject, const FString& FunctionName) const;
+
+    UFUNCTION(BlueprintCallable)
+    void RemoveFunctionFromJson(const FString& ObjectKey, const FString& FunctionName) const;
+
+    bool HaveFunctionInJson(const FString& ObjectKey, UObject* TargetObject, const FString& FunctionName) const;
 
     /**
-     * 配列の文字列をJsonにセットする
-     * @param Key 
-     * @param StringArray 
+     * お気に入り情報を追加
      */
     UFUNCTION(BlueprintCallable)
-    void SetStringArrayToJson(const FString& Key, const TArray<FString>& StringArray);
+    void AddFavoriteEntry(const FString& DefinitionName, const FString& FavoriteSaveKey);
+
+    /**
+     * お気に入り情報を削除
+     */
+    UFUNCTION(BlueprintCallable)
+    bool RemoveFavoriteEntry(const FString& DefinitionName, const FString& FavoriteSaveKey);
+
+    /**
+     * お気に入り情報が存在するか？
+     */
+    UFUNCTION(BlueprintCallable)
+    bool HasFavoriteEntry(const FString& DefinitionName, const FString& FavoriteSaveKey) const;
+
+    /**
+     * すべてのお気に入り情報を取得する
+     */
+    UFUNCTION(BlueprintCallable)
+    TArray<FGDMFavoriteEntry> GetAllFavoriteEntries() const;
+    
+    /**
+     * 配列の文字列をJsonにセットする
+     */
+    UFUNCTION(BlueprintCallable)
+    void SetCustomStringArray(const FString& Key, const TArray<FString>& StringArray);
+
+    /**
+     * 単一の文字列をJsonにセットする
+     */
+    UFUNCTION(BlueprintCallable)
+    void SetCustomString(const FString& Key, const FString& StringValue);
 
     /**
      * 配列の文字列をJsonから取得する
      * @param Key 
      */
     UFUNCTION(BlueprintCallable)
-    TArray<FString> GetStringArrayFromJson(const FString& Key) const;
+    TArray<FString> GetCustomStringArray(const FString& Key) const;
     
-    /**
-     * 単一の文字列をJsonにセットする
-     */
-    UFUNCTION(BlueprintCallable)
-    void SetSingleStringToJson(const FString& Key, const FString& StringValue);
-
     /**
      * 単一の文字列をJsonから取得
      */
     UFUNCTION(BlueprintCallable)
-    FString GetSingleStringFromJson(const FString& Key, const FString& DefaultValue = TEXT("")) const;
+    FString GetCustomString(const FString& Key, const FString& DefaultValue = TEXT("")) const;
 
     /**
      * Json内に指定されたキーで文字列が存在するかを確認する
      */
     UFUNCTION(BlueprintCallable)
-    bool HasStringInJson(const FString& Key) const;
+    bool HasCustomString(const FString& Key) const;
 
     /**
      * Jsonを文字列で取得
