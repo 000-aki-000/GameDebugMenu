@@ -15,7 +15,7 @@ UGameDebugMenuDataAsset::UGameDebugMenuDataAsset()
 	, DebugMenuRootWidgetClass()
 	, DebugMenuClasses()
 	, DebugMenuRegistrationOrder()
-	, RootWidgetZOrder(TNumericLimits<int32>::Max())
+	, RootWidgetZOrder(TNumericLimits<int32>::Max() - 100)/* モバイルとかの仮想パッドより上になるよう強制で10加算されるので問題内容100小さくしてる。UGameViewportSubsystem::AddToScreen参照 */
 	, AddInputMappingContextWhenCreateManager()
 	, AddInputMappingContextWhenDebugMenuIsShow()
 	, DebugCameraInputClass(nullptr)
