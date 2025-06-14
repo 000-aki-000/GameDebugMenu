@@ -14,6 +14,7 @@
 #include "GameDebugMenuSettings.generated.h"
 
 class AGDMDebugReportRequester;
+class UGDMEnhancedInputComponent;
 
 /**
 * DebugMenu用設定クラス
@@ -67,6 +68,9 @@ public:
 	/** DebugMenuのWidgetの入力優先度 */
 	UPROPERTY(EditAnywhere, config, Category = "Input")
 	int32 WidgetInputActionPriority;
+
+	UPROPERTY(EditAnywhere, config, Category = "Input")
+	TSoftClassPtr<UGDMEnhancedInputComponent> DebugMenuInputComponentClass;
 	
 	/** デバックメニューのUMG使用フォント */
 	UPROPERTY(EditAnywhere, config, Category = "Font", meta = (AllowedClasses = "/Script/Engine.Font", DisplayName = "Font Family"))
@@ -168,6 +172,7 @@ public:
 	int32 GetGameplayCategoryIndex(const int32& ArrayIndex) const;
 	const TSubclassOf<AGDMDebugReportRequester>* GetDebugReportRequesterClass() const;
 	FString GetFullSavePath() const;
+	UClass* GetDebugMenuInputComponentClass() const;
 
 private:
 	void SetupCategoryResets();

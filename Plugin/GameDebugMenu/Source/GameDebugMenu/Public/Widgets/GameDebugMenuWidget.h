@@ -13,7 +13,7 @@
 #include "GameDebugMenuWidget.generated.h"
 
 class UInputAction;
-class UEnhancedInputComponent;
+class UGDMEnhancedInputComponent;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FGDMWidgetDelegate, UGameDebugMenuWidget*, TargetWidget, FName, EventName);
 
@@ -32,10 +32,7 @@ public:
 	/** イベント通知ディスパッチャー */
 	UPROPERTY(BlueprintAssignable)
 	FGDMWidgetDelegate OnSendWidgetEventDispatcher;
-
-	UPROPERTY(BlueprintReadWrite, Category = "GDM", Meta = (ExposeOnSpawn = true))
-	TObjectPtr<UGameDebugMenuWidget> ParentGameDebugMenuWidget;
-
+	
 protected:
 	bool bActivateMenu;
 	TArray<uint32> InputHandles;
@@ -46,10 +43,16 @@ public:
 
 public:
 	/**
+	 * ローカルのコントローラーを取得（DebugCamera操作中でも取得できるもの）
+	 */
+	UFUNCTION(BlueprintPure, Category = "GDM")
+	APlayerController* GetOriginalPlayerController() const;
+	
+	/**
 	 * Widgetが所持するInputComponentを返す 
 	 */
 	UFUNCTION(BlueprintPure, Category = "GDM|Input")
-	UInputComponent* GetMyInputComponent() const;
+	UGDMEnhancedInputComponent* GetMyInputComponent() const;
 	
 	/**
 	* 指定のInputActionが入力されたときに呼び出される関数名を登録する
@@ -161,10 +164,4 @@ public:
 	*/
 	UFUNCTION(BlueprintCallable, Category = "GDM", meta = (DeterminesOutputType = "WidgetClass", DynamicOutputParam = "OutChildWidgets"))
 	virtual bool GetWidgetChildrenOfClass(TSubclassOf<UWidget> WidgetClass, TArray<UWidget*>& OutChildWidgets, bool bEndSearchAsYouFind);
-
-	/**
-	 * ローカルのコントローラーを取得（DebugCamera操作中でも取得できるもの）
-	 */
-	UFUNCTION(BlueprintPure, Category = "GDM")
-	APlayerController* GetOriginalPlayerController() const;
 };

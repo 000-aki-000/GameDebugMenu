@@ -21,10 +21,9 @@ class GAMEDEBUGMENU_API UGameDebugMenuRootWidget : public UGameDebugMenuWidget
 {
 	GENERATED_BODY()
 
-public:
-	UPROPERTY(BlueprintReadOnly)
-	AGameDebugMenuManager* DebugMenuManager;
-
+	UPROPERTY(Transient)
+	TObjectPtr<AGameDebugMenuManager> Manager = nullptr;
+	
 public:
 	virtual void NativeConstruct() override;
 	virtual void NativeDestruct() override;
@@ -37,4 +36,9 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "GDM|Event")
 	void ShowDebugReport();
+
+	void SetDebugMenuManager(AGameDebugMenuManager* InManager);
+	
+	UFUNCTION(BlueprintPure, Category = "GDM")
+	AGameDebugMenuManager* GetOwnerManager() const;
 };

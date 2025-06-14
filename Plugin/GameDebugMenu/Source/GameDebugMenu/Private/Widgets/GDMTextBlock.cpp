@@ -53,7 +53,7 @@ void UGDMTextBlock::SetText(FText InText)
 	{
 		if( UGameDebugMenuRootWidget* RootWidget = Cast<UGameDebugMenuRootWidget>(GetOuter()) )
 		{
-			World = RootWidget->DebugMenuManager->GetWorld();
+			World = RootWidget->GetOwnerManager()->GetWorld();
 		}
 		else
 		{

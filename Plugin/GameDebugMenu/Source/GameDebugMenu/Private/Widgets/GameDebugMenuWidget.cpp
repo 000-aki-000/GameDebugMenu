@@ -7,17 +7,16 @@
 
 #include "Widgets/GameDebugMenuWidget.h"
 #include <Blueprint/WidgetTree.h>
+#include "Engine/DebugCameraController.h"
 #include "GameDebugMenuManager.h"
 #include "Component/GDMPlayerControllerProxyComponent.h"
-#include "Engine/DebugCameraController.h"
-#include "EnhancedInputComponent.h"
 #include "GameDebugMenuFunctions.h"
 #include "GameDebugMenuSettings.h"
+#include "Input/GDMEnhancedInputComponent.h"
 
 UGameDebugMenuWidget::UGameDebugMenuWidget(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 	, OnSendWidgetEventDispatcher()
-	, ParentGameDebugMenuWidget(nullptr)
 	, bActivateMenu(false)
 	, InputHandles()
 {
@@ -25,6 +24,7 @@ UGameDebugMenuWidget::UGameDebugMenuWidget(const FObjectInitializer& ObjectIniti
 
 void UGameDebugMenuWidget::InitializeInputComponent()
 {
+	/* PushInputComponentまでしてしまうので呼び出さない */
 //	Super::InitializeInputComponent();
 
 	if (IsValid(InputComponent))
@@ -34,36 +34,42 @@ void UGameDebugMenuWidget::InitializeInputComponent()
 	
 	if ( APlayerController* Controller = GetOwningPlayer() )
 	{
-		InputComponent = NewObject<UInputComponent>( this, UEnhancedInputComponent::StaticClass(), TEXT("GameDebugMenuWidget_InputComponent"), RF_Transient);
-
-		/* TODO ↓セッター経由だとInputComponentがないと更新できないんだが。。。。 */
-		{
-			/* 最後に追加されたUI用InputComponentだけ処理したい（アンバインド処理をしなくてもいいように）のでブロック指定にする */
-			SetInputActionBlocking(true);
-
-			/* DebugMenuはEnhancedInputを利用するので他のInputComponentより優先度は高くなるような値を指定 */
-			SetInputActionPriority(GetDefault<UGameDebugMenuSettings>()->WidgetInputActionPriority);
-		}
+		const UClass* Class = GetDefault<UGameDebugMenuSettings>()->GetDebugMenuInputComponentClass();
+		InputComponent = NewObject<UGDMEnhancedInputComponent>( Controller, Class, NAME_None, RF_Transient);
 	}
 }
 
-UInputComponent* UGameDebugMenuWidget::GetMyInputComponent() const
+APlayerController* UGameDebugMenuWidget::GetOriginalPlayerController() const
 {
-	return InputComponent;
+	APlayerController* PlayerController = GetOwningPlayer();
+
+	const ADebugCameraController* DCC = Cast<ADebugCameraController>(PlayerController);
+	if (IsValid(DCC))
+	{
+		/* FLocalPlayerContextのGetPlayerControllerはADebugCameraControllerを無視できないのでオリジナルを返す */
+		return DCC->OriginalControllerRef;
+	}
+	
+	return PlayerController;
+}
+
+UGDMEnhancedInputComponent* UGameDebugMenuWidget::GetMyInputComponent() const
+{
+	return Cast<UGDMEnhancedInputComponent>(InputComponent);
 }
 
 bool UGameDebugMenuWidget::RegisterDebugMenuWidgetInputFunction(const UInputAction* Action, const FName FunctionName, const ETriggerEvent TriggerEvent, UObject* FunctionObject)
 {
 	InitializeInputComponent();
 	
-	if (UEnhancedInputComponent* InputComp = Cast<UEnhancedInputComponent>(InputComponent))
+	if (UGDMEnhancedInputComponent* InputComp = GetMyInputComponent())
 	{
 		if (!IsValid(FunctionObject))
 		{
 			FunctionObject = this;
 		}
 
-		InputHandles.Add(InputComp->BindAction(Action, TriggerEvent, FunctionObject, FunctionName).GetHandle());
+		InputHandles.Add(InputComp->BindDebugMenuAction(Action, TriggerEvent, FunctionObject, FunctionName).GetHandle());
 		return true;
 	}
 
@@ -74,10 +80,10 @@ bool UGameDebugMenuWidget::RegisterDebugMenuWidgetInputEvent(const UInputAction*
 {
 	InitializeInputComponent();
 	
-	if (UEnhancedInputComponent* InputComp = Cast<UEnhancedInputComponent>(InputComponent))
+	if (UGDMEnhancedInputComponent* InputComp = GetMyInputComponent())
 	{
 		const FEnhancedInputActionEventBinding& Binding =
-		InputComp->BindActionInstanceLambda(
+		InputComp->BindDebugMenuAction(
 			Action,
 			TriggerEvent,
 			[WeakThis = TWeakObjectPtr<UGameDebugMenuWidget>(this), Callback](const FInputActionInstance& Instance)
@@ -97,7 +103,7 @@ bool UGameDebugMenuWidget::RegisterDebugMenuWidgetInputEvent(const UInputAction*
 
 void UGameDebugMenuWidget::UnregisterDebugMenuWidgetInputs()
 {
-	if (UEnhancedInputComponent* InputComp = Cast<UEnhancedInputComponent>(InputComponent))
+	if (UGDMEnhancedInputComponent* InputComp = GetMyInputComponent())
 	{
 		for (const auto Handle : InputHandles)
 		{
@@ -229,16 +235,3 @@ bool UGameDebugMenuWidget::GetWidgetChildrenOfClass(TSubclassOf<UWidget> WidgetC
 	return (OutChildWidgets.Num() > 0);
 }
 
-APlayerController* UGameDebugMenuWidget::GetOriginalPlayerController() const
-{
-	APlayerController* PlayerController = GetOwningPlayer();
-
-	const ADebugCameraController* DCC = Cast<ADebugCameraController>(PlayerController);
-	if (IsValid(DCC))
-	{
-		/* FLocalPlayerContextのGetPlayerControllerはADebugCameraControllerを無視できないのでオリジナルを返す */
-		return DCC->OriginalControllerRef;
-	}
-	
-	return PlayerController;
-}

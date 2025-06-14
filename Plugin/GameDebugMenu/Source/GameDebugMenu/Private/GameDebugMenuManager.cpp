@@ -276,7 +276,7 @@ void AGameDebugMenuManager::CreateDebugMenuRootWidget()
 	}
 
 	DebugMenuRootWidget = Cast<UGameDebugMenuRootWidget>(UWidgetBlueprintLibrary::Create(this, MenuAsset->DebugMenuRootWidgetClass, GetOwnerPlayerController()));
-	DebugMenuRootWidget->DebugMenuManager = this;
+	DebugMenuRootWidget->SetDebugMenuManager(this);
 	DebugMenuRootWidget->AddToViewport(MenuAsset->RootWidgetZOrder);
 	DebugMenuRootWidget->SetVisibility(ESlateVisibility::Collapsed);
 	DebugMenuRootWidget->InitializeInputComponent();
@@ -632,6 +632,11 @@ void AGameDebugMenuManager::GetOutputLogString(FString& OutLog, const FString& S
 void AGameDebugMenuManager::GetOutputCommandHistoryString(TArray<FString>& OutCommandHistory)
 {
 	OutCommandHistory = OutputLog->GetCommandHistory();
+}
+
+void AGameDebugMenuManager::ClearCommandHistory()
+{
+	OutputLog->ClearCommandHistory();
 }
 
 EGDMPropertyType AGameDebugMenuManager::GetPropertyType(const FProperty* TargetProperty) const

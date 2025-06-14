@@ -7,7 +7,6 @@
 
 #include "Input/GDMPadInputWidgetController.h"
 #include <Widgets/GameDebugMenuWidget.h>
-#include "Component/GDMListenerComponent.h"
 #include "Engine/Engine.h"
 
 UWorld* UGDMPadInputWidgetController::GetWorld() const
@@ -17,33 +16,4 @@ UWorld* UGDMPadInputWidgetController::GetWorld() const
 		return GWorld;
 	}
 	return OwnerGameDebugMenuWidget->GetWorld();
-}
-
-void UGDMPadInputWidgetController::InitializeListenerComponent(UObject* WorldContextObject)
-{
-	if( !IsValid(ListenerComponent) )
-	{
-		if( UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::LogAndReturnNull) )
-		{
-			ListenerComponent = NewObject<UGDMListenerComponent>(World, NAME_None, RF_Transient);
-			UGDMListenerComponent::PushListenerComponent(World,ListenerComponent);
-
-			FWorldDelegates::OnPreWorldFinishDestroy.AddUObject(this, &UGDMPadInputWidgetController::OnPreWorldFinishDestroy);
-		}
-	}
-}
-
-UGDMListenerComponent* UGDMPadInputWidgetController::GetListenerComponent() const
-{
-	return ListenerComponent;
-}
-
-void UGDMPadInputWidgetController::OnPreWorldFinishDestroy(UWorld* World)
-{
-	if( IsValid(ListenerComponent) && ListenerComponent->GetWorld() == World )
-	{
-		ListenerComponent->AllUnbindDispatchers();
-		UGDMListenerComponent::PopListenerComponent(World, ListenerComponent);
-		ListenerComponent = nullptr;
-	}
 }

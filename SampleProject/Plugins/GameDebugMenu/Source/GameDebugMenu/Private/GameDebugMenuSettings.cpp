@@ -9,6 +9,7 @@
 #include "Performance/EnginePerformanceTargets.h"
 #include <Internationalization/StringTableCore.h>
 #include "GameDebugMenuTypes.h"
+#include "Input/GDMEnhancedInputComponent.h"
 #include "Reports/GDMRequesterJira.h"
 #include "Reports/GDMRequesterRedmine.h"
 #include "Reports/GDMRequesterTrello.h"
@@ -48,8 +49,12 @@ UGameDebugMenuSettings::UGameDebugMenuSettings()
 	OrderConsoleCommandCategoryTitles.Add(FGDMOrderMenuCategoryTitle(TEXT("Log Verbosity"),14));
 
 	OrderGameplayCategoryTitles.Add(FGDMOrderMenuCategoryTitle(TEXT("Other"),0));
+
+	/* AGameDebugMenuManagerもデフォルトではInt最大値なのでそれより低くする
+	 * 同じ、または大きくした場合、マネージャーで設定する入力はメニューが閉じられるまで反応しなくなるので注意 */
+	WidgetInputActionPriority = TNumericLimits<int32>::Max() - 1;
 	
-	WidgetInputActionPriority = 10000;
+	DebugMenuInputComponentClass = UGDMEnhancedInputComponent::StaticClass();
 
 	FontName.SetPath(TEXT("/Engine/EngineFonts/Roboto.Roboto"));
 
@@ -319,6 +324,13 @@ const TSubclassOf<AGDMDebugReportRequester>* UGameDebugMenuSettings::GetDebugRep
 FString UGameDebugMenuSettings::GetFullSavePath() const
 {
 	return FPaths::ProjectDir().Append(SaveFilePath).Append(TEXT("/")).Append(SaveFileName).Append(TEXT(".json"));
+}
+
+UClass* UGameDebugMenuSettings::GetDebugMenuInputComponentClass() const
+{
+	const TSoftClassPtr<UGDMEnhancedInputComponent> Class = DebugMenuInputComponentClass;
+	ensureMsgf(Class.IsValid(), TEXT("Invalid DebugMenuInputComponentClass class in GameDebugMenuSettings. Manual reset required."));
+	return Class.IsValid() ? Class.Get() : UGDMEnhancedInputComponent::StaticClass();
 }
 
 void UGameDebugMenuSettings::SetupCategoryResets()

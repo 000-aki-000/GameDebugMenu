@@ -6,6 +6,7 @@
 */
 
 #include "Widgets/GameDebugMenuRootWidget.h"
+#include "GameDebugMenuManager.h"
 
 void UGameDebugMenuRootWidget::NativeConstruct()
 {
@@ -28,4 +29,14 @@ void UGameDebugMenuRootWidget::ActivateDebugMenu()
 void UGameDebugMenuRootWidget::DeactivateDebugMenu()
 {
 	/* ルートは使用しない */
+}
+
+void UGameDebugMenuRootWidget::SetDebugMenuManager(AGameDebugMenuManager* InManager)
+{
+	Manager = InManager;
+}
+
+AGameDebugMenuManager* UGameDebugMenuRootWidget::GetOwnerManager() const
+{
+	return Manager;
 }

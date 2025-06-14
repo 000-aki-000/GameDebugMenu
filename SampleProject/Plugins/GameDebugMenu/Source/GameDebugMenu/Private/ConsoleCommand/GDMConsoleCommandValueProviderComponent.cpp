@@ -20,7 +20,7 @@ bool UGDMConsoleCommandValueProviderComponent::GetFloatValue(const FString& Comm
 {
 	for (const FGDMConsoleCommandProviderPattern& PatternStruct : ProviderPatterns)
 	{
-		if (PatternStruct.Pattern.IsEmpty() || PatternStruct.Provider == nullptr)
+		if (PatternStruct.Pattern.IsEmpty() || !IsValid(PatternStruct.Provider))
 		{
 			continue;
 		}

@@ -15,6 +15,7 @@
 #include "GameDebugMenuManager.h"
 #include "Component/GDMLocalizeStringComponent.h"
 #include "Input/GDMDebugCameraInput.h"
+#include "Input/GDMEnhancedInputComponent.h"
 #include "Widgets/GameDebugMenuRootWidget.h"
 
 UGDMInputSystemComponent::UGDMInputSystemComponent()
@@ -140,9 +141,15 @@ void UGDMInputSystemComponent::UnregisterInputComponent(UInputComponent* InputCo
 
 void UGDMInputSystemComponent::RegisterInputComponentToGroup(UInputComponent* InputComponent, const FName GroupName)
 {
-	if ( !IsValid(InputComponent) || (InputComponent == RootWidgetInputComponent) )
+	if ( !IsValid(InputComponent) )
 	{
 		UE_LOG(LogGDM, Verbose, TEXT("RegisterInputComponent failed: Not found InputComponent"));
+		return;
+	}
+
+	if ( InputComponent == RootWidgetInputComponent )
+	{
+		UE_LOG(LogGDM, Verbose, TEXT("RegisterInputComponent failed: RootWidgetInputComponent"));
 		return;
 	}
 	
@@ -176,9 +183,15 @@ void UGDMInputSystemComponent::RegisterInputComponentToGroup(UInputComponent* In
 
 void UGDMInputSystemComponent::UnregisterInputComponentFromGroup(UInputComponent* InputComponent, const FName GroupName)
 {
-	if ( !IsValid(InputComponent) || (InputComponent == RootWidgetInputComponent) )
+	if ( !IsValid(InputComponent) )
 	{
 		UE_LOG(LogGDM, Verbose, TEXT("UnregisterInputComponent failed: Not found InputComponent"));
+		return;
+	}
+
+	if (InputComponent == RootWidgetInputComponent)
+	{
+		UE_LOG(LogGDM, Verbose, TEXT("UnregisterInputComponent failed: RootWidgetInputComponent"));
 		return;
 	}
 	

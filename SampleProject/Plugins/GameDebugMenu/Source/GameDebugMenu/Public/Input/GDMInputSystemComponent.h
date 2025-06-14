@@ -12,7 +12,7 @@
 #include "GDMInputSystemComponent.generated.h"
 
 class ADebugCameraController;
-class UInputComponent;
+class UGDMEnhancedInputComponent;
 class AGameDebugMenuManager;
 class AGDMDebugCameraInput;
 
@@ -47,7 +47,7 @@ protected:
 
 	/** ルートのWidgetが持つInputComponent */
 	UPROPERTY(Transient)
-	TObjectPtr<UInputComponent> RootWidgetInputComponent;
+	TObjectPtr<UGDMEnhancedInputComponent> RootWidgetInputComponent;
 
 	/** DebugMenuManagerが作られたときに追加される InputMappingContext */
 	UPROPERTY(Transient)

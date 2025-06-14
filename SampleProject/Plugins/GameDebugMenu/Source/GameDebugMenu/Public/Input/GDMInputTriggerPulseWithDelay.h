@@ -12,7 +12,7 @@
 #include "GDMInputTriggerPulseWithDelay.generated.h"
 
 /**
- * DebugMenuでの入力処理を行うコンポーネント
+ * 最初と２回目以降のトリガー時間を別に指定できるInputTrigger
  */
 UCLASS(NotBlueprintable, meta = (DisplayName = "GDMPulseWithDelay"))
 class GAMEDEBUGMENU_API UGDMInputTriggerPulseWithDelay : public UInputTriggerTimedBase

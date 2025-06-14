@@ -12,7 +12,8 @@
 #include "GDMConsoleCommandValueProvider.generated.h"
 
 /**
- * 
+ * コンソールコマンド名に対応する値を取得するためのベースクラス。
+ * 複数のコンソールコマンドへのアクセス方式（例: ConsoleVariable, WorldTime等）を抽象化する。
  */
 UCLASS(Abstract, Blueprintable, EditInlineNew, DefaultToInstanced)
 class GAMEDEBUGMENU_API UGDMConsoleCommandValueProvider : public UObject

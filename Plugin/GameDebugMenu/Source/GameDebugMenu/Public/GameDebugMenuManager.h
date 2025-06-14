@@ -35,6 +35,7 @@ class GAMEDEBUGMENU_API AGameDebugMenuManager : public AActor
 {
 	GENERATED_BODY()
 
+protected:
 	/** DebugMenuの入力操作を制御するコンポーネント */
 	UPROPERTY(VisibleAnywhere, Category = "GDM", meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UGDMInputSystemComponent> DebugMenuInputSystemComponent;
@@ -64,8 +65,7 @@ class GAMEDEBUGMENU_API AGameDebugMenuManager : public AActor
 
 	FTimerHandle InitializeManagerHandle;
 	bool bInitializedManager = false;
-	
-protected:
+
 	/** デバックメニュー用UIアセット */
 	UPROPERTY(EditAnywhere, Category = "GDM")
 	TObjectPtr<UGameDebugMenuDataAsset> MenuAsset;
@@ -247,7 +247,10 @@ public:
 	* ゲーム中実行したコンソールコマンドの履歴を取得
 	*/
 	virtual void GetOutputCommandHistoryString(TArray<FString>& OutCommandHistory);
-	
+
+	UFUNCTION(BlueprintCallable, Category = "GDM")
+	virtual void ClearCommandHistory();
+
 	virtual EGDMPropertyType GetPropertyType(const FProperty* TargetProperty) const;
 	virtual bool RegisterObjectProperty(UObject* TargetObject, const FName PropertyName, const FGDMGameplayCategoryKey& CategoryKey, const FString& PropertySaveKey, const FText& DisplayPropertyName, const FText& Description, const FGDMPropertyUIConfigInfo& PropertyUIConfigInfo, const int32& DisplayPriority);
 	virtual bool RegisterObjectFunction(UObject* TargetObject, const FName FunctionName, const FGDMGameplayCategoryKey& CategoryKey, const FString& FunctionSaveKey, const FText& DisplayFunctionName, const FText& Description, const int32& DisplayPriority);

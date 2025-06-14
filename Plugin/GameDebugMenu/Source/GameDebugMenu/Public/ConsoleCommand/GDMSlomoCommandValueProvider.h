@@ -12,7 +12,7 @@
 #include "GDMSlomoCommandValueProvider.generated.h"
 
 /**
- * 
+ * Slomo用プロバイダー
  */
 UCLASS()
 class GAMEDEBUGMENU_API UGDMSlomoCommandValueProvider : public UGDMConsoleCommandValueProvider

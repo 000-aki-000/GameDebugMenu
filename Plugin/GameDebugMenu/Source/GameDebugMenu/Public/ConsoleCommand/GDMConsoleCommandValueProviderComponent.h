@@ -14,6 +14,10 @@
 
 class UGDMConsoleVariableCommandValueProvider;
 
+/**
+ * 特定の部分文字列（パターン）に一致するコンソールコマンドに対し、
+ * 対応する ValueProvider を指定する構造体。
+ */
 USTRUCT(BlueprintType)
 struct FGDMConsoleCommandProviderPattern
 {
@@ -26,6 +30,12 @@ struct FGDMConsoleCommandProviderPattern
 	TObjectPtr<UGDMConsoleCommandValueProvider> Provider = nullptr;
 };
 
+/**
+ * 登録されたパターンに応じて適切な UGDMConsoleCommandValueProvider を選択し、
+ * コンソールコマンドから値を取得する ActorComponent。
+ * 
+ * パターンマッチが成功しない場合は ConsoleVariableCommandValueProvider を fallback として利用する。
+ */
 UCLASS()
 class GAMEDEBUGMENU_API UGDMConsoleCommandValueProviderComponent : public UActorComponent
 {

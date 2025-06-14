@@ -8,6 +8,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Components/Widget.h"
 #include "GDMPadInputWidgetController.generated.h"
 
 class UGDMListenerComponent;
@@ -22,23 +23,39 @@ class GAMEDEBUGMENU_API UGDMPadInputWidgetController : public UObject
 	GENERATED_BODY()
 	
 protected:
-	UPROPERTY(Transient, DuplicateTransient)
-	UGDMListenerComponent* ListenerComponent;
-
 	UPROPERTY(BlueprintReadOnly, meta = (ExposeOnSpawn))
 	UGameDebugMenuWidget* OwnerGameDebugMenuWidget;
 
 public:
 	virtual UWorld* GetWorld() const override;
+	
+	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category = "GDM")
+	int32 NextChoosing();
 
-	UFUNCTION(BlueprintCallable, Category = "GDM|ListenerComponent", meta = (WorldContext = "WorldContextObject"))
-	void InitializeListenerComponent(UObject* WorldContextObject);
+	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category = "GDM")
+	int32 PreviousChoosing();
 
-	UFUNCTION(BlueprintPure, Category = "GDM|ListenerComponent")
-	UGDMListenerComponent* GetListenerComponent() const;
+	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category = "GDM")
+	UWidget* GetChoosingWidget() const;
 
+	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category = "GDM")
+	int32 GetChoosingWidgetIndex() const;
 
-private:
-	void OnPreWorldFinishDestroy(UWorld* World);
+	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category = "GDM")
+	UWidget* GetChosenWidget() const;
 
+	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category = "GDM")
+	int32 GetChosenWidgetIndex() const;
+
+	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category = "GDM")
+	bool IsChosen() const;
+
+	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category = "GDM")
+	void ChangeChosenMode();
+	
+	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category = "GDM")
+	void ChangeChoosingMode();
+
+	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category = "GDM")
+	void SetChoosingWidget(UWidget* NewChoosingWidget);
 };

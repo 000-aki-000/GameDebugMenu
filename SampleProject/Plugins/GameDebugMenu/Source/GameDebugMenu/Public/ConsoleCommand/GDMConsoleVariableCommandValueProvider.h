@@ -12,7 +12,7 @@
 #include "GDMConsoleVariableCommandValueProvider.generated.h"
 
 /**
- * 
+ * ConsoleManager用プロバイダー
  */
 UCLASS()
 class GAMEDEBUGMENU_API UGDMConsoleVariableCommandValueProvider : public UGDMConsoleCommandValueProvider
