@@ -34,7 +34,7 @@ public class GameDebugMenu : ModuleRules
                 "ImageDownload",
 				"ImageWrapper",
 				"EngineSettings",
-				"EnhancedInput"
+				"EnhancedInput",
 			}
             );
 			
@@ -47,6 +47,7 @@ public class GameDebugMenu : ModuleRules
 				"Slate",
 				"SlateCore",
 				"DeveloperSettings",
+				"EnhancedInput",
 			}
 			);
 	}

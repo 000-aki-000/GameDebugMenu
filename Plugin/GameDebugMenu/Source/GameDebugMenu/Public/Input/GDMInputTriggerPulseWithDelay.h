@@ -15,7 +15,7 @@
  * 最初と２回目以降のトリガー時間を別に指定できるInputTrigger
  */
 UCLASS(NotBlueprintable, meta = (DisplayName = "GDMPulseWithDelay"))
-class GAMEDEBUGMENU_API UGDMInputTriggerPulseWithDelay : public UInputTriggerTimedBase
+class GAMEDEBUGMENU_API UGDMInputTriggerPulseWithDelay : public UInputTrigger/* UInputTriggerTimedBaseのENHANCEDINPUT_APIがなぜかUE5.6で削除された.... */
 {
 	GENERATED_BODY()
 
@@ -36,6 +36,23 @@ public:
 	UPROPERTY(EditAnywhere, Config, BlueprintReadWrite, Category = "Trigger Settings", meta = (ClampMin = "0"))
 	int32 TriggerLimit = 0;
 
+	// How long have we been actuating this trigger?
+	UPROPERTY(BlueprintReadWrite, Category = "Trigger Settings")
+	float HeldDuration = 0.0f;
+
+	/**
+	 * Should global time dilation be applied to the held duration?
+	 * Default is set to false.
+	 * 
+	 * If this is set to true, then the owning Player Controller's actor time dilation
+	 * will be used when calculating the HeldDuration.
+	 * 
+	 * @see UInputTriggerTimedBase::CalculateHeldDuration
+	 * @see AWorldSettings::GetEffectiveTimeDilation
+	 */
+	UPROPERTY(EditAnywhere, Config, BlueprintReadWrite, Category = "Trigger Settings")
+	bool bAffectedByTimeDilation = false;
+	
 private:
 	bool bWasPressed = false;
 	bool bTriggeredOnStart = false;
@@ -43,7 +60,7 @@ private:
 	
 public:
 	virtual FString GetDebugState() const override;
-	
-protected:
+	virtual ETriggerEventsSupported GetSupportedTriggerEvents() const override { return ETriggerEventsSupported::Ongoing; }
 	virtual ETriggerState UpdateState_Implementation(const UEnhancedPlayerInput* PlayerInput, FInputActionValue ModifiedValue, float DeltaTime) override;
+	float CalculateHeldDuration(const UEnhancedPlayerInput* PlayerInput, float DeltaTime) const;
 };
