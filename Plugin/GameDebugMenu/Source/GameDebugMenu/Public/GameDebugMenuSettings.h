@@ -19,7 +19,7 @@ class UGDMEnhancedInputComponent;
 /**
 * DebugMenu用設定クラス
 */
-UCLASS(config=Game)
+UCLASS(config=GameDebugMenu)
 class GAMEDEBUGMENU_API UGameDebugMenuSettings : public UDeveloperSettings
 {
 	GENERATED_BODY()

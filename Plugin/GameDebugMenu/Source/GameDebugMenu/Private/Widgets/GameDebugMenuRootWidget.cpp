@@ -7,6 +7,7 @@
 
 #include "Widgets/GameDebugMenuRootWidget.h"
 #include "GameDebugMenuManager.h"
+#include "Input/GDMInputSystemComponent.h"
 
 void UGameDebugMenuRootWidget::NativeConstruct()
 {
@@ -39,4 +40,9 @@ void UGameDebugMenuRootWidget::SetDebugMenuManager(AGameDebugMenuManager* InMana
 AGameDebugMenuManager* UGameDebugMenuRootWidget::GetOwnerManager() const
 {
 	return Manager;
+}
+
+void UGameDebugMenuRootWidget::SwitchInputComponentGroupForGameDebugMenu(const FName NewGroupName)
+{
+	Manager->GetDebugMenuInputSystemComponent()->SwitchToInputGroup(NewGroupName);
 }

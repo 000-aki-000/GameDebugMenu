@@ -14,7 +14,6 @@
 #include <Internationalization/StringTable.h>
 #include "GameDebugMenuTypes.generated.h"
 
-
 DECLARE_LOG_CATEGORY_EXTERN(LogGDM, Log, All);
 
 /** NavigationをきるためだけのConfig */
@@ -159,7 +158,7 @@ USTRUCT(BlueprintType)
 struct GAMEDEBUGMENU_API FGDMConsoleCommand
 {
 	GENERATED_BODY()
-
+	
 	UPROPERTY(BlueprintReadWrite)
 	EGDMConsoleCommandType Type;
 
@@ -178,15 +177,10 @@ struct GAMEDEBUGMENU_API FGDMConsoleCommand
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, config)
 	EGDMConsoleCommandNetType CommandNetType;
 
-	FGDMConsoleCommand()
-	{
-		CategoryIndex  = 255;
-		Title          = FText::GetEmpty();
-		Description    = FText::GetEmpty();
-		Type           = EGDMConsoleCommandType::Non;
-		ClickedEvent   = EGDMConsoleCommandClickedEvent::Non;
-		CommandNetType = EGDMConsoleCommandNetType::LocalOnly;
-	}
+	FGDMConsoleCommand();
+	virtual ~FGDMConsoleCommand() = default;
+
+	virtual FString BuildCommandIdentifier() const PURE_VIRTUAL(FGDMConsoleCommand::GetCommandId, return FString(););
 };
 
 /**
@@ -200,12 +194,8 @@ struct GAMEDEBUGMENU_API FGDMConsoleCommandSingle : public FGDMConsoleCommand
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, config)
 	FString ConsoleCommandName;
 
-	FGDMConsoleCommandSingle()
-		: Super()
-	{
-		ConsoleCommandName.Empty();
-		Type = EGDMConsoleCommandType::Single;
-	}
+	FGDMConsoleCommandSingle();
+	virtual FString BuildCommandIdentifier() const override;
 };
 
 /**
@@ -219,13 +209,8 @@ struct GAMEDEBUGMENU_API FGDMConsoleCommandGroup : public FGDMConsoleCommand
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, config)
 	TArray<FString> ConsoleCommandNames;
 
-	FGDMConsoleCommandGroup()
-		: Super()
-	{
-		ConsoleCommandNames.Reset();
-		Type = EGDMConsoleCommandType::Group;
-	}
-
+	FGDMConsoleCommandGroup();
+	virtual FString BuildCommandIdentifier() const override;
 };
 
 /**
@@ -242,13 +227,8 @@ struct GAMEDEBUGMENU_API FGDMConsoleCommandPair : public FGDMConsoleCommand
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, config)
 	FString SecondConsoleCommandName;
 
-	FGDMConsoleCommandPair()
-		: Super()
-	{
-		FirstConsoleCommandName.Empty();
-		SecondConsoleCommandName.Empty();
-		Type = EGDMConsoleCommandType::Pair;
-	}
+	FGDMConsoleCommandPair();
+	virtual FString BuildCommandIdentifier() const override;
 };
 
 /**
@@ -278,20 +258,8 @@ struct GAMEDEBUGMENU_API FGDMConsoleCommandNumber : public FGDMConsoleCommand
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, config)
 	FString ConsoleVariableName;
 
-	FGDMConsoleCommandNumber()
-		: Super()
-	{
-		ConsoleCommandName.Empty();
-		PreConsoleCommandName.Empty();
-		PostConsoleCommandName.Empty();
-		Type                        = EGDMConsoleCommandType::Number;
-		UIConfigInfo.Range.bUseMax  = true;
-		UIConfigInfo.Range.bUseMin  = true;
-		UIConfigInfo.Range.MinValue = 0.0f;
-		UIConfigInfo.Range.MaxValue = 1.0f;
-		DefaultValue                = 0.0f;
-		ConsoleVariableName.Empty();
-	}
+	FGDMConsoleCommandNumber();
+	virtual FString BuildCommandIdentifier() const override;
 };
 
 /**
