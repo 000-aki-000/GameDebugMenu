@@ -1,7 +1,7 @@
 {
 	"FileVersion": 3,
 	"Version": 2,
-	"VersionName": "1.30",
+	"VersionName": "1.31",
 	"FriendlyName": "GameDebugMenu",
 	"Description": "DebugMenu for UnrealEngine5",
 	"Category": "Debug",

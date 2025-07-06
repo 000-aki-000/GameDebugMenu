@@ -160,59 +160,59 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintCosmetic, Category = "GDM|Functions", meta = (Keywords = "DebugMenu GDM", WorldContext = "WorldContextObject"))
 	static bool VerifyGDMNumObjectFunctions(UObject* WorldContextObject);
 
-	/** 
-	* コンソールコマンドの情報取得
-	*/
-	UFUNCTION(BlueprintCallable, Category = "GDM|Functions", meta = (Keywords = "DebugMenu GDM"))
-	static bool GetGDMConsoleCommandNameByArrayIndex(const int32 ArrayIndex, FGDMConsoleCommandSingle& Out);
+	// /** 
+	// * コンソールコマンドの情報取得
+	// */
+	// UFUNCTION(BlueprintCallable, Category = "GDM|Functions", meta = (Keywords = "DebugMenu GDM"))
+	// static bool GetGDMConsoleCommandNameByArrayIndex(const int32 ArrayIndex, FGDMConsoleCommandSingle& Out);
+	//
+	// /**
+	// * コンソールコマンド数
+	// */
+	// UFUNCTION(BlueprintPure, Category = "GDM|Functions", meta = (Keywords = "DebugMenu GDM"))
+	// static int32 GetGDMNumConsoleCommandNames();
+	//
+	// /** 
+	// * コンソールコマンドグループの情報取得
+	// */
+	// UFUNCTION(BlueprintCallable, Category = "GDM|Functions", meta = (Keywords = "DebugMenu GDM"))
+	// static bool GetGDMConsoleCommandGroupByArrayIndex(const int32 ArrayIndex, FGDMConsoleCommandGroup& Out);
+	//
+	// /**
+	// * コンソールコマンドグループ数
+	// */
+	// UFUNCTION(BlueprintPure, Category = "GDM|Functions", meta = (Keywords = "DebugMenu GDM"))
+	// static int32 GetGDMNumConsoleCommandGroups();
+	//
+	// /** 
+	// * コンソールコマンドペアの情報取得
+	// */
+	// UFUNCTION(BlueprintCallable, Category = "GDM|Functions", meta = (Keywords = "DebugMenu GDM"))
+	// static bool GetGDMConsoleCommandPairByArrayIndex(const int32 ArrayIndex, FGDMConsoleCommandPair& Out);
+	//
+	// /**
+	// * コンソールコマンドペア数
+	// */
+	// UFUNCTION(BlueprintPure, Category = "GDM|Functions", meta = (Keywords = "DebugMenu GDM"))
+	// static int32 GetGDMNumConsoleCommandPairs();
+	//
+	// /**
+	// * コンソールコマンドナンバーの情報取得
+	// */
+	// UFUNCTION(BlueprintCallable, Category = "GDM|Functions", meta = (Keywords = "DebugMenu GDM"))
+	// static bool GetGDMConsoleCommandNumberByArrayIndex(const int32 ArrayIndex, FGDMConsoleCommandNumber& Out);
+	//
+	// /**
+	// * コンソールコマンドナンバー数
+	// */
+	// UFUNCTION(BlueprintPure, Category = "GDM|Functions", meta = (Keywords = "DebugMenu GDM"))
+	// static int32 GetGDMNumConsoleCommandNumbers();
 
-	/**
-	* コンソールコマンド数
-	*/
-	UFUNCTION(BlueprintPure, Category = "GDM|Functions", meta = (Keywords = "DebugMenu GDM"))
-	static int32 GetGDMNumConsoleCommandNames();
-
-	/** 
-	* コンソールコマンドグループの情報取得
-	*/
-	UFUNCTION(BlueprintCallable, Category = "GDM|Functions", meta = (Keywords = "DebugMenu GDM"))
-	static bool GetGDMConsoleCommandGroupByArrayIndex(const int32 ArrayIndex, FGDMConsoleCommandGroup& Out);
-
-	/**
-	* コンソールコマンドグループ数
-	*/
-	UFUNCTION(BlueprintPure, Category = "GDM|Functions", meta = (Keywords = "DebugMenu GDM"))
-	static int32 GetGDMNumConsoleCommandGroups();
-
-	/** 
-	* コンソールコマンドペアの情報取得
-	*/
-	UFUNCTION(BlueprintCallable, Category = "GDM|Functions", meta = (Keywords = "DebugMenu GDM"))
-	static bool GetGDMConsoleCommandPairByArrayIndex(const int32 ArrayIndex, FGDMConsoleCommandPair& Out);
-
-	/**
-	* コンソールコマンドペア数
-	*/
-	UFUNCTION(BlueprintPure, Category = "GDM|Functions", meta = (Keywords = "DebugMenu GDM"))
-	static int32 GetGDMNumConsoleCommandPairs();
-
-	/**
-	* コンソールコマンドナンバーの情報取得
-	*/
-	UFUNCTION(BlueprintCallable, Category = "GDM|Functions", meta = (Keywords = "DebugMenu GDM"))
-	static bool GetGDMConsoleCommandNumberByArrayIndex(const int32 ArrayIndex, FGDMConsoleCommandNumber& Out);
-
-	/**
-	* コンソールコマンドナンバー数
-	*/
-	UFUNCTION(BlueprintPure, Category = "GDM|Functions", meta = (Keywords = "DebugMenu GDM"))
-	static int32 GetGDMNumConsoleCommandNumbers();
-
-	/**
-	* コンソールコマンドメニューのカテゴリ名を取得
-	*/
-	UFUNCTION(BlueprintCallable, Category = "GDM|Functions", meta = (Keywords = "DebugMenu GDM", WorldContext = "WorldContextObject"))
-	static TArray<FGDMMenuCategoryKey> GetOrderConsoleCommandCategoryTitle(UObject* WorldContextObject);
+	// /**
+	// * コンソールコマンドメニューのカテゴリ名を取得
+	// */
+	// UFUNCTION(BlueprintCallable, Category = "GDM|Functions", meta = (Keywords = "DebugMenu GDM", WorldContext = "WorldContextObject"))
+	// static TArray<FGDMMenuCategoryKey> GetOrderConsoleCommandCategoryTitle(UObject* WorldContextObject);
 
 	/**
 	* Gameplayメニューのカテゴリ名を取得
@@ -244,9 +244,6 @@ public:
 	*/
 	UFUNCTION(BlueprintCallable, BlueprintCosmetic, Category = "GDM|Functions", meta = (Keywords = "DebugMenu GDM", WorldContext = "WorldContextObject"))
 	static void UnregisterInputComponentForGameDebugMenu(UObject* WorldContextObject, UInputComponent* InputComponent);
-
-	UFUNCTION(BlueprintCallable, BlueprintCosmetic, Category = "GDM|Functions", meta = (Keywords = "DebugMenu GDM", WorldContext = "WorldContextObject"))
-	static void SwitchInputComponentGroupForGameDebugMenu(UObject* WorldContextObject, const FName NewGroupName);
 	
 	/**
 	* DebugReport用UIを表示する
@@ -324,14 +321,23 @@ public:
 	*/
 	UFUNCTION(BlueprintPure, Category = "GDM|Functions", meta = (Keywords = "DebugMenu GDM"))
 	static FString GetDebugMenuLineBreakString();
+	
+	/** 単体コマンドから識別子を構築 */
+	UFUNCTION(BlueprintCallable, Category = "ConsoleCommand")
+	static FString BuildConsoleCommandId_FromSingle(const FGDMConsoleCommandSingle& Command);
 
-	/**
-	 * Widgetのプロパティをコピーするユーティリティ関数
-	 * （あくまでプロパティのみでSlate側は考慮しない）
-	 */
-	UFUNCTION(BlueprintCallable, Category = "GDM|Functions", meta = (Keywords = "DebugMenu GDM"))
-	static void CopyWidgetProperties(UWidget* Source, UWidget* Target);
+	/** グループコマンドから識別子を構築 */
+	UFUNCTION(BlueprintCallable, Category = "ConsoleCommand")
+	static FString BuildConsoleCommandId_FromGroup(const FGDMConsoleCommandGroup& Command);
 
+	/** ペアコマンドから識別子を構築 */
+	UFUNCTION(BlueprintCallable, Category = "ConsoleCommand")
+	static FString BuildConsoleCommandId_FromPair(const FGDMConsoleCommandPair& Command);
+
+	/** 数値指定コマンドから識別子を構築 */
+	UFUNCTION(BlueprintCallable, Category = "ConsoleCommand")
+	static FString BuildConsoleCommandId_FromNumber(const FGDMConsoleCommandNumber& Command);
+	
 public:
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "Equal (GDMMenuCategoryKey)", CompactNodeTitle = "=="), Category = "GDM|Functions")
 	static bool EqualEqual_GDMMenuCategoryKey(const FGDMMenuCategoryKey& A, const FGDMMenuCategoryKey& B);
@@ -352,5 +358,4 @@ private:
 	static void HideDebugConsoleCommand();
 	static void ToggleDebugConsoleCommand();
 	static void ToggleInputSystemLog();
-
 };

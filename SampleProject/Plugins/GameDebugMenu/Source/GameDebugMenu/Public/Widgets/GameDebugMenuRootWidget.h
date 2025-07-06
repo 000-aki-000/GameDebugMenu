@@ -31,14 +31,17 @@ public:
 	virtual void DeactivateDebugMenu() override;
 
 public:
-	UFUNCTION(BlueprintImplementableEvent, Category = "GDM")
+	void SetDebugMenuManager(AGameDebugMenuManager* InManager);
+
+	UFUNCTION(BlueprintImplementableEvent)
 	void InitializeRootWidget();
 
-	UFUNCTION(BlueprintImplementableEvent, Category = "GDM|Event")
+	UFUNCTION(BlueprintImplementableEvent)
 	void ShowDebugReport();
-
-	void SetDebugMenuManager(AGameDebugMenuManager* InManager);
 	
-	UFUNCTION(BlueprintPure, Category = "GDM")
+	UFUNCTION(BlueprintPure)
 	AGameDebugMenuManager* GetOwnerManager() const;
+
+	UFUNCTION(BlueprintCallable)
+	void SwitchInputComponentGroupForGameDebugMenu(FName NewGroupName);
 };

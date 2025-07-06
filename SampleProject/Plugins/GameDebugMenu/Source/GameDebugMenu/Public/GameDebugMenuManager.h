@@ -12,6 +12,7 @@
 #include "GameDebugMenuTypes.h"
 #include "GameDebugMenuManager.generated.h"
 
+class UGDMConsoleCommandSetAsset;
 class UGDMFavoriteSystemComponent;
 class UGDMConsoleCommandValueProviderComponent;
 class UGDMLocalizeStringComponent;
@@ -69,6 +70,10 @@ protected:
 	/** デバックメニュー用UIアセット */
 	UPROPERTY(EditAnywhere, Category = "GDM")
 	TObjectPtr<UGameDebugMenuDataAsset> MenuAsset;
+
+	/** コンソールコマンド設定アセット */
+	UPROPERTY(EditAnywhere, Category = "GDM")
+	TObjectPtr<UGDMConsoleCommandSetAsset> ConsoleCommandSetAsset;
 	
 	/** True：UI表示中 */
 	bool bShowDebugMenu;
@@ -300,10 +305,19 @@ public:
 	*/
 	UFUNCTION(BlueprintCallable, Category = "GDM")
 	virtual void ChangeDebugMenuLanguage(FName LanguageKey, bool bForcedUpdate);
-	
+
+	/**
+	 * Viewport上にあるすべてのGameDebugMenuWidgetを取得する
+	 */
 	UFUNCTION(BlueprintCallable, Category = "GDM")
 	TArray<UGameDebugMenuWidget*> GetViewportDebugMenuWidgets();
 
+	UFUNCTION(BlueprintCallable, Category = "GDM")
+	void ChangeConsoleCommandSetAsset(UGDMConsoleCommandSetAsset* NewCommandSetAsset); 
+
+	UFUNCTION(BlueprintPure, Category = "GDM")
+	UGDMConsoleCommandSetAsset* GetConsoleCommandSetAsset() const;
+	
 protected:
 	virtual void CallExecuteConsoleCommandDispatcher(const FString& Command);
 	virtual void CallShowDispatcher();

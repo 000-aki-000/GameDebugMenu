@@ -13,12 +13,9 @@
 #include "Misc/ConfigCacheIni.h"
 #include <GeneralProjectSettings.h>
 
-#include "Blueprint/UserWidget.h"
 #include "Component/GDMLocalizeStringComponent.h"
 #include "GameFramework/WorldSettings.h"
 #include "Input/GDMInputSystemComponent.h"
-#include "Serialization/ObjectReader.h"
-#include "Serialization/ObjectWriter.h"
 
 TArray< TWeakObjectPtr<AGameDebugMenuManager> > GGameDebugMenuManagers;
 TWeakObjectPtr<AGameDebugMenuManager> UGameDebugMenuFunctions::CurrentGameDebugMenuManager = nullptr;
@@ -586,162 +583,162 @@ bool UGameDebugMenuFunctions::VerifyGDMNumObjectFunctions(UObject* WorldContextO
 	
 	return (RemoveCount == 0);
 }
+//
+// bool UGameDebugMenuFunctions::GetGDMConsoleCommandNameByArrayIndex(const int32 ArrayIndex, FGDMConsoleCommandSingle& Out)
+// {
+// #if WITH_EDITOR
+// 	TArray<FGDMConsoleCommandSingle> Commands;
+// 	Commands.Append(GetDefault<UGameDebugMenuSettings>()->ConsoleCommandNames);
+// 	Commands.Append(GetDefault<UGameDebugMenuSettings>()->EditorOnlyConsoleCommandNames);
+// 	if (!Commands.IsValidIndex(ArrayIndex))
+// 	{
+// 		return false;
+// 	}
+//
+// 	Out = Commands[ArrayIndex];
+// #else
+// 	const auto& Commands = GetDefault<UGameDebugMenuSettings>()->ConsoleCommandNames;
+// 	if (!Commands.IsValidIndex(ArrayIndex))
+// 	{
+// 		return false;
+// 	}
+//
+// 	Out = Commands[ArrayIndex];
+// #endif
+// 	return true;
+// }
+//
+// int32 UGameDebugMenuFunctions::GetGDMNumConsoleCommandNames()
+// {
+// #if WITH_EDITOR
+// 	TArray<FGDMConsoleCommandSingle> Commands;
+// 	Commands.Append(GetDefault<UGameDebugMenuSettings>()->ConsoleCommandNames);
+// 	Commands.Append(GetDefault<UGameDebugMenuSettings>()->EditorOnlyConsoleCommandNames);
+// 	return Commands.Num();
+// #else
+// 	return GetDefault<UGameDebugMenuSettings>()->ConsoleCommandNames.Num();
+// #endif
+// }
+//
+// bool UGameDebugMenuFunctions::GetGDMConsoleCommandGroupByArrayIndex(const int32 ArrayIndex, FGDMConsoleCommandGroup& Out)
+// {
+// #if WITH_EDITOR
+// 	TArray<FGDMConsoleCommandGroup> Commands;
+// 	Commands.Append(GetDefault<UGameDebugMenuSettings>()->ConsoleCommandGroups);
+// 	Commands.Append(GetDefault<UGameDebugMenuSettings>()->EditorOnlyConsoleCommandGroups);
+// 	if (!Commands.IsValidIndex(ArrayIndex))
+// 	{
+// 		return false;
+// 	}
+//
+// 	Out = Commands[ArrayIndex];
+// #else
+// 	const auto& Commands = GetDefault<UGameDebugMenuSettings>()->ConsoleCommandGroups;
+// 	if (!Commands.IsValidIndex(ArrayIndex))
+// 	{
+// 		return false;
+// 	}
+//
+// 	Out = Commands[ArrayIndex];
+// #endif
+// 	return true;
+// }
+//
+// int32 UGameDebugMenuFunctions::GetGDMNumConsoleCommandGroups()
+// {
+// #if WITH_EDITOR
+// 	TArray<FGDMConsoleCommandGroup> Commands;
+// 	Commands.Append(GetDefault<UGameDebugMenuSettings>()->ConsoleCommandGroups);
+// 	Commands.Append(GetDefault<UGameDebugMenuSettings>()->EditorOnlyConsoleCommandGroups);
+// 	return Commands.Num();
+// #else
+// 	return GetDefault<UGameDebugMenuSettings>()->ConsoleCommandGroups.Num();
+// #endif
+// }
+//
+// bool UGameDebugMenuFunctions::GetGDMConsoleCommandPairByArrayIndex(const int32 ArrayIndex, FGDMConsoleCommandPair& Out)
+// {
+// #if WITH_EDITOR
+// 	TArray<FGDMConsoleCommandPair> Commands;
+// 	Commands.Append(GetDefault<UGameDebugMenuSettings>()->ConsoleCommandPairs);
+// 	Commands.Append(GetDefault<UGameDebugMenuSettings>()->EditorOnlyConsoleCommandPairs);
+// 	if (!Commands.IsValidIndex(ArrayIndex))
+// 	{
+// 		return false;
+// 	}
+//
+// 	Out = Commands[ArrayIndex];
+// #else
+// 	const auto& Commands = GetDefault<UGameDebugMenuSettings>()->ConsoleCommandPairs;
+// 	if (!Commands.IsValidIndex(ArrayIndex))
+// 	{
+// 		return false;
+// 	}
+//
+// 	Out = Commands[ArrayIndex];
+// #endif
+// 	return true;
+// }
+//
+// int32 UGameDebugMenuFunctions::GetGDMNumConsoleCommandPairs()
+// {
+// #if WITH_EDITOR
+// 	TArray<FGDMConsoleCommandPair> Commands;
+// 	Commands.Append(GetDefault<UGameDebugMenuSettings>()->ConsoleCommandPairs);
+// 	Commands.Append(GetDefault<UGameDebugMenuSettings>()->EditorOnlyConsoleCommandPairs);
+// 	return Commands.Num();
+// #else
+// 	return GetDefault<UGameDebugMenuSettings>()->ConsoleCommandPairs.Num();
+// #endif
+// }
+//
+// bool UGameDebugMenuFunctions::GetGDMConsoleCommandNumberByArrayIndex(const int32 ArrayIndex, FGDMConsoleCommandNumber& Out)
+// {
+// #if WITH_EDITOR
+// 	TArray<FGDMConsoleCommandNumber> Commands;
+// 	Commands.Append(GetDefault<UGameDebugMenuSettings>()->ConsoleCommandNumbers);
+// 	Commands.Append(GetDefault<UGameDebugMenuSettings>()->EditorOnlyConsoleCommandNumbers);
+// 	if (!Commands.IsValidIndex(ArrayIndex))
+// 	{
+// 		return false;
+// 	}
+//
+// 	Out = Commands[ArrayIndex];
+// #else
+// 	const auto& Commands = GetDefault<UGameDebugMenuSettings>()->ConsoleCommandNumbers;
+// 	if (!Commands.IsValidIndex(ArrayIndex))
+// 	{
+// 		return false;
+// 	}
+//
+// 	Out = Commands[ArrayIndex];
+// #endif
+// 	return true;
+// }
+//
+// int32 UGameDebugMenuFunctions::GetGDMNumConsoleCommandNumbers()
+// {
+// #if WITH_EDITOR
+// 	TArray<FGDMConsoleCommandNumber> Commands;
+// 	Commands.Append(GetDefault<UGameDebugMenuSettings>()->ConsoleCommandNumbers);
+// 	Commands.Append(GetDefault<UGameDebugMenuSettings>()->EditorOnlyConsoleCommandNumbers);
+// 	return Commands.Num();
+// #else
+// 	return GetDefault<UGameDebugMenuSettings>()->ConsoleCommandNumbers.Num();
+// #endif
+// }
 
-bool UGameDebugMenuFunctions::GetGDMConsoleCommandNameByArrayIndex(const int32 ArrayIndex, FGDMConsoleCommandSingle& Out)
-{
-#if WITH_EDITOR
-	TArray<FGDMConsoleCommandSingle> Commands;
-	Commands.Append(GetDefault<UGameDebugMenuSettings>()->ConsoleCommandNames);
-	Commands.Append(GetDefault<UGameDebugMenuSettings>()->EditorOnlyConsoleCommandNames);
-	if (!Commands.IsValidIndex(ArrayIndex))
-	{
-		return false;
-	}
-
-	Out = Commands[ArrayIndex];
-#else
-	const auto& Commands = GetDefault<UGameDebugMenuSettings>()->ConsoleCommandNames;
-	if (!Commands.IsValidIndex(ArrayIndex))
-	{
-		return false;
-	}
-
-	Out = Commands[ArrayIndex];
-#endif
-	return true;
-}
-
-int32 UGameDebugMenuFunctions::GetGDMNumConsoleCommandNames()
-{
-#if WITH_EDITOR
-	TArray<FGDMConsoleCommandSingle> Commands;
-	Commands.Append(GetDefault<UGameDebugMenuSettings>()->ConsoleCommandNames);
-	Commands.Append(GetDefault<UGameDebugMenuSettings>()->EditorOnlyConsoleCommandNames);
-	return Commands.Num();
-#else
-	return GetDefault<UGameDebugMenuSettings>()->ConsoleCommandNames.Num();
-#endif
-}
-
-bool UGameDebugMenuFunctions::GetGDMConsoleCommandGroupByArrayIndex(const int32 ArrayIndex, FGDMConsoleCommandGroup& Out)
-{
-#if WITH_EDITOR
-	TArray<FGDMConsoleCommandGroup> Commands;
-	Commands.Append(GetDefault<UGameDebugMenuSettings>()->ConsoleCommandGroups);
-	Commands.Append(GetDefault<UGameDebugMenuSettings>()->EditorOnlyConsoleCommandGroups);
-	if (!Commands.IsValidIndex(ArrayIndex))
-	{
-		return false;
-	}
-
-	Out = Commands[ArrayIndex];
-#else
-	const auto& Commands = GetDefault<UGameDebugMenuSettings>()->ConsoleCommandGroups;
-	if (!Commands.IsValidIndex(ArrayIndex))
-	{
-		return false;
-	}
-
-	Out = Commands[ArrayIndex];
-#endif
-	return true;
-}
-
-int32 UGameDebugMenuFunctions::GetGDMNumConsoleCommandGroups()
-{
-#if WITH_EDITOR
-	TArray<FGDMConsoleCommandGroup> Commands;
-	Commands.Append(GetDefault<UGameDebugMenuSettings>()->ConsoleCommandGroups);
-	Commands.Append(GetDefault<UGameDebugMenuSettings>()->EditorOnlyConsoleCommandGroups);
-	return Commands.Num();
-#else
-	return GetDefault<UGameDebugMenuSettings>()->ConsoleCommandGroups.Num();
-#endif
-}
-
-bool UGameDebugMenuFunctions::GetGDMConsoleCommandPairByArrayIndex(const int32 ArrayIndex, FGDMConsoleCommandPair& Out)
-{
-#if WITH_EDITOR
-	TArray<FGDMConsoleCommandPair> Commands;
-	Commands.Append(GetDefault<UGameDebugMenuSettings>()->ConsoleCommandPairs);
-	Commands.Append(GetDefault<UGameDebugMenuSettings>()->EditorOnlyConsoleCommandPairs);
-	if (!Commands.IsValidIndex(ArrayIndex))
-	{
-		return false;
-	}
-
-	Out = Commands[ArrayIndex];
-#else
-	const auto& Commands = GetDefault<UGameDebugMenuSettings>()->ConsoleCommandPairs;
-	if (!Commands.IsValidIndex(ArrayIndex))
-	{
-		return false;
-	}
-
-	Out = Commands[ArrayIndex];
-#endif
-	return true;
-}
-
-int32 UGameDebugMenuFunctions::GetGDMNumConsoleCommandPairs()
-{
-#if WITH_EDITOR
-	TArray<FGDMConsoleCommandPair> Commands;
-	Commands.Append(GetDefault<UGameDebugMenuSettings>()->ConsoleCommandPairs);
-	Commands.Append(GetDefault<UGameDebugMenuSettings>()->EditorOnlyConsoleCommandPairs);
-	return Commands.Num();
-#else
-	return GetDefault<UGameDebugMenuSettings>()->ConsoleCommandPairs.Num();
-#endif
-}
-
-bool UGameDebugMenuFunctions::GetGDMConsoleCommandNumberByArrayIndex(const int32 ArrayIndex, FGDMConsoleCommandNumber& Out)
-{
-#if WITH_EDITOR
-	TArray<FGDMConsoleCommandNumber> Commands;
-	Commands.Append(GetDefault<UGameDebugMenuSettings>()->ConsoleCommandNumbers);
-	Commands.Append(GetDefault<UGameDebugMenuSettings>()->EditorOnlyConsoleCommandNumbers);
-	if (!Commands.IsValidIndex(ArrayIndex))
-	{
-		return false;
-	}
-
-	Out = Commands[ArrayIndex];
-#else
-	const auto& Commands = GetDefault<UGameDebugMenuSettings>()->ConsoleCommandNumbers;
-	if (!Commands.IsValidIndex(ArrayIndex))
-	{
-		return false;
-	}
-
-	Out = Commands[ArrayIndex];
-#endif
-	return true;
-}
-
-int32 UGameDebugMenuFunctions::GetGDMNumConsoleCommandNumbers()
-{
-#if WITH_EDITOR
-	TArray<FGDMConsoleCommandNumber> Commands;
-	Commands.Append(GetDefault<UGameDebugMenuSettings>()->ConsoleCommandNumbers);
-	Commands.Append(GetDefault<UGameDebugMenuSettings>()->EditorOnlyConsoleCommandNumbers);
-	return Commands.Num();
-#else
-	return GetDefault<UGameDebugMenuSettings>()->ConsoleCommandNumbers.Num();
-#endif
-}
-
-TArray<FGDMMenuCategoryKey> UGameDebugMenuFunctions::GetOrderConsoleCommandCategoryTitle(UObject* WorldContextObject)
-{
-	TArray<FGDMMenuCategoryKey> ReturnValues;
-	const auto& TitleArray = GetDefault<UGameDebugMenuSettings>()->OrderConsoleCommandCategoryTitles;
-	for( int32 Index = 0;Index < TitleArray.Num();++Index )
-	{
-		ReturnValues.Add(FGDMMenuCategoryKey(TitleArray[Index].Index, TitleArray[Index].Title));
-	}
-
-	return ReturnValues;
-}
+// TArray<FGDMMenuCategoryKey> UGameDebugMenuFunctions::GetOrderConsoleCommandCategoryTitle(UObject* WorldContextObject)
+// {
+// 	TArray<FGDMMenuCategoryKey> ReturnValues;
+// 	const auto& TitleArray = GetDefault<UGameDebugMenuSettings>()->OrderConsoleCommandCategoryTitles;
+// 	for( int32 Index = 0;Index < TitleArray.Num();++Index )
+// 	{
+// 		ReturnValues.Add(FGDMMenuCategoryKey(TitleArray[Index].Index, TitleArray[Index].Title));
+// 	}
+//
+// 	return ReturnValues;
+// }
 
 TArray<FGDMMenuCategoryKey> UGameDebugMenuFunctions::GetOrderGameplayCategoryTitle(UObject* WorldContextObject)
 {
@@ -787,14 +784,6 @@ void UGameDebugMenuFunctions::UnregisterInputComponentForGameDebugMenu(UObject* 
 	if (AGameDebugMenuManager* GDMManager = GetGameDebugMenuManager(WorldContextObject))
 	{
 		GDMManager->GetDebugMenuInputSystemComponent()->UnregisterInputComponent(InputComponent);
-	}
-}
-
-void UGameDebugMenuFunctions::SwitchInputComponentGroupForGameDebugMenu(UObject* WorldContextObject , const FName NewGroupName)
-{
-	if (AGameDebugMenuManager* GDMManager = GetGameDebugMenuManager(WorldContextObject))
-	{
-		GDMManager->GetDebugMenuInputSystemComponent()->SwitchToInputGroup(NewGroupName);
 	}
 }
 
@@ -951,25 +940,26 @@ FString UGameDebugMenuFunctions::GetDebugMenuLineBreakString()
 	return GetDefault<UGameDebugMenuSettings>()->LineBreakString;
 }
 
-void UGameDebugMenuFunctions::CopyWidgetProperties(UWidget* Source, UWidget* Target)
+FString UGameDebugMenuFunctions::BuildConsoleCommandId_FromSingle(const FGDMConsoleCommandSingle& Command)
 {
-	if (!IsValid(Source) || !IsValid(Target))
-	{
-		return;
-	}
-
-	if (Source->GetClass() != Target->GetClass())
-	{
-		/* 型が一致している必要あり */
-		UE_LOG(LogGDM, Warning, TEXT("CopyWidgetProperties: クラスが一致していません"));
-		return;
-	}
-
-	/* シリアライズでコピー */
-	TArray<uint8> Buffer;
-	FObjectWriter Writer(Source, Buffer);
-	FObjectReader Reader(Target, Buffer);
+	return Command.BuildCommandIdentifier();
 }
+
+FString UGameDebugMenuFunctions::BuildConsoleCommandId_FromGroup(const FGDMConsoleCommandGroup& Command)
+{
+	return Command.BuildCommandIdentifier();
+}
+
+FString UGameDebugMenuFunctions::BuildConsoleCommandId_FromPair(const FGDMConsoleCommandPair& Command)
+{
+	return Command.BuildCommandIdentifier();
+}
+
+FString UGameDebugMenuFunctions::BuildConsoleCommandId_FromNumber(const FGDMConsoleCommandNumber& Command)
+{
+	return Command.BuildCommandIdentifier();
+}
+
 
 bool UGameDebugMenuFunctions::EqualEqual_GDMMenuCategoryKey(const FGDMMenuCategoryKey& A, const FGDMMenuCategoryKey& B)
 {

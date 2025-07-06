@@ -12,9 +12,11 @@
 #include "Components/ActorComponent.h"
 #include "GDMLocalizeStringComponent.generated.h"
 
-
 class UGDMPropertyJsonSystemComponent;
 
+/**
+ * DebugMenuの文字列管理
+ */
 UCLASS(NotBlueprintable, NotBlueprintType)
 class GAMEDEBUGMENU_API UGDMLocalizeStringComponent : public UActorComponent
 {

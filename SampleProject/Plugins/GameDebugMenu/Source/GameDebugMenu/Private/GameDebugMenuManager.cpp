@@ -49,6 +49,8 @@ AGameDebugMenuManager::AGameDebugMenuManager(const FObjectInitializer& ObjectIni
 	, ListenerComponent(nullptr)
 	, InitializeManagerHandle()
 	, bInitializedManager(false)
+	, MenuAsset(nullptr)
+	, ConsoleCommandSetAsset(nullptr)
 	, bShowDebugMenu(false)
 	, bCachedGamePaused(false)
 	, bCachedShowMouseCursor(false)
@@ -1181,6 +1183,16 @@ void AGameDebugMenuManager::ChangeDebugMenuLanguage(FName LanguageKey, bool bFor
 TArray<UGameDebugMenuWidget*> AGameDebugMenuManager::GetViewportDebugMenuWidgets()
 {
 	return ViewportDebugMenuWidgets;
+}
+
+void AGameDebugMenuManager::ChangeConsoleCommandSetAsset(UGDMConsoleCommandSetAsset* NewCommandSetAsset)
+{
+	ConsoleCommandSetAsset = NewCommandSetAsset;
+}
+
+UGDMConsoleCommandSetAsset* AGameDebugMenuManager::GetConsoleCommandSetAsset() const
+{
+	return ConsoleCommandSetAsset;
 }
 
 void AGameDebugMenuManager::CallExecuteConsoleCommandDispatcher(const FString& Command)
