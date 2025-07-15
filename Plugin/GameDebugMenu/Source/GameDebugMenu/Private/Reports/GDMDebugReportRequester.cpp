@@ -82,9 +82,9 @@ FString AGDMDebugReportRequester::SuffixDescriptionString_Implementation()
 {
 	return FString::Printf(TEXT("\n\n====================\n  Platform Name : %s\n  Build Version : %s\n  Build Configuration : %s\n  Project Version : %s\n  Test Count %d / %d\n")
 					, *UGameplayStatics::GetPlatformName()
-					, *UGameDebugMenuFunctions::GetBuildVersionString()
-					, *UGameDebugMenuFunctions::GetBuildConfigurationString()
-					, *UGameDebugMenuFunctions::GetProjectVersionString()
+					, *UGameDebugMenuFunctions::GetGDMBuildVersionString()
+					, *UGameDebugMenuFunctions::GetGDMBuildConfigurationString()
+					, *UGameDebugMenuFunctions::GetGDMProjectVersionString()
 					, TestCount, MaxTestCount
 	);
 }

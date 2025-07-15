@@ -15,7 +15,9 @@ class ADebugCameraController;
 class AGameDebugMenuManager;
 
 /**
-* DebugCameraController有効時に入力クラス
+* DebugCameraController動作中に処理される入力判定を制御するクラス
+* 「ToogleDebugCamera」実行時に別途、入力機能（メニューの開閉など）をここで実装できるようにしてる
+* （BP_GDMDebugCameraInput参照）
 */
 UCLASS(Blueprintable, NotBlueprintType, notplaceable)
 class GAMEDEBUGMENU_API AGDMDebugCameraInput : public AActor

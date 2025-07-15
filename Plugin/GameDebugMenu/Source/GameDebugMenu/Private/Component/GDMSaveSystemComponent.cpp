@@ -92,8 +92,10 @@ void UGDMSaveSystemComponent::LoadDebugMenuFile()
 	
 	if (!JsonSystemComponent->BuildJsonFromString(LoadedJsonString))
 	{
-		UE_LOG(LogGDM, Error, TEXT("LoadDebugMenuFile: Failed to apply JSON to JsonSystemComponent."));
+		UE_LOG(LogGDM, Warning, TEXT("LoadDebugMenuFile: Failed to apply JSON to JsonSystemComponent."));
 		
+		/* ファイルがないため現状の状態を１度保存する */
+		SaveDebugMenuFile();
 		return;
 	}
 

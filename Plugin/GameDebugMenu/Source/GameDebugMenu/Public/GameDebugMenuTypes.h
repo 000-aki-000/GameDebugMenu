@@ -395,8 +395,8 @@ struct GAMEDEBUGMENU_API FGDMPendingObjectData
 UENUM(BlueprintType)
 enum class EGDMProjectManagementTool : uint8
 {
-	Trello,
 	Redmine,
+	Trello,
 	Jira,
 };
 
@@ -607,10 +607,8 @@ struct GAMEDEBUGMENU_API FGDMOrderMenuCategoryTitle
 	int32 Index;
 
 #if WITH_EDITORONLY_DATA
-
 	UPROPERTY(VisibleAnywhere)
 	FString PreviewTitle;
-
 #endif
 
 	FGDMOrderMenuCategoryTitle()

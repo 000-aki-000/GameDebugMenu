@@ -25,7 +25,7 @@ UGDMTextBlock::UGDMTextBlock(const FObjectInitializer& ObjectInitializer)
 {
 	if( !IsRunningDedicatedServer() )
 	{
-		SetFont(FSlateFontInfo(GetDefault<UGameDebugMenuSettings>()->GetGDMFont(), 24, FName("Bold")));
+		SetFont(FSlateFontInfo(GetDefault<UGameDebugMenuSettings>()->GetDebugMenuFont(), 24, FName("Bold")));
 	}
 }
 

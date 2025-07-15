@@ -9,6 +9,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+
 #include "GameDebugMenuTypes.h"
 #include "GameDebugMenuManager.generated.h"
 
@@ -22,7 +23,7 @@ class UGDMListenerComponent;
 class UGameDebugMenuWidget;
 class UGDMInputSystemComponent;
 class UGDMScreenshotRequesterComponent;
-class UGameDebugMenuDataAsset;
+class UGameDebugMenuManagerAsset;
 class UGameDebugMenuRootWidget;
 class UGDMPlayerControllerProxyComponent;
 class AGDMDebugReportRequester;
@@ -31,7 +32,7 @@ class FGDMOutputDevice;
 /**
 * デバックメニュー管理マネージャー（生成はTryCreateDebugMenuManagerで）
 */
-UCLASS(Blueprintable, NotBlueprintType, notplaceable)
+UCLASS(Blueprintable, BlueprintType, notplaceable)
 class GAMEDEBUGMENU_API AGameDebugMenuManager : public AActor
 {
 	GENERATED_BODY()
@@ -69,7 +70,7 @@ protected:
 
 	/** デバックメニュー用UIアセット */
 	UPROPERTY(EditAnywhere, Category = "GDM")
-	TObjectPtr<UGameDebugMenuDataAsset> MenuAsset;
+	TObjectPtr<UGameDebugMenuManagerAsset> MenuAsset;
 
 	/** コンソールコマンド設定アセット */
 	UPROPERTY(EditAnywhere, Category = "GDM")

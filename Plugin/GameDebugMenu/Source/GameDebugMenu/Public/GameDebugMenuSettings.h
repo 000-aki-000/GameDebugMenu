@@ -10,21 +10,31 @@
 #include "CoreMinimal.h"
 #include "Engine/DeveloperSettings.h"
 #include "Templates/SubclassOf.h"
+
 #include "GameDebugMenuTypes.h"
 #include "GameDebugMenuSettings.generated.h"
 
+class UGameDebugMenuMasterAsset;
+class AGameDebugMenuManager;
+class IGDMDeveloperSettingProvider;
 class AGDMDebugReportRequester;
 class UGDMEnhancedInputComponent;
 
 /**
 * DebugMenu用設定クラス
 */
-UCLASS(config=GameDebugMenu)
+UCLASS(config=GameDebugMenu, DefaultConfig)
 class GAMEDEBUGMENU_API UGameDebugMenuSettings : public UDeveloperSettings
 {
 	GENERATED_BODY()
 
+	friend class UGameDebugMenuDeveloperSettings;
+	
 public:
+	/** マスターアセットのアセット名 */
+	UPROPERTY(EditAnywhere, config, Category = "Meta")
+	FString MasterAssetName;
+	
 	/** コンソールコマンド名 */
 	UPROPERTY(EditAnywhere, config, Category = "ConsoleCommand")
 	TArray<FGDMConsoleCommandSingle> ConsoleCommandNames;
@@ -69,13 +79,6 @@ public:
 	UPROPERTY(EditAnywhere, config, Category = "Input")
 	int32 WidgetInputActionPriority;
 
-	UPROPERTY(EditAnywhere, config, Category = "Input")
-	TSoftClassPtr<UGDMEnhancedInputComponent> DebugMenuInputComponentClass;
-	
-	/** デバックメニューのUMG使用フォント */
-	UPROPERTY(EditAnywhere, config, Category = "Font", meta = (AllowedClasses = "/Script/Engine.Font", DisplayName = "Font Family"))
-	FSoftObjectPath FontName;
-
 	/** バグレポート連携ツール */
 	UPROPERTY(EditAnywhere, config, Category = "ReportSettings")
 	EGDMProjectManagementTool ProjectManagementToolType;
@@ -92,10 +95,6 @@ public:
 	UPROPERTY(EditAnywhere, config, Category = "ReportSettings")
 	FGDMJiraSettings JiraSettings;
 
-	/** バグレポート処理クラス */
-	UPROPERTY(EditAnywhere, Category = "ReportSettings")
-	TMap<EGDMProjectManagementTool, TSubclassOf<AGDMDebugReportRequester>> DebugReportRequesterClass;
-
 	/** バグレポート用の画面キャプチャ処理を無効化する */
 	UPROPERTY(EditAnywhere, Category = "ReportSettings")
 	bool bDisableScreenCaptureProcessingWhenOpeningDebugMenu;
@@ -103,10 +102,6 @@ public:
 	/** DebugMenuから指定できるCultureのリスト */
 	UPROPERTY(EditAnywhere, config, Category = "Localization")
 	TArray<FString> CultureList;
-
-	/** デバックメニュー用StringTable */
-	UPROPERTY(EditAnywhere, config, Category = "Localization")
-	TMap<FName, FGDMStringTableList> GameDebugMenuStringTables;
 
 	/** デバックメニューの使用言語 */
 	UPROPERTY(EditAnywhere, config, Category = "Localization")
@@ -144,36 +139,36 @@ public:
 	UPROPERTY(EditAnywhere, config, Category = "Other")
 	FString LineBreakString;
 
-	/** デバックメニューを無効化する */
-	UPROPERTY(EditAnywhere, config, Category = "Other")
-	bool bDisableGameDebugMenu;
-	
+private:
+	UPROPERTY(transient)
+	mutable TObjectPtr<UGameDebugMenuMasterAsset> MasterAsset;
+
 public:
 	UGameDebugMenuSettings();
 
-	virtual FName GetCategoryName() const override
-	{
-		return FName("Plugins");
-	}
-	
 #if WITH_EDITOR
 	virtual void PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent) override;
 	virtual FText GetSectionText() const override;
 #endif
 
-	UObject* GetGDMFont() const;
 	TArray<FText> GetIssueCategoryNameList() const;
 	TArray<FText> GetPriorityNameList() const;
 	TArray<FText> GetAssigneeNameList() const;
 	int32 GetDefaultIssueCategoryIndex() const;
 	int32 GetDefaultPriorityIndex() const;
-	FString GetDebugMenuString(const FName& LanguageKey, const FString& StringKey) const;
 	FString GetGameplayCategoryTitle(const int32& ArrayIndex) const;
 	int32 GetGameplayCategoryIndex(const int32& ArrayIndex) const;
-	const TSubclassOf<AGDMDebugReportRequester>* GetDebugReportRequesterClass() const;
 	FString GetFullSavePath() const;
-	UClass* GetDebugMenuInputComponentClass() const;
 
+	const FGDMStringTableList* TryGetStringTableList(const FName& LanguageKey) const;
+	TArray<FName> GetDebugMenuLanguageKeys() const;
+	UClass* GetDebugMenuInputComponentClass() const;
+	const TSubclassOf<AGDMDebugReportRequester>* GetDebugReportRequesterClass() const;
+	FString GetDebugMenuString(const FName& LanguageKey, const FString& StringKey) const;
+	UObject* GetDebugMenuFont() const;
+
+	UGameDebugMenuMasterAsset* GetMasterAsset() const;
+	
 private:
 	void SetupCategoryResets();
 	void SetupCategorySlomo();

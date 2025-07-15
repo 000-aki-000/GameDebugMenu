@@ -102,7 +102,7 @@ bool UGDMInputSystemComponent::IsInputIgnored() const
 	return (IgnoreDebugMenuInput > 0);
 }
 
-void UGDMInputSystemComponent::Initialize(UGameDebugMenuDataAsset* MenuDataAsset)
+void UGDMInputSystemComponent::Initialize(UGameDebugMenuManagerAsset* MenuDataAsset)
 {
 	AddInputMappingContextWhenCreateManager = MenuDataAsset->AddInputMappingContextWhenCreateManager;
 	AddInputMappingContextWhenDebugMenuIsShow = MenuDataAsset->AddInputMappingContextWhenDebugMenuIsShow;

@@ -12,6 +12,9 @@
 #include "GDMEnhancedInputComponent.generated.h"
 
 
+/**
+ * DebugMenu用のUIで入力判定を制御する専用のEnhancedInputComponent
+ */
 UCLASS()
 class GAMEDEBUGMENU_API UGDMEnhancedInputComponent : public UEnhancedInputComponent
 {
