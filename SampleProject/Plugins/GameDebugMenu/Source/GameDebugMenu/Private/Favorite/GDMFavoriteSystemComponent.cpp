@@ -11,7 +11,7 @@
 #include "GameDebugMenuTypes.h"
 #include "Blueprint/UserWidget.h"
 #include "Component/GDMPropertyJsonSystemComponent.h"
-#include "Data/GameDebugMenuDataAsset.h"
+#include "Data/GameDebugMenuManagerAsset.h"
 #include "Favorite/GDMFavoriteItemDefinition.h"
 
 UGDMFavoriteSystemComponent::UGDMFavoriteSystemComponent()
@@ -32,7 +32,7 @@ UGDMPropertyJsonSystemComponent* UGDMFavoriteSystemComponent::GetPropertyJsonSys
 	return nullptr;
 }
 
-void UGDMFavoriteSystemComponent::Initialize(const UGameDebugMenuDataAsset* InMenuAsset)
+void UGDMFavoriteSystemComponent::Initialize(const UGameDebugMenuManagerAsset* InMenuAsset)
 {
 	if (!IsValid(InMenuAsset))
 	{

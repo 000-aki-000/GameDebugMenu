@@ -54,12 +54,18 @@ void UGDMLocalizeStringComponent::SyncLoadDebugMenuStringTables()
 {
 	CachedDebugMenuStrings.Reset();
 
-	if( const FGDMStringTableList* StringTableList = GetDefault<UGameDebugMenuSettings>()->GameDebugMenuStringTables.Find(CurrentLanguage) )
+	if( const FGDMStringTableList* StringTableList = GetDefault<UGameDebugMenuSettings>()->TryGetStringTableList(CurrentLanguage) )
 	{
 		UE_LOG(LogGDM, Verbose, TEXT("Call SyncLoadDebugMenuStringTables %s"), *CurrentLanguage.ToString());
-
+		
 		for( auto& StrTablePtr : StringTableList->StringTables )
 		{
+			if( !StrTablePtr.ToSoftObjectPath().IsValid() || StrTablePtr.ToSoftObjectPath().IsNull() )
+			{
+				UE_LOG(LogGDM, Warning, TEXT("SyncLoadDebugMenuStringTables: failed StringTable : LanguageKey->%s"), *CurrentLanguage.ToString());
+				continue;
+			}
+				
 			if(const UStringTable* StringTable = StrTablePtr.LoadSynchronous() )
 			{
 				StringTable->GetStringTable()->EnumerateSourceStrings([&](const FString& InKey, const FString& InSourceString) -> bool

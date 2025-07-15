@@ -9,11 +9,11 @@
 
 #include "Modules/ModuleManager.h"
 
-class FGameDebugMenuModule : public IModuleInterface
+class GAMEDEBUGMENU_API FGameDebugMenuModule : public IModuleInterface
 {
 public:
-
-	/* IModuleInterface implementation */
+	/* Begin IModuleInterface */
 	virtual void StartupModule() override;
 	virtual void ShutdownModule() override;
+	/* End IModuleInterface */
 };

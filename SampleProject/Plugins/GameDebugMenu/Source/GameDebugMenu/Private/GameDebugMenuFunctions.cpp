@@ -6,15 +6,16 @@
 */
 
 #include "GameDebugMenuFunctions.h"
+#include "GameFramework/WorldSettings.h"
 #include "Engine/Engine.h"
 #include "Kismet/GameplayStatics.h"
-#include "GameDebugMenuSettings.h"
 #include "CoreGlobals.h"
 #include "Misc/ConfigCacheIni.h"
 #include <GeneralProjectSettings.h>
 
+#include "GameDebugMenuSettings.h"
 #include "Component/GDMLocalizeStringComponent.h"
-#include "GameFramework/WorldSettings.h"
+#include "Data/GameDebugMenuMasterAsset.h"
 #include "Input/GDMInputSystemComponent.h"
 
 TArray< TWeakObjectPtr<AGameDebugMenuManager> > GGameDebugMenuManagers;
@@ -22,6 +23,7 @@ TWeakObjectPtr<AGameDebugMenuManager> UGameDebugMenuFunctions::CurrentGameDebugM
 TArray<FGDMPendingObjectData> UGameDebugMenuFunctions::RegisterPendingProperties;
 TArray<FGDMPendingObjectData> UGameDebugMenuFunctions::RegisterPendingFunctions;
 FDelegateHandle UGameDebugMenuFunctions::ActorSpawnedDelegateHandle;
+bool UGameDebugMenuFunctions::bDisableGameDebugMenu = false;
 
 UGameDebugMenuFunctions::UGameDebugMenuFunctions(const FObjectInitializer& ObjectInitializer)
 : Super(ObjectInitializer)
@@ -74,35 +76,59 @@ void UGameDebugMenuFunctions::UnregisterGameDebugMenuManagerInstance(AGameDebugM
 	}
 }
 
-bool UGameDebugMenuFunctions::TryCreateDebugMenuManager(APlayerController* PlayerController, TSoftClassPtr<AGameDebugMenuManager> DebugMenuManagerClassPtr)
+bool UGameDebugMenuFunctions::TryCreateDebugMenuManager(APlayerController* PlayerController, FString DebugMenuManagerClassName)
 {
-	if (GetDefault<UGameDebugMenuSettings>()->bDisableGameDebugMenu)
-	{
-		return false;
-	}
-
 	bool bServer    = UKismetSystemLibrary::IsServer(PlayerController);
 	FString NetMode = (bServer ? TEXT("Server") : TEXT("Client"));
 
 	UWorld* World = GEngine->GetWorldFromContextObject(PlayerController, EGetWorldErrorMode::LogAndReturnNull);
 	if(World == nullptr)
 	{
-		UE_LOG(LogGDM, Log, TEXT("TryCreateDebugMenuManager: Not found world[%s]"), *NetMode);
+		UE_LOG(LogGDM, Warning, TEXT("TryCreateDebugMenuManager: Not found world[%s]"), *NetMode);
 		return false;
 	}
 
-	if (DebugMenuManagerClassPtr.IsNull())
+	if (DebugMenuManagerClassName.IsEmpty())
 	{
-		UE_LOG(LogGDM, Log, TEXT("TryCreateDebugMenuManager: Class Pointer null[%s]"), *NetMode);
+		UE_LOG(LogGDM, Warning, TEXT("TryCreateDebugMenuManager: class name empty[%s]"), *NetMode);
 		return false;
 	}
 
-	if (!FPackageName::DoesPackageExist(DebugMenuManagerClassPtr.GetLongPackageName()))
+	const UGameDebugMenuMasterAsset* MasterAsset = GetDefault<UGameDebugMenuSettings>()->GetMasterAsset();
+	if (!IsValid(MasterAsset))
 	{
-		UE_LOG(LogGDM, Log, TEXT("TryCreateDebugMenuManager: Package was not on disk[%s]"), *NetMode);
+		UE_LOG(LogGDM, Warning, TEXT("TryCreateDebugMenuManager: Not found MasterAsset[%s]"), *NetMode);
+
+		/* 生成ができない環境なので無効フラグを立てる */
+		bDisableGameDebugMenu = true;
+		CurrentGameDebugMenuManager = nullptr;
+		RegisterPendingProperties.Empty();
+		RegisterPendingFunctions.Empty();
+		return false;
+	}
+	
+	const auto ManagerClass = MasterAsset->GetGameDebugMenuManagerSoftClass(DebugMenuManagerClassName);
+	UClass* DebugMenuManagerClass = ManagerClass.LoadSynchronous();
+	if(DebugMenuManagerClass == nullptr)
+	{
+		FString ErrorStr = TEXT("DebugMenuManagerClass NotFound LoadError");
+		ErrorStr += TEXT("[");
+		ErrorStr += NetMode;
+		ErrorStr += TEXT("]");
+
+		UE_LOG(LogGDM, Warning, TEXT("TryCreateDebugMenuManager: Failed Class name [%s] %s"), *NetMode, *DebugMenuManagerClassName);
+		UKismetSystemLibrary::PrintString(PlayerController, ErrorStr, true, true, FLinearColor::Red, 10.0f);
+
+		/* 生成ができない環境なので無効フラグを立てる */
+		bDisableGameDebugMenu = true;
+		CurrentGameDebugMenuManager = nullptr;
+		RegisterPendingProperties.Empty();
+		RegisterPendingFunctions.Empty();
 		return false;
 	}
 
+	bDisableGameDebugMenu = false;
+	
 	if(!bServer)
 	{
 		/* Client */
@@ -127,19 +153,7 @@ bool UGameDebugMenuFunctions::TryCreateDebugMenuManager(APlayerController* Playe
 		FActorSpawnParameters SpawnParams;
 		SpawnParams.Owner = PlayerController;
 		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-
-		UClass* DebugMenuManagerClass = DebugMenuManagerClassPtr.LoadSynchronous();
-		if(DebugMenuManagerClass == nullptr)
-		{
-			FString ErrorStr = TEXT("DebugMenuManagerClass NotFound LoadError");
-			ErrorStr += TEXT("[");
-			ErrorStr += NetMode;
-			ErrorStr += TEXT("]");
-
-			UKismetSystemLibrary::PrintString(PlayerController, ErrorStr);
-			return false;
-		}
-
+		
 		CurrentGameDebugMenuManager = World->SpawnActor<AGameDebugMenuManager>(DebugMenuManagerClass, FTransform::Identity, SpawnParams);
 
 		for (FConstPlayerControllerIterator Iterator = World->GetPlayerControllerIterator(); Iterator; ++Iterator)
@@ -258,7 +272,7 @@ bool UGameDebugMenuFunctions::DestroyDebugMenuManager(APlayerController* PlayerC
 
 AGameDebugMenuManager* UGameDebugMenuFunctions::GetGameDebugMenuManager(const UObject* WorldContextObject, const bool bCheckInitialize)
 {
-	if(GetDefault<UGameDebugMenuSettings>()->bDisableGameDebugMenu)
+	if(bDisableGameDebugMenu)
 	{
 		return nullptr;
 	}
@@ -311,7 +325,7 @@ AGameDebugMenuManager* UGameDebugMenuFunctions::GetGameDebugMenuManager(const UO
 
 bool UGameDebugMenuFunctions::ShowDebugMenu(UObject* WorldContextObject)
 {
-	if(GetDefault<UGameDebugMenuSettings>()->bDisableGameDebugMenu)
+	if(bDisableGameDebugMenu)
 	{
 		UE_LOG(LogGDM, Warning, TEXT("ShowDebugMenu: GameDebugMenu is disabled"));
 		return false;
@@ -386,7 +400,7 @@ UGameDebugMenuRootWidget* UGameDebugMenuFunctions::GetGameDebugMenuRootWidget(co
 
 bool UGameDebugMenuFunctions::RegisterGDMObjectProperty(UObject* TargetObject, const FGDMPropertyUIConfigInfo PropertyUIConfigInfo, const FName PropertyName, const FGDMGameplayCategoryKey CategoryKey, const FString PropertySaveKey, const FText DisplayPropertyName,const FText Description, const int32 DisplayPriority)
 {
-	if(GetDefault<UGameDebugMenuSettings>()->bDisableGameDebugMenu)
+	if(bDisableGameDebugMenu)
 	{
 		UE_LOG(LogGDM, Warning, TEXT("RegisterGDMObjectProperty: GameDebugMenu is disabled"));
 		return false;
@@ -395,6 +409,7 @@ bool UGameDebugMenuFunctions::RegisterGDMObjectProperty(UObject* TargetObject, c
 	AGameDebugMenuManager* GDMManager = GetGameDebugMenuManager(TargetObject);
 	if(!IsValid(GDMManager))
 	{
+		/* まだ生成してないので一時キャッシュ */
 		FGDMPendingObjectData PendingData;
 		PendingData.TargetObject        = TargetObject;
 		PendingData.TargetName          = PropertyName;
@@ -413,7 +428,7 @@ bool UGameDebugMenuFunctions::RegisterGDMObjectProperty(UObject* TargetObject, c
 
 bool UGameDebugMenuFunctions::RegisterGDMObjectFunction(UObject* TargetObject, FName FunctionName, const FGDMGameplayCategoryKey CategoryKey, const FString FunctionSaveKey, const FText DisplayFunctionName,const FText Description, const int32 DisplayPriority)
 {
-	if(GetDefault<UGameDebugMenuSettings>()->bDisableGameDebugMenu)
+	if(bDisableGameDebugMenu)
 	{
 		UE_LOG(LogGDM, Warning, TEXT("RegisterGDMObjectFunction: GameDebugMenu is disabled"));
 		return false;
@@ -422,6 +437,7 @@ bool UGameDebugMenuFunctions::RegisterGDMObjectFunction(UObject* TargetObject, F
 	AGameDebugMenuManager* GDMManager = GetGameDebugMenuManager(TargetObject);
 	if(!IsValid(GDMManager))
 	{
+		/* まだ生成してないので一時キャッシュ */
 		FGDMPendingObjectData PendingData;
 		PendingData.TargetObject        = TargetObject;
 		PendingData.TargetName          = FunctionName;
@@ -583,164 +599,8 @@ bool UGameDebugMenuFunctions::VerifyGDMNumObjectFunctions(UObject* WorldContextO
 	
 	return (RemoveCount == 0);
 }
-//
-// bool UGameDebugMenuFunctions::GetGDMConsoleCommandNameByArrayIndex(const int32 ArrayIndex, FGDMConsoleCommandSingle& Out)
-// {
-// #if WITH_EDITOR
-// 	TArray<FGDMConsoleCommandSingle> Commands;
-// 	Commands.Append(GetDefault<UGameDebugMenuSettings>()->ConsoleCommandNames);
-// 	Commands.Append(GetDefault<UGameDebugMenuSettings>()->EditorOnlyConsoleCommandNames);
-// 	if (!Commands.IsValidIndex(ArrayIndex))
-// 	{
-// 		return false;
-// 	}
-//
-// 	Out = Commands[ArrayIndex];
-// #else
-// 	const auto& Commands = GetDefault<UGameDebugMenuSettings>()->ConsoleCommandNames;
-// 	if (!Commands.IsValidIndex(ArrayIndex))
-// 	{
-// 		return false;
-// 	}
-//
-// 	Out = Commands[ArrayIndex];
-// #endif
-// 	return true;
-// }
-//
-// int32 UGameDebugMenuFunctions::GetGDMNumConsoleCommandNames()
-// {
-// #if WITH_EDITOR
-// 	TArray<FGDMConsoleCommandSingle> Commands;
-// 	Commands.Append(GetDefault<UGameDebugMenuSettings>()->ConsoleCommandNames);
-// 	Commands.Append(GetDefault<UGameDebugMenuSettings>()->EditorOnlyConsoleCommandNames);
-// 	return Commands.Num();
-// #else
-// 	return GetDefault<UGameDebugMenuSettings>()->ConsoleCommandNames.Num();
-// #endif
-// }
-//
-// bool UGameDebugMenuFunctions::GetGDMConsoleCommandGroupByArrayIndex(const int32 ArrayIndex, FGDMConsoleCommandGroup& Out)
-// {
-// #if WITH_EDITOR
-// 	TArray<FGDMConsoleCommandGroup> Commands;
-// 	Commands.Append(GetDefault<UGameDebugMenuSettings>()->ConsoleCommandGroups);
-// 	Commands.Append(GetDefault<UGameDebugMenuSettings>()->EditorOnlyConsoleCommandGroups);
-// 	if (!Commands.IsValidIndex(ArrayIndex))
-// 	{
-// 		return false;
-// 	}
-//
-// 	Out = Commands[ArrayIndex];
-// #else
-// 	const auto& Commands = GetDefault<UGameDebugMenuSettings>()->ConsoleCommandGroups;
-// 	if (!Commands.IsValidIndex(ArrayIndex))
-// 	{
-// 		return false;
-// 	}
-//
-// 	Out = Commands[ArrayIndex];
-// #endif
-// 	return true;
-// }
-//
-// int32 UGameDebugMenuFunctions::GetGDMNumConsoleCommandGroups()
-// {
-// #if WITH_EDITOR
-// 	TArray<FGDMConsoleCommandGroup> Commands;
-// 	Commands.Append(GetDefault<UGameDebugMenuSettings>()->ConsoleCommandGroups);
-// 	Commands.Append(GetDefault<UGameDebugMenuSettings>()->EditorOnlyConsoleCommandGroups);
-// 	return Commands.Num();
-// #else
-// 	return GetDefault<UGameDebugMenuSettings>()->ConsoleCommandGroups.Num();
-// #endif
-// }
-//
-// bool UGameDebugMenuFunctions::GetGDMConsoleCommandPairByArrayIndex(const int32 ArrayIndex, FGDMConsoleCommandPair& Out)
-// {
-// #if WITH_EDITOR
-// 	TArray<FGDMConsoleCommandPair> Commands;
-// 	Commands.Append(GetDefault<UGameDebugMenuSettings>()->ConsoleCommandPairs);
-// 	Commands.Append(GetDefault<UGameDebugMenuSettings>()->EditorOnlyConsoleCommandPairs);
-// 	if (!Commands.IsValidIndex(ArrayIndex))
-// 	{
-// 		return false;
-// 	}
-//
-// 	Out = Commands[ArrayIndex];
-// #else
-// 	const auto& Commands = GetDefault<UGameDebugMenuSettings>()->ConsoleCommandPairs;
-// 	if (!Commands.IsValidIndex(ArrayIndex))
-// 	{
-// 		return false;
-// 	}
-//
-// 	Out = Commands[ArrayIndex];
-// #endif
-// 	return true;
-// }
-//
-// int32 UGameDebugMenuFunctions::GetGDMNumConsoleCommandPairs()
-// {
-// #if WITH_EDITOR
-// 	TArray<FGDMConsoleCommandPair> Commands;
-// 	Commands.Append(GetDefault<UGameDebugMenuSettings>()->ConsoleCommandPairs);
-// 	Commands.Append(GetDefault<UGameDebugMenuSettings>()->EditorOnlyConsoleCommandPairs);
-// 	return Commands.Num();
-// #else
-// 	return GetDefault<UGameDebugMenuSettings>()->ConsoleCommandPairs.Num();
-// #endif
-// }
-//
-// bool UGameDebugMenuFunctions::GetGDMConsoleCommandNumberByArrayIndex(const int32 ArrayIndex, FGDMConsoleCommandNumber& Out)
-// {
-// #if WITH_EDITOR
-// 	TArray<FGDMConsoleCommandNumber> Commands;
-// 	Commands.Append(GetDefault<UGameDebugMenuSettings>()->ConsoleCommandNumbers);
-// 	Commands.Append(GetDefault<UGameDebugMenuSettings>()->EditorOnlyConsoleCommandNumbers);
-// 	if (!Commands.IsValidIndex(ArrayIndex))
-// 	{
-// 		return false;
-// 	}
-//
-// 	Out = Commands[ArrayIndex];
-// #else
-// 	const auto& Commands = GetDefault<UGameDebugMenuSettings>()->ConsoleCommandNumbers;
-// 	if (!Commands.IsValidIndex(ArrayIndex))
-// 	{
-// 		return false;
-// 	}
-//
-// 	Out = Commands[ArrayIndex];
-// #endif
-// 	return true;
-// }
-//
-// int32 UGameDebugMenuFunctions::GetGDMNumConsoleCommandNumbers()
-// {
-// #if WITH_EDITOR
-// 	TArray<FGDMConsoleCommandNumber> Commands;
-// 	Commands.Append(GetDefault<UGameDebugMenuSettings>()->ConsoleCommandNumbers);
-// 	Commands.Append(GetDefault<UGameDebugMenuSettings>()->EditorOnlyConsoleCommandNumbers);
-// 	return Commands.Num();
-// #else
-// 	return GetDefault<UGameDebugMenuSettings>()->ConsoleCommandNumbers.Num();
-// #endif
-// }
 
-// TArray<FGDMMenuCategoryKey> UGameDebugMenuFunctions::GetOrderConsoleCommandCategoryTitle(UObject* WorldContextObject)
-// {
-// 	TArray<FGDMMenuCategoryKey> ReturnValues;
-// 	const auto& TitleArray = GetDefault<UGameDebugMenuSettings>()->OrderConsoleCommandCategoryTitles;
-// 	for( int32 Index = 0;Index < TitleArray.Num();++Index )
-// 	{
-// 		ReturnValues.Add(FGDMMenuCategoryKey(TitleArray[Index].Index, TitleArray[Index].Title));
-// 	}
-//
-// 	return ReturnValues;
-// }
-
-TArray<FGDMMenuCategoryKey> UGameDebugMenuFunctions::GetOrderGameplayCategoryTitle(UObject* WorldContextObject)
+TArray<FGDMMenuCategoryKey> UGameDebugMenuFunctions::GetGDMOrderGameplayCategoryTitle(UObject* WorldContextObject)
 {
 	TArray<FGDMMenuCategoryKey> ReturnValues;
 	const auto& TitleArray = GetDefault<UGameDebugMenuSettings>()->OrderGameplayCategoryTitles;
@@ -804,12 +664,12 @@ bool UGameDebugMenuFunctions::ShowDebugReport(UObject* WorldContextObject)
 	return false;
 }
 
-EGDMProjectManagementTool UGameDebugMenuFunctions::GetSelectedProjectManagementTool()
+EGDMProjectManagementTool UGameDebugMenuFunctions::GetGDMSelectedProjectManagementTool()
 {
 	return GetDefault<UGameDebugMenuSettings>()->ProjectManagementToolType;
 }
 
-FString UGameDebugMenuFunctions::GetBuildConfigurationString()
+FString UGameDebugMenuFunctions::GetGDMBuildConfigurationString()
 {
 #if UE_EDITOR
 	return TEXT("Editor");
@@ -818,12 +678,12 @@ FString UGameDebugMenuFunctions::GetBuildConfigurationString()
 #endif
 }
 
-FString UGameDebugMenuFunctions::GetBuildVersionString()
+FString UGameDebugMenuFunctions::GetGDMBuildVersionString()
 {
 	return FApp::GetBuildVersion();
 }
 
-FString UGameDebugMenuFunctions::GetProjectVersionString()
+FString UGameDebugMenuFunctions::GetGDMProjectVersionString()
 {
 	const UGeneralProjectSettings& ProjectSettings = *GetDefault<UGeneralProjectSettings>();
 	return *ProjectSettings.ProjectVersion;
@@ -896,17 +756,6 @@ void UGameDebugMenuFunctions::PrintLogScreen(UObject* WorldContextObject, const 
 #endif
 }
 
-void UGameDebugMenuFunctions::DynamicallyChangeGameDebugMenuManagerBlockInput(UObject* WorldContextObject, bool bBlockFlag)
-{
-	if(const AGameDebugMenuManager* Manager = GetGameDebugMenuManager(WorldContextObject))
-	{
-		if(IsValid(Manager->InputComponent))
-		{
-			Manager->InputComponent->bBlockInput = bBlockFlag;
-		}
-	}
-}
-
 bool UGameDebugMenuFunctions::GetDebugMenuString(UObject* WorldContextObject, const FString StringKey, FString& OutString)
 {
 	if(const AGameDebugMenuManager* Manager = GetGameDebugMenuManager(WorldContextObject) )
@@ -930,9 +779,7 @@ FName UGameDebugMenuFunctions::GetCurrentDebugMenuLanguage(UObject* WorldContext
 
 TArray<FName> UGameDebugMenuFunctions::GetDebugMenuLanguageKeys()
 {
-	TArray<FName> ReturnValues;
-	GetDefault<UGameDebugMenuSettings>()->GameDebugMenuStringTables.GetKeys(ReturnValues);
-	return ReturnValues;
+	return GetDefault<UGameDebugMenuSettings>()->GetDebugMenuLanguageKeys();
 }
 
 FString UGameDebugMenuFunctions::GetDebugMenuLineBreakString()

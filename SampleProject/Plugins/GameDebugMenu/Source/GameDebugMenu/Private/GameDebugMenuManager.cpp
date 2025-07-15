@@ -14,16 +14,16 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "TimerManager.h"
+#include "Blueprint/GameViewportSubsystem.h"
 #include "Blueprint/WidgetBlueprintLibrary.h"
 #include "Framework/Application/SlateApplication.h"
 
 #include "GameDebugMenuSettings.h"
 #include "GameDebugMenuFunctions.h"
+#include "Log/GDMOutputDevice.h"
 #include "Component/GDMListenerComponent.h"
 #include "Component/GDMPlayerControllerProxyComponent.h"
 #include "Component/GDMScreenshotRequesterComponent.h"
-#include "Log/GDMOutputDevice.h"
-#include "Blueprint/GameViewportSubsystem.h"
 #include "Component/GDMLocalizeStringComponent.h"
 #include "Component/GDMPropertyJsonSystemComponent.h"
 #include "Component/GDMSaveSystemComponent.h"
@@ -31,7 +31,7 @@
 #include "Input/GDMInputSystemComponent.h"
 #include "Widgets/GameDebugMenuRootWidget.h"
 #include "Widgets/GDMTextBlock.h"
-#include "Data/GameDebugMenuDataAsset.h"
+#include "Data/GameDebugMenuManagerAsset.h"
 #include "Favorite/GDMFavoriteSystemComponent.h"
 
 

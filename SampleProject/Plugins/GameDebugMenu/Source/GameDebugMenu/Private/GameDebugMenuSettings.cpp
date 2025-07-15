@@ -8,7 +8,11 @@
 #include "GameDebugMenuSettings.h"
 #include "Performance/EnginePerformanceTargets.h"
 #include <Internationalization/StringTableCore.h>
+
 #include "GameDebugMenuTypes.h"
+#include "Components/Widget.h"
+#include "Data/GameDebugMenuMasterAsset.h"
+#include "Engine/AssetManager.h"
 #include "Input/GDMEnhancedInputComponent.h"
 #include "Reports/GDMRequesterJira.h"
 #include "Reports/GDMRequesterRedmine.h"
@@ -16,6 +20,8 @@
 
 UGameDebugMenuSettings::UGameDebugMenuSettings()
 {
+	CategoryName = TEXT("Plugins");
+
 	SetupCategoryResets();
 	SetupCategorySlomo();
 	SetupCategoryCamera();
@@ -32,6 +38,8 @@ UGameDebugMenuSettings::UGameDebugMenuSettings()
 	SetupCategoryOther();
 	SetupCategoryLogVerbosity();
 
+	MasterAssetName = TEXT("DA_GDM_Master");
+	
 	OrderConsoleCommandCategoryTitles.Add(FGDMOrderMenuCategoryTitle(TEXT("Resets"),0));
 	OrderConsoleCommandCategoryTitles.Add(FGDMOrderMenuCategoryTitle(TEXT("Slomo"),1));
 	OrderConsoleCommandCategoryTitles.Add(FGDMOrderMenuCategoryTitle(TEXT("Camera"),2));
@@ -53,35 +61,13 @@ UGameDebugMenuSettings::UGameDebugMenuSettings()
 	/* AGameDebugMenuManagerもデフォルトではInt最大値なのでそれより低くする
 	 * 同じ、または大きくした場合、マネージャーで設定する入力はメニューが閉じられるまで反応しなくなるので注意 */
 	WidgetInputActionPriority = TNumericLimits<int32>::Max() - 1;
-	
-	DebugMenuInputComponentClass = UGDMEnhancedInputComponent::StaticClass();
-
-	FontName.SetPath(TEXT("/Engine/EngineFonts/Roboto.Roboto"));
 
 	CultureList.Add(TEXT("ja"));
 	CultureList.Add(TEXT("en"));
+	
+	DefaultGameDebugMenuLanguage = TEXT("Japanese");
 
-	const FName Japanese = TEXT("Japanese");
-	{
-		FGDMStringTableList StringTableList;
-		StringTableList.StringTables.Add(TSoftObjectPtr<UStringTable>(FSoftObjectPath(TEXT("/GameDebugMenu/StringTable/ST_GDM_Japanese.ST_GDM_Japanese"))));
-		GameDebugMenuStringTables.Add(Japanese, StringTableList);
-	}
-
-	const FName English = TEXT("English");
-	{
-		FGDMStringTableList StringTableList;
-		StringTableList.StringTables.Add(TSoftObjectPtr<UStringTable>(FSoftObjectPath(TEXT("/GameDebugMenu/StringTable/ST_GDM_English.ST_GDM_English"))));
-		GameDebugMenuStringTables.Add(English, StringTableList);
-	}
-
-	DefaultGameDebugMenuLanguage = Japanese;
-
-	DebugReportRequesterClass.Add(EGDMProjectManagementTool::Trello, AGDMRequesterTrello::StaticClass());
-	DebugReportRequesterClass.Add(EGDMProjectManagementTool::Redmine, AGDMRequesterRedmine::StaticClass());
-	DebugReportRequesterClass.Add(EGDMProjectManagementTool::Jira, AGDMRequesterJira::StaticClass());
-
-	bDisableScreenCaptureProcessingWhenOpeningDebugMenu = false;
+	bDisableScreenCaptureProcessingWhenOpeningDebugMenu = true;
 
 	bUseSaveGame = false;
 	SaveFilePath = TEXT("Saved/DebugMenu");
@@ -98,7 +84,8 @@ UGameDebugMenuSettings::UGameDebugMenuSettings()
 	NoSaveConsoleCommands.Add(TEXT("Obj "));
 	NoSaveConsoleCommands.Add(TEXT("Freeze"));
 	LineBreakString = TEXT("\n");
-	bDisableGameDebugMenu = false;
+	
+	MasterAsset = nullptr;
 }
 
 #if WITH_EDITOR
@@ -150,12 +137,6 @@ FText UGameDebugMenuSettings::GetSectionText() const
 	return FText::FromString(TEXT("Game Debug Menu"));
 }
 #endif
-
-UObject* UGameDebugMenuSettings::GetGDMFont() const
-{
-	UObject* Obj = FontName.ResolveObject();
-	return ( (Obj == nullptr) ? FontName.TryLoad() : Obj );
-}
 
 TArray<FText> UGameDebugMenuSettings::GetIssueCategoryNameList() const
 {
@@ -269,27 +250,6 @@ int32 UGameDebugMenuSettings::GetDefaultPriorityIndex() const
 	return 0;
 }
 
-FString UGameDebugMenuSettings::GetDebugMenuString(const FName& LanguageKey, const FString& StringKey) const
-{
-	if( const FGDMStringTableList* StringTableList = GameDebugMenuStringTables.Find(LanguageKey) )
-	{
-		FString OutSourceString;
-
-		for( auto& StrTablePtr : StringTableList->StringTables )
-		{
-			if(const UStringTable* StringTable = StrTablePtr.LoadSynchronous() )
-			{
-				if( StringTable->GetStringTable()->GetSourceString(StringKey, OutSourceString) )
-				{
-					return OutSourceString;
-				}
-			}
-		}		
-	}
-
-	return FString();
-}
-
 FString UGameDebugMenuSettings::GetGameplayCategoryTitle(const int32& ArrayIndex) const
 {
 	FString ReturnValue;
@@ -316,21 +276,143 @@ int32 UGameDebugMenuSettings::GetGameplayCategoryIndex(const int32& ArrayIndex) 
 	return 0;
 }
 
-const TSubclassOf<AGDMDebugReportRequester>* UGameDebugMenuSettings::GetDebugReportRequesterClass() const
-{
-	return DebugReportRequesterClass.Find(ProjectManagementToolType);
-}
-
 FString UGameDebugMenuSettings::GetFullSavePath() const
 {
 	return FPaths::ProjectDir().Append(SaveFilePath).Append(TEXT("/")).Append(SaveFileName).Append(TEXT(".json"));
 }
 
+const FGDMStringTableList* UGameDebugMenuSettings::TryGetStringTableList(const FName& LanguageKey) const
+{
+	if (const auto Master = GetMasterAsset())
+	{
+		return Master->GameDebugMenuStringTables.Find(LanguageKey);
+	}
+	
+	return nullptr;
+}
+
+TArray<FName> UGameDebugMenuSettings::GetDebugMenuLanguageKeys() const
+{
+	TArray<FName> ReturnValues;
+
+	if (const auto Master = GetMasterAsset())
+	{
+		Master->GameDebugMenuStringTables.GetKeys(ReturnValues);
+	}
+	
+	return ReturnValues;
+}
+
 UClass* UGameDebugMenuSettings::GetDebugMenuInputComponentClass() const
 {
-	const TSoftClassPtr<UGDMEnhancedInputComponent> Class = DebugMenuInputComponentClass;
+	TSoftClassPtr<UGDMEnhancedInputComponent> Class = nullptr;
+
+	if (const auto Master = GetMasterAsset())
+	{
+		Class = Master->DebugMenuInputComponentClass;	
+	}
+	
 	ensureMsgf(Class.IsValid(), TEXT("Invalid DebugMenuInputComponentClass class in GameDebugMenuSettings. Manual reset required."));
+	
 	return Class.IsValid() ? Class.Get() : UGDMEnhancedInputComponent::StaticClass();
+}
+
+const TSubclassOf<AGDMDebugReportRequester>* UGameDebugMenuSettings::GetDebugReportRequesterClass() const
+{
+	if (const auto Master = GetMasterAsset())
+	{
+		return Master->DebugReportRequesterClass.Find(ProjectManagementToolType);	
+	}
+
+	return nullptr;
+}
+
+
+FString UGameDebugMenuSettings::GetDebugMenuString(const FName& LanguageKey, const FString& StringKey) const
+{
+	if( const FGDMStringTableList* StringTableList = TryGetStringTableList(LanguageKey) )
+	{
+		FString OutSourceString;
+
+		for( auto& StrTablePtr : StringTableList->StringTables )
+		{
+			if( !StrTablePtr.ToSoftObjectPath().IsValid() || StrTablePtr.ToSoftObjectPath().IsNull() )
+			{
+				UE_LOG(LogGDM, Warning, TEXT("GetDebugMenuString: failed StringTable : LanguageKey->%s StringKey->%s"), *LanguageKey.ToString(), *StringKey);
+				continue;
+			}
+
+			if(const UStringTable* StringTable = StrTablePtr.LoadSynchronous() )
+			{
+				const FStringTableConstPtr TableData = StringTable->GetStringTable();
+				if (!TableData.IsValid() || !TableData->IsLoaded())
+				{
+					UE_LOG(LogGDM, Warning, TEXT("GetDebugMenuString: StringTable not loaded: %s"), *StringTable->GetName());
+					continue;
+				}
+
+				if( TableData->GetSourceString(StringKey, OutSourceString) )
+				{
+					return OutSourceString;
+				}
+			}
+		}		
+	}
+	
+	return FString();
+}
+
+UObject* UGameDebugMenuSettings::GetDebugMenuFont() const
+{
+	if (const auto Master = GetMasterAsset())
+	{
+		if (UObject* FontObj = Master->FontName.ResolveObject())
+		{
+			return FontObj;
+		}
+
+		return Master->FontName.TryLoad();
+	}
+
+	const FSoftObjectPath EngineFontPath = UWidget::GetDefaultFontName();
+	return EngineFontPath.TryLoad();
+}
+
+UGameDebugMenuMasterAsset* UGameDebugMenuSettings::GetMasterAsset() const
+{
+	const UAssetManager* AssetManager = UAssetManager::GetIfInitialized();
+	if (!IsValid(AssetManager))
+	{
+		return nullptr;
+	}
+
+	if (MasterAssetName.IsEmpty())
+	{
+		UE_LOG(LogGDM, Warning, TEXT("MasterAssetName is empty."));
+		return nullptr;
+	}
+
+	const FPrimaryAssetId MasterAssetId(UGameDebugMenuMasterAsset::GetPrimaryType(), FName(*MasterAssetName));
+
+	if (IsValid(MasterAsset))
+	{
+		const FPrimaryAssetId CachedId = MasterAsset->GetPrimaryAssetId();
+		if (CachedId == MasterAssetId)
+		{
+			return MasterAsset.Get();
+		}
+	}
+	
+	UObject* Asset = AssetManager->GetPrimaryAssetObject(MasterAssetId);
+	if (!IsValid(Asset))
+	{
+		const FSoftObjectPath AssetPath = AssetManager->GetPrimaryAssetPath(MasterAssetId);
+		Asset = AssetPath.TryLoad();
+	}
+
+	MasterAsset = Cast<UGameDebugMenuMasterAsset>(Asset);
+	
+	return MasterAsset;
 }
 
 void UGameDebugMenuSettings::SetupCategoryResets()

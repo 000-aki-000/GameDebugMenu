@@ -12,16 +12,8 @@ public class GameDebugMenu : ModuleRules
 {
 	public GameDebugMenu(ReadOnlyTargetRules Target) : base(Target)
 	{
-		PrivateIncludePaths.AddRange(
-			new string[] 
-            {
-				"GameDebugMenu/Private",
-            }
-			);
-		
 		PublicDependencyModuleNames.AddRange(
-			new string[]
-			{
+			[
 				"Core",
                 "UMG",
                 "Engine",
@@ -34,21 +26,20 @@ public class GameDebugMenu : ModuleRules
                 "ImageDownload",
 				"ImageWrapper",
 				"EngineSettings",
-				"EnhancedInput",
-			}
-            );
+				"EnhancedInput"
+			]
+		);
 			
 		
 		PrivateDependencyModuleNames.AddRange(
-			new string[]
-			{
+			[
 				"CoreUObject",
 				"Engine",
 				"Slate",
 				"SlateCore",
 				"DeveloperSettings",
-				"EnhancedInput",
-			}
-			);
+				"EnhancedInput"
+			]
+		);
 	}
 }

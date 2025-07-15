@@ -8,7 +8,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Data/GameDebugMenuDataAsset.h"
+#include "Data/GameDebugMenuManagerAsset.h"
 #include "GDMInputSystemComponent.generated.h"
 
 class ADebugCameraController;
@@ -80,7 +80,7 @@ public:
 	/**
 	 * 初期化
 	 */
-	virtual void Initialize(UGameDebugMenuDataAsset* MenuDataAsset);
+	virtual void Initialize(UGameDebugMenuManagerAsset* MenuDataAsset);
 
 	/**
 	 * 現在アクティブなグループにInputComponentを登録/解除をする

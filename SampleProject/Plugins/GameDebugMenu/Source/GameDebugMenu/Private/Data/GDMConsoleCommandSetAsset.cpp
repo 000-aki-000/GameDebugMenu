@@ -9,9 +9,9 @@
 
 #include "GameDebugMenuSettings.h"
 
-#if WITH_EDITORONLY_DATA
 void UGDMConsoleCommandSetAsset::SetupCommandNames()
 {
+#if WITH_EDITORONLY_DATA
 	const UGameDebugMenuSettings* Settings = GetDefault<UGameDebugMenuSettings>();
 
 	auto FilterByCategory = [this](const auto& CommandArray, auto& OutArray)
@@ -47,17 +47,21 @@ void UGDMConsoleCommandSetAsset::SetupCommandNames()
 	FilterByCategory(Settings->EditorOnlyConsoleCommandNumbers, EditorOnlyConsoleCommandNumbers);
 
 	this->Modify();
+#endif
 }
 
 void UGDMConsoleCommandSetAsset::SetupOrderConsoleCommandCategoryTitles()
 {
+#if WITH_EDITORONLY_DATA
 	const UGameDebugMenuSettings* Settings = GetDefault<UGameDebugMenuSettings>();
 	OrderConsoleCommandCategoryTitles = Settings->OrderConsoleCommandCategoryTitles;
 	this->Modify();
+#endif
 }
 
 void UGDMConsoleCommandSetAsset::MergeFromSourceAssets()
 {
+#if WITH_EDITORONLY_DATA
 	auto MergeCommands = [](auto& Target, const auto& Source)
 	{
 		for (const auto& Item : Source)
@@ -89,9 +93,8 @@ void UGDMConsoleCommandSetAsset::MergeFromSourceAssets()
 	}
 
 	this->Modify();
-}
 #endif
-
+}
 
 TArray<FGDMMenuCategoryKey> UGDMConsoleCommandSetAsset::GetOrderConsoleCommandCategoryTitle() const
 {

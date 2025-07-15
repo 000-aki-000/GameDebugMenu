@@ -5,12 +5,12 @@
 * (See accompanying file LICENSE.txt or copy at http://opensource.org/licenses/MIT)
 */
 
-#include "Data/GameDebugMenuDataAsset.h"
+#include "Data/GameDebugMenuManagerAsset.h"
 
 #include "Component/GDMPlayerControllerProxyComponent.h"
 #include "Input/GDMDebugCameraInput.h"
 
-UGameDebugMenuDataAsset::UGameDebugMenuDataAsset()
+UGameDebugMenuManagerAsset::UGameDebugMenuManagerAsset()
 	: Super()
 	, DebugMenuRootWidgetClass()
 	, DebugMenuClasses()

@@ -11,12 +11,13 @@
 
 void FGameDebugMenuModule::StartupModule()
 {
+	UE_LOG(LogTemp, Display, TEXT("FGameDebugMenuModule StartupModule"));
 }
 
 void FGameDebugMenuModule::ShutdownModule()
 {
+	UE_LOG(LogTemp, Display, TEXT("FGameDebugMenuModule ShutdownModule"));
 }
-
 
 #undef LOCTEXT_NAMESPACE
 	

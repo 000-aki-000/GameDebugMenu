@@ -23,7 +23,8 @@ class GAMEDEBUGMENU_API UGameDebugMenuFunctions : public UBlueprintFunctionLibra
 	static TArray<FGDMPendingObjectData> RegisterPendingProperties;
 	static TArray<FGDMPendingObjectData> RegisterPendingFunctions;
 	static FDelegateHandle ActorSpawnedDelegateHandle;
-
+	static bool bDisableGameDebugMenu;
+	
 public:
 	UGameDebugMenuFunctions(const FObjectInitializer& ObjectInitializer);
 
@@ -32,15 +33,15 @@ public:
 	static void UnregisterGameDebugMenuManagerInstance(AGameDebugMenuManager* UnregisterManager);
 
 public:
-	/**
+	/** 
 	* 生成。ロードしてない場合は同期ロードされるので注意
 	* @param PlayerController - メニューを操作するローカルのプレイヤーコントローラー
-	* @param DebugMenuManagerClassPtr - 生成するマネージャークラス
+	* @param DebugMenuManagerClassName - 生成するマネージャークラス名(BP_GDM_Manager)
 	* @return true: 正常終了 false: デバックメニューは使用できない
 	*/
 	UFUNCTION(BlueprintCallable, Category = "GDM|Functions", meta = (Keywords = "DebugMenu GDM"))
-	static bool TryCreateDebugMenuManager(APlayerController* PlayerController, TSoftClassPtr<AGameDebugMenuManager> DebugMenuManagerClassPtr);
-
+	static bool TryCreateDebugMenuManager(APlayerController* PlayerController, FString DebugMenuManagerClassName);
+	
 	/**
 	* 削除
 	*/
@@ -160,65 +161,11 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintCosmetic, Category = "GDM|Functions", meta = (Keywords = "DebugMenu GDM", WorldContext = "WorldContextObject"))
 	static bool VerifyGDMNumObjectFunctions(UObject* WorldContextObject);
 
-	// /** 
-	// * コンソールコマンドの情報取得
-	// */
-	// UFUNCTION(BlueprintCallable, Category = "GDM|Functions", meta = (Keywords = "DebugMenu GDM"))
-	// static bool GetGDMConsoleCommandNameByArrayIndex(const int32 ArrayIndex, FGDMConsoleCommandSingle& Out);
-	//
-	// /**
-	// * コンソールコマンド数
-	// */
-	// UFUNCTION(BlueprintPure, Category = "GDM|Functions", meta = (Keywords = "DebugMenu GDM"))
-	// static int32 GetGDMNumConsoleCommandNames();
-	//
-	// /** 
-	// * コンソールコマンドグループの情報取得
-	// */
-	// UFUNCTION(BlueprintCallable, Category = "GDM|Functions", meta = (Keywords = "DebugMenu GDM"))
-	// static bool GetGDMConsoleCommandGroupByArrayIndex(const int32 ArrayIndex, FGDMConsoleCommandGroup& Out);
-	//
-	// /**
-	// * コンソールコマンドグループ数
-	// */
-	// UFUNCTION(BlueprintPure, Category = "GDM|Functions", meta = (Keywords = "DebugMenu GDM"))
-	// static int32 GetGDMNumConsoleCommandGroups();
-	//
-	// /** 
-	// * コンソールコマンドペアの情報取得
-	// */
-	// UFUNCTION(BlueprintCallable, Category = "GDM|Functions", meta = (Keywords = "DebugMenu GDM"))
-	// static bool GetGDMConsoleCommandPairByArrayIndex(const int32 ArrayIndex, FGDMConsoleCommandPair& Out);
-	//
-	// /**
-	// * コンソールコマンドペア数
-	// */
-	// UFUNCTION(BlueprintPure, Category = "GDM|Functions", meta = (Keywords = "DebugMenu GDM"))
-	// static int32 GetGDMNumConsoleCommandPairs();
-	//
-	// /**
-	// * コンソールコマンドナンバーの情報取得
-	// */
-	// UFUNCTION(BlueprintCallable, Category = "GDM|Functions", meta = (Keywords = "DebugMenu GDM"))
-	// static bool GetGDMConsoleCommandNumberByArrayIndex(const int32 ArrayIndex, FGDMConsoleCommandNumber& Out);
-	//
-	// /**
-	// * コンソールコマンドナンバー数
-	// */
-	// UFUNCTION(BlueprintPure, Category = "GDM|Functions", meta = (Keywords = "DebugMenu GDM"))
-	// static int32 GetGDMNumConsoleCommandNumbers();
-
-	// /**
-	// * コンソールコマンドメニューのカテゴリ名を取得
-	// */
-	// UFUNCTION(BlueprintCallable, Category = "GDM|Functions", meta = (Keywords = "DebugMenu GDM", WorldContext = "WorldContextObject"))
-	// static TArray<FGDMMenuCategoryKey> GetOrderConsoleCommandCategoryTitle(UObject* WorldContextObject);
-
 	/**
 	* Gameplayメニューのカテゴリ名を取得
 	*/
 	UFUNCTION(BlueprintCallable, Category = "GDM|Functions", meta = (Keywords = "DebugMenu GDM", WorldContext = "WorldContextObject"))
-	static TArray<FGDMMenuCategoryKey> GetOrderGameplayCategoryTitle(UObject* WorldContextObject);
+	static TArray<FGDMMenuCategoryKey> GetGDMOrderGameplayCategoryTitle(UObject* WorldContextObject);
 
 	/**
 	* 無効なIndex
@@ -256,38 +203,32 @@ public:
 	* DebugReport用UIが対応するツールを取得
 	*/
 	UFUNCTION(BlueprintPure, BlueprintCosmetic, Category = "GDM|Functions", meta = (Keywords = "DebugMenu GDM"))
-	static EGDMProjectManagementTool GetSelectedProjectManagementTool();
+	static EGDMProjectManagementTool GetGDMSelectedProjectManagementTool();
 
 	/**
 	* ビルド構成を文字列で取得
 	* @note EBuildConfiguration(Engine\Source\Runtime\Core\Public\GenericPlatform\GenericPlatformMisc.h)参照
 	*/
 	UFUNCTION(BlueprintPure, BlueprintCosmetic, Category = "GDM|Functions", meta = (Keywords = "DebugMenu GDM"))
-	static FString GetBuildConfigurationString();
+	static FString GetGDMBuildConfigurationString();
 
 	/**
 	* エンジンのビルドバージョンを取得
 	*/
 	UFUNCTION(BlueprintPure, BlueprintCosmetic, Category = "GDM|Functions", meta = (Keywords = "DebugMenu GDM"))
-	static FString GetBuildVersionString();
+	static FString GetGDMBuildVersionString();
 
 	/**
 	* プロジェクトバージョンの取得
 	*/
 	UFUNCTION(BlueprintPure, BlueprintCosmetic, Category = "GDM|Functions", meta = (Keywords = "DebugMenu GDM"))
-	static FString GetProjectVersionString();
+	static FString GetGDMProjectVersionString();
 
 	/**
 	* デバッグメニュー用のログカテゴリを使用したPrintString
 	*/
 	UFUNCTION(BlueprintCallable, BlueprintCosmetic, Category = "GDM|Functions", meta = (Keywords = "DebugMenu GDM", WorldContext = "WorldContextObject", DisplayName = "PrintLogScreenGDM"))
 	static void PrintLogScreen(UObject* WorldContextObject, const FString& InString, float Duration = 0.2f, bool bPrintToLog = false);
-
-	/**
-	* マネージャーのInputComponentのbBlockInputを動的に変更する
-	*/
-	UFUNCTION(BlueprintCallable, Category = "GDM|Functions", meta = (Keywords = "DebugMenu GDM", WorldContext = "WorldContextObject"))
-	static void DynamicallyChangeGameDebugMenuManagerBlockInput(UObject* WorldContextObject, bool bBlockFlag);
 
 	/**
 	* デバッグメニュー用のStringTableから文字列を取得する

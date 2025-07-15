@@ -10,7 +10,7 @@
 #include "CoreMinimal.h"
 #include "GameDebugMenuTypes.h"
 #include "Engine/DataAsset.h"
-#include "GameDebugMenuDataAsset.generated.h"
+#include "GameDebugMenuManagerAsset.generated.h"
 
 class AGDMDebugCameraInput;
 class UGDMPlayerControllerProxyComponent;
@@ -19,10 +19,12 @@ class UGameDebugMenuWidget;
 class UGDMFavoriteItemDefinition;
 
 /**
- * 
+ * デバッグメニューの構成をまとめたデータアセット
+ * このアセットは、GameDebugMenuManager によって参照され、
+ * 表示するデバッグメニューUIの構成・入力設定などメニュー全体の挙動を制御する設定を一元的に保持
  */
 UCLASS(Const)
-class GAMEDEBUGMENU_API UGameDebugMenuDataAsset : public UDataAsset
+class GAMEDEBUGMENU_API UGameDebugMenuManagerAsset : public UDataAsset
 {
 	GENERATED_BODY()
 	
@@ -68,5 +70,5 @@ public:
 	bool bGamePause;
 	
 public:
-	UGameDebugMenuDataAsset();
+	UGameDebugMenuManagerAsset();
 };

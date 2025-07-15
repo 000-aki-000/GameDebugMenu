@@ -14,7 +14,7 @@
 
 class AGameDebugMenuManager;
 class UGDMFavoriteItemDefinition;
-class UGameDebugMenuDataAsset;
+class UGameDebugMenuManagerAsset;
 class UUserWidget;
 class UGDMPropertyJsonSystemComponent;
 
@@ -37,7 +37,7 @@ protected:
 	UGDMPropertyJsonSystemComponent* GetPropertyJsonSystemComponent() const;
 	
 public:
-	virtual void Initialize(const UGameDebugMenuDataAsset* InMenuAsset);
+	virtual void Initialize(const UGameDebugMenuManagerAsset* InMenuAsset);
 
 	/**
 	 * お気に入りに追加/削除を行う

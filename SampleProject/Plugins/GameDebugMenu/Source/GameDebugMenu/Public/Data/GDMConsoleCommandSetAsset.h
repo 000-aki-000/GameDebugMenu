@@ -13,7 +13,9 @@
 #include "GDMConsoleCommandSetAsset.generated.h"
 
 /**
- * 
+ * デバッグメニューで使用可能なコンソールコマンド群を定義するためのデータアセット
+ * AGameDebugMenuManager によって参照され、ユーザーがゲーム中にデバッグUIを通じてコマンドを実行できるようにするものです
+ * コマンド情報はINIファイルで設定されたものを一括追加、他アセットのマージなど可能
  */
 UCLASS(Const, BlueprintType)
 class GAMEDEBUGMENU_API UGDMConsoleCommandSetAsset : public UDataAsset
@@ -59,10 +61,14 @@ public:
 
 public:
 #if WITH_EDITORONLY_DATA
-
 	UPROPERTY(EditAnywhere, Category = "Editor")
 	TArray<int32> CategoryIndexList;
-	
+
+	/** マージ対象の外部アセット */
+	UPROPERTY(EditAnywhere, Category = "Editor")
+	TArray<UGDMConsoleCommandSetAsset*> MergeSourceAssets;
+#endif
+
 	/**
 	 * INIファイルで設定されたコマンド郡をこのアセットにセットする
 	 */
@@ -75,16 +81,11 @@ public:
 	UFUNCTION(CallInEditor, Category = "Editor")
 	void SetupOrderConsoleCommandCategoryTitles();
 	
-	/** マージ対象の外部アセット */
-	UPROPERTY(EditAnywhere, Category = "Editor")
-	TArray<UGDMConsoleCommandSetAsset*> MergeSourceAssets;
-	
 	/**
 	 * アセットをマージする
 	 */
 	UFUNCTION(CallInEditor, Category = "Editor")
 	void MergeFromSourceAssets();
-#endif
 
 public:
 	/**
