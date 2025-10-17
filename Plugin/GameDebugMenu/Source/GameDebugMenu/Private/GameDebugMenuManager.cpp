@@ -36,7 +36,7 @@
 
 
 /********************************************************************/
-/* AGameDebugMenuManager										*/
+/* AGameDebugMenuManager						    				*/
 /********************************************************************/
 
 AGameDebugMenuManager::AGameDebugMenuManager(const FObjectInitializer& ObjectInitializer)
@@ -618,7 +618,7 @@ bool AGameDebugMenuManager::GetDebugMenuWidgetInstances(TArray<UGameDebugMenuWid
 	OutInstances.Reset();
 	OutInstances.Reserve(Array.Num());
 
-	for (auto A : Array)
+	for (auto& A : Array)
 	{
 		OutInstances.Add(A);
 	}
@@ -1065,7 +1065,7 @@ UObject* AGameDebugMenuManager::TryGetObjectFunction(const FString& InFunctionSa
 			continue;
 		}
 
-		const auto Function = ObjFunc->TargetFunction;
+		const auto& Function = ObjFunc->TargetFunction;
 		if(!Function.IsValid())
 		{
 			continue;
@@ -1146,7 +1146,7 @@ void AGameDebugMenuManager::ChangeDebugMenuLanguage(FName LanguageKey, bool bFor
 	}
 
 	TArray<UWidget*> ChildWidgets;
-	for(const auto ViewportWidget : ViewportDebugMenuWidgets )
+	for(const auto& ViewportWidget : ViewportDebugMenuWidgets )
 	{
 		/* Viewportに追加 Widget 内にあるすべてのTextBlockとDebugMenuWidgetを更新 */
 		{
