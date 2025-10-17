@@ -15,7 +15,7 @@
 #define LOCTEXT_NAMESPACE "GDMGameplayCategoryKeyCustomization"
 
 /************************************************************************/
-/* FGOAPStateKeyCustomization										*/
+/* FGOAPStateKeyCustomization											*/
 /************************************************************************/
 
 TSharedRef<IPropertyTypeCustomization> FGDMGameplayCategoryKeyCustomization::MakeInstance()

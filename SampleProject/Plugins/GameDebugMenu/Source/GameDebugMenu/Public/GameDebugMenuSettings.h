@@ -28,8 +28,6 @@ class GAMEDEBUGMENU_API UGameDebugMenuSettings : public UDeveloperSettings
 {
 	GENERATED_BODY()
 
-	friend class UGameDebugMenuDeveloperSettings;
-	
 public:
 	/** マスターアセットのアセット名 */
 	UPROPERTY(EditAnywhere, config, Category = "Meta")

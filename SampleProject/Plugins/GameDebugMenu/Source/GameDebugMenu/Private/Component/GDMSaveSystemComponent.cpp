@@ -162,7 +162,7 @@ bool UGDMSaveSystemComponent::SaveFile(const FString& ContentString)
 			return true;
 		}
 
-		UE_LOG(LogGDM, Error, TEXT("SaveFile: Failed to save JSON to '%s'"), *SaveFilePath);
+		UE_LOG(LogGDM, Verbose, TEXT("SaveFile: Failed to save JSON to '%s'"), *SaveFilePath);
 	}
 
 	return false;
@@ -198,7 +198,7 @@ bool UGDMSaveSystemComponent::LoadFile(FString& OutLoadedContentString)
 			return true;
 		}
 
-		UE_LOG(LogGDM, Warning, TEXT("LoadFile: Failed to load JSON to '%s'"), *LoadFilePath);
+		UE_LOG(LogGDM, Verbose, TEXT("LoadFile: Failed to load JSON to '%s'"), *LoadFilePath);
 	}
 
 	return false;

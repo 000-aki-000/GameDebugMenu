@@ -14,7 +14,7 @@
 
 
 /************************************************************************/
-/* SGoapStateKeyPin												*/
+/* SGoapStateKeyPin														*/
 /************************************************************************/
 
 void SGDMGameplayCategoryKeyPin::Construct(const FArguments& InArgs, UEdGraphPin* InGraphPinObj)
