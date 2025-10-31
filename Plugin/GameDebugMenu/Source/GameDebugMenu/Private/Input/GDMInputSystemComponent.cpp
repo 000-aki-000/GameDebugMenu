@@ -395,15 +395,17 @@ TArray<APlayerController*> UGDMInputSystemComponent::GetPlayerControllers() cons
 {
 	TArray<APlayerController*> ReturnValues;
 	
-	APlayerController* TargetPC = GetOwnerGameDebugMenuManager()->GetOwnerPlayerController();
-	ReturnValues.Add(TargetPC);
-	
-	if (IsValid(TargetPC->CheatManager))
+	if (APlayerController* TargetPC = GetOwnerGameDebugMenuManager()->GetOwnerPlayerController())
 	{
-		if (ADebugCameraController* DCC = TargetPC->CheatManager->DebugCameraControllerRef)
+		ReturnValues.Add(TargetPC);
+	
+		if (IsValid(TargetPC->CheatManager))
 		{
-			/* デバックカメラ側も対象に含める */
-			ReturnValues.Add(DCC);
+			if (ADebugCameraController* DCC = TargetPC->CheatManager->DebugCameraControllerRef)
+			{
+				/* デバックカメラ側も対象に含める */
+				ReturnValues.Add(DCC);
+			}
 		}
 	}
 	

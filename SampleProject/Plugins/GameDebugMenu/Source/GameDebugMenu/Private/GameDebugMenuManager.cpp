@@ -71,18 +71,19 @@ AGameDebugMenuManager::AGameDebugMenuManager(const FObjectInitializer& ObjectIni
 	LocalizeStringComponent		  = CreateDefaultSubobject<UGDMLocalizeStringComponent>(TEXT("LocalizeStringComponent"));
 	ListenerComponent             = CreateDefaultSubobject<UGDMListenerComponent>(TEXT("ListenerComponent"));
 
-	PrimaryActorTick.bCanEverTick			= true;
-	PrimaryActorTick.bStartWithTickEnabled	= true;
-	PrimaryActorTick.bTickEvenWhenPaused	= true;
+	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bStartWithTickEnabled = true;
+	PrimaryActorTick.bTickEvenWhenPaused = true;
 	SetCanBeDamaged(false);
 	SetHidden(true);
-	InputPriority                           = TNumericLimits<int32>::Max();
-	bBlockInput                             = false;
-	bReplicates                             = true;
-	bAlwaysRelevant                         = true;
-	SetReplicatingMovement(false);
-	SetNetUpdateFrequency(1);/* デフォルトのPlayerStateと同じかんじにしとく */
+	InputPriority = TNumericLimits<int32>::Max();
+	bBlockInput = false;
 	SetRemoteRoleForBackwardsCompat(ROLE_SimulatedProxy);
+	bReplicates = true;
+	bAlwaysRelevant = false;
+	SetReplicatingMovement(false);
+	SetNetUpdateFrequency(1.0f);/* デフォルトのPlayerStateと同じかんじにしとく */
+	bOnlyRelevantToOwner = true;
 }
 
 void AGameDebugMenuManager::BeginPlay()
@@ -208,8 +209,11 @@ void AGameDebugMenuManager::OnInitializeManager()
 
 	if (!IsValid(PC->GetLocalPlayer()))
 	{
-		UGameDebugMenuFunctions::PrintLogScreen(this, TEXT("AGameDebugMenuManager: No LocalPlayer"), 0.6f);
-		return;
+		if (PC->IsLocalController())
+		{
+			UGameDebugMenuFunctions::PrintLogScreen(this, TEXT("AGameDebugMenuManager: No LocalPlayer"), 0.6f);
+			return;
+		}
 	}
 
 	bInitializedManager = true;
@@ -218,7 +222,7 @@ void AGameDebugMenuManager::OnInitializeManager()
 	
 	GetLocalizeStringComponent()->SyncLoadDebugMenuStringTables();
 	
-	if( !UKismetSystemLibrary::IsDedicatedServer(this) )
+	if( !UKismetSystemLibrary::IsDedicatedServer(this) && PC->IsLocalController() )
 	{
 		GetFavoriteSystemComponent()->Initialize(MenuAsset);
 		

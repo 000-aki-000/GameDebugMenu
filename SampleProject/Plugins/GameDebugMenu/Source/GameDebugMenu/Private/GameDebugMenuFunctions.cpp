@@ -19,7 +19,6 @@
 #include "Input/GDMInputSystemComponent.h"
 
 TArray< TWeakObjectPtr<AGameDebugMenuManager> > GGameDebugMenuManagers;
-TWeakObjectPtr<AGameDebugMenuManager> UGameDebugMenuFunctions::CurrentGameDebugMenuManager = nullptr;
 TArray<FGDMPendingObjectData> UGameDebugMenuFunctions::RegisterPendingProperties;
 TArray<FGDMPendingObjectData> UGameDebugMenuFunctions::RegisterPendingFunctions;
 FDelegateHandle UGameDebugMenuFunctions::ActorSpawnedDelegateHandle;
@@ -69,11 +68,6 @@ void UGameDebugMenuFunctions::RegisterGameDebugMenuManagerInstance(AGameDebugMen
 void UGameDebugMenuFunctions::UnregisterGameDebugMenuManagerInstance(AGameDebugMenuManager* UnregisterManager)
 {
 	GGameDebugMenuManagers.Remove(UnregisterManager);
-
-	if( UnregisterManager == CurrentGameDebugMenuManager )
-	{
-		CurrentGameDebugMenuManager = nullptr;
-	}
 }
 
 bool UGameDebugMenuFunctions::TryCreateDebugMenuManager(APlayerController* PlayerController, FString DebugMenuManagerClassName)
@@ -101,7 +95,6 @@ bool UGameDebugMenuFunctions::TryCreateDebugMenuManager(APlayerController* Playe
 
 		/* 生成ができない環境なので無効フラグを立てる */
 		bDisableGameDebugMenu = true;
-		CurrentGameDebugMenuManager = nullptr;
 		RegisterPendingProperties.Empty();
 		RegisterPendingFunctions.Empty();
 		return false;
@@ -121,7 +114,6 @@ bool UGameDebugMenuFunctions::TryCreateDebugMenuManager(APlayerController* Playe
 
 		/* 生成ができない環境なので無効フラグを立てる */
 		bDisableGameDebugMenu = true;
-		CurrentGameDebugMenuManager = nullptr;
 		RegisterPendingProperties.Empty();
 		RegisterPendingFunctions.Empty();
 		return false;
@@ -138,13 +130,11 @@ bool UGameDebugMenuFunctions::TryCreateDebugMenuManager(APlayerController* Playe
 			UE_LOG(LogGDM, Log, TEXT("TryCreateDebugMenuManager: Wait spawn[%s]"), *NetMode);
 			return true;
 		}
-
-		CurrentGameDebugMenuManager = GetGameDebugMenuManager(PlayerController, false);
 	}
 	else
 	{
 		/* Server */
-		if (IsValid(GetGameDebugMenuManager(PlayerController, false)))
+		if (IsValid(TryGetGameDebugMenuManagerFromPlayerController(PlayerController)))
 		{
 			UE_LOG(LogGDM, Log, TEXT("TryCreateDebugMenuManager: Created manager[%s]"), *NetMode);
 			return true;
@@ -154,7 +144,7 @@ bool UGameDebugMenuFunctions::TryCreateDebugMenuManager(APlayerController* Playe
 		SpawnParams.Owner = PlayerController;
 		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 		
-		CurrentGameDebugMenuManager = World->SpawnActor<AGameDebugMenuManager>(DebugMenuManagerClass, FTransform::Identity, SpawnParams);
+		AGameDebugMenuManager* Manager = World->SpawnActor<AGameDebugMenuManager>(DebugMenuManagerClass, FTransform::Identity, SpawnParams);
 
 		for (FConstPlayerControllerIterator Iterator = World->GetPlayerControllerIterator(); Iterator; ++Iterator)
 		{
@@ -163,8 +153,9 @@ bool UGameDebugMenuFunctions::TryCreateDebugMenuManager(APlayerController* Playe
 			{
 				continue;
 			}
+			
 			/* PlayerControllerにコンポーネントを追加 */
-			CurrentGameDebugMenuManager->AddDebugMenuPCProxyComponent(PC);
+			Manager->AddDebugMenuPCProxyComponent(PC);
 		}
 
 		ActorSpawnedDelegateHandle = World->AddOnActorSpawnedHandler(FOnActorSpawned::FDelegate::CreateStatic(&UGameDebugMenuFunctions::OnActorSpawnedServer));
@@ -284,29 +275,17 @@ AGameDebugMenuManager* UGameDebugMenuFunctions::GetGameDebugMenuManager(const UO
 		return nullptr;
 	}
 
-	AGameDebugMenuManager* GDMManager = CurrentGameDebugMenuManager.Get();
-	if (IsValid(GDMManager))
-	{
-		if (GDMManager->GetWorld() == World)
-		{
-			if(bCheckInitialize)
-			{
-				return GDMManager->IsInitializedManager() ? GDMManager : nullptr;
-			}
-
-			return GDMManager;
-		}
-	}
-
-	/* 違うワールドの場合は検索して取得し直す（主にエディターなど） */
-	GDMManager = nullptr;
+	AGameDebugMenuManager* GDMManager = nullptr;
 
 	for (const auto Manager : GGameDebugMenuManagers )
 	{
 		if (Manager->GetWorld() == World)
 		{
-			GDMManager = Cast<AGameDebugMenuManager>(Manager);
-			break;
+			if (IsValid(Manager->GetOwner()))
+			{
+				GDMManager = Cast<AGameDebugMenuManager>(Manager);
+				break;
+			}
 		}
 	}
 
@@ -318,6 +297,19 @@ AGameDebugMenuManager* UGameDebugMenuFunctions::GetGameDebugMenuManager(const UO
 		}
 
 		return GDMManager;
+	}
+
+	return nullptr;
+}
+
+AGameDebugMenuManager* UGameDebugMenuFunctions::TryGetGameDebugMenuManagerFromPlayerController(const APlayerController* PlayerController)
+{
+	for (const auto Manager : GGameDebugMenuManagers )
+	{
+		if (Manager->GetOwner() == PlayerController)
+		{
+			return Cast<AGameDebugMenuManager>(Manager);
+		}
 	}
 
 	return nullptr;
@@ -830,8 +822,6 @@ FGDMMenuCategoryKey UGameDebugMenuFunctions::Conv_ByteToGDMMenuCategoryKey(const
 
 void UGameDebugMenuFunctions::OnActorSpawnedClientWaitManager(AGameDebugMenuManager* SpawnDebugMenuManager)
 {	
-	CurrentGameDebugMenuManager = SpawnDebugMenuManager;
-
 	/* マネージャー生成前に登録処理したプロパティ群を追加する */
 	for(const auto& PendingData : RegisterPendingProperties)
 	{
@@ -916,44 +906,56 @@ void UGameDebugMenuFunctions::OnActorSpawnedServer(AActor* SpawnActor)
 
 void UGameDebugMenuFunctions::ShowDebugConsoleCommand()
 {
-	/* キャッシュしてるマネージャーに対して実行 */
-	if( CurrentGameDebugMenuManager.IsValid())
+	for (const auto Manager : GGameDebugMenuManagers )
 	{
-		CurrentGameDebugMenuManager->ShowDebugMenu();
+		if (IsValid(Manager->GetWorld()) && IsValid(Manager->GetOwner()))
+		{
+			Manager->ShowDebugMenu();
+			break;
+		}
 	}
 }
 
 void UGameDebugMenuFunctions::HideDebugConsoleCommand()
 {
-	/* キャッシュしてるマネージャーに対して実行 */
-	if( CurrentGameDebugMenuManager.IsValid())
+	for (const auto Manager : GGameDebugMenuManagers )
 	{
-		CurrentGameDebugMenuManager->HideDebugMenu();
+		if (IsValid(Manager->GetWorld()) && IsValid(Manager->GetOwner()))
+		{
+			Manager->HideDebugMenu();
+			break;
+		}
 	}
 }
 
 void UGameDebugMenuFunctions::ToggleDebugConsoleCommand()
 {
-	/* キャッシュしてるマネージャーに対して実行 */
-	if( CurrentGameDebugMenuManager.IsValid())
+	for (const auto Manager : GGameDebugMenuManagers )
 	{
-		if( CurrentGameDebugMenuManager->IsShowingDebugMenu())
+		if (IsValid(Manager->GetWorld()) && IsValid(Manager->GetOwner()))
 		{
-			CurrentGameDebugMenuManager->HideDebugMenu();
-		}
-		else
-		{
-			CurrentGameDebugMenuManager->ShowDebugMenu();
+			if( Manager->IsShowingDebugMenu())
+			{
+				Manager->HideDebugMenu();
+			}
+			else
+			{
+				Manager->ShowDebugMenu();
+			}
+			break;
 		}
 	}
 }
 
 void UGameDebugMenuFunctions::ToggleInputSystemLog()
 {
-	/* キャッシュしてるマネージャーに対して実行 */
-	if( CurrentGameDebugMenuManager.IsValid() )
+	for (const auto Manager : GGameDebugMenuManagers )
 	{
-		UGDMInputSystemComponent* InputSystemComponent = CurrentGameDebugMenuManager->GetDebugMenuInputSystemComponent();
-		InputSystemComponent->bOutputDebugLog = !InputSystemComponent->bOutputDebugLog;
+		if (IsValid(Manager->GetWorld()) && IsValid(Manager->GetOwner()))
+		{
+			UGDMInputSystemComponent* InputSystemComponent = Manager->GetDebugMenuInputSystemComponent();
+			InputSystemComponent->bOutputDebugLog = !InputSystemComponent->bOutputDebugLog;
+			break;
+		}
 	}
 }

@@ -19,7 +19,6 @@ class GAMEDEBUGMENU_API UGameDebugMenuFunctions : public UBlueprintFunctionLibra
 {
 	GENERATED_BODY()
 
-	static TWeakObjectPtr<AGameDebugMenuManager> CurrentGameDebugMenuManager;
 	static TArray<FGDMPendingObjectData> RegisterPendingProperties;
 	static TArray<FGDMPendingObjectData> RegisterPendingFunctions;
 	static FDelegateHandle ActorSpawnedDelegateHandle;
@@ -53,6 +52,12 @@ public:
 	*/
 	UFUNCTION(BlueprintPure, Category = "GDM|Functions", meta = (Keywords = "DebugMenu GDM", WorldContext = "WorldContextObject", AdvancedDisplay = "bCheckInitialize"))
 	static AGameDebugMenuManager* GetGameDebugMenuManager(const UObject* WorldContextObject, bool bCheckInitialize = true);
+
+	/**
+	* 取得(Managerの参照をもつことになるので使用する場合は注意)
+	*/
+	UFUNCTION(BlueprintPure, Category = "GDM|Functions", meta = (Keywords = "DebugMenu GDM"))
+	static AGameDebugMenuManager* TryGetGameDebugMenuManagerFromPlayerController(const APlayerController* PlayerController);
 
 	/**
 	* 表示
