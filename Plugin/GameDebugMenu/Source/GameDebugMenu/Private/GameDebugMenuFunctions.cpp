@@ -700,7 +700,13 @@ void UGameDebugMenuFunctions::PrintLogScreen(UObject* WorldContextObject, const 
 			switch (World->GetNetMode())
 			{
 			case NM_Client:
-				Prefix = FString::Printf(TEXT("Client %d: "), UE::GetPlayInEditorID() - 1);
+			{
+				/* UE::GetPlayInEditorID() はマルチPIEで "ambiguous PIE world" 警告を出すことがあるので
+				 Worldに紐づくPIE Instance Idを使用する*/
+				const UPackage* Pkg = World->GetPackage();
+				const int32 PieInstanceId = Pkg ? Pkg->GetPIEInstanceID() : INDEX_NONE;
+				Prefix = FString::Printf(TEXT("Client PIE_%d: "), PieInstanceId);
+			}
 				break;
 			case NM_DedicatedServer:
 			case NM_ListenServer:

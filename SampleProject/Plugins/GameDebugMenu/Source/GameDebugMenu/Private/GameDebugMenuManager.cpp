@@ -88,22 +88,69 @@ AGameDebugMenuManager::AGameDebugMenuManager(const FObjectInitializer& ObjectIni
 
 void AGameDebugMenuManager::BeginPlay()
 {
-	OutputLog = MakeShared<FGDMOutputDevice>();
-	
-	/* 他で参照される前にロードは処理しとく */
-	GetSaveSystemComponent()->LoadDebugMenuFile();
-	
 	Super::BeginPlay();
 
-	UGameDebugMenuFunctions::RegisterGameDebugMenuManagerInstance(this);
-	
-	UGameDebugMenuFunctions::PrintLogScreen(this, TEXT("AGameDebugMenuManager: Call BeginPlay"), 4.0f);
-
-	/* managerのBeginplayがちゃんと完了後に処理↓ */
-	GetWorld()->GetTimerManager().SetTimer(InitializeManagerHandle, FTimerDelegate::CreateLambda([this]()
+	/* DedicatedServer ではローカルUIが無いので何もしない */
+	if (UKismetSystemLibrary::IsDedicatedServer(this))
 	{
-		OnInitializeManager();
-	}), 0.01f, true);
+		return;
+	}
+
+	/* BeginPlay時点でOwnerが未確定なケースがある（レプリケーション生成など）
+	 * Ownerが確定して「ローカルPCのManager」であることが分かったときだけ初期化する。*/
+	auto TryLocalInit = [this]()
+	{
+		if (bLocalBeginPlayInitialized)
+		{
+			return;
+		}
+
+		const APlayerController* PC = Cast<APlayerController>(GetOwner());
+		if (!IsValid(PC))
+		{
+			return; /* まだOwner未確定、後で再試行 */
+		}
+		
+		if (!PC->IsLocalController())
+		{
+			/* Ownerが確定していてローカルでないなら、このManagerはこのプロセスでは初期化しない */
+			bLocalBeginPlayInitialized = true;
+			return;
+		}
+
+		bLocalBeginPlayInitialized = true;
+
+		OutputLog = MakeShared<FGDMOutputDevice>();
+
+		/* 他で参照される前にロードは処理しとく */
+		GetSaveSystemComponent()->LoadDebugMenuFile();
+
+		UGameDebugMenuFunctions::RegisterGameDebugMenuManagerInstance(this);
+		UGameDebugMenuFunctions::PrintLogScreen(this, TEXT("AGameDebugMenuManager: Call BeginPlay"), 4.0f);
+
+		/* managerのBeginplayがちゃんと完了後に処理↓ */
+		GetWorld()->GetTimerManager().SetTimer(InitializeManagerHandle, FTimerDelegate::CreateLambda([this]()
+		{
+			OnInitializeManager();
+		}), 0.01f, true);
+	};
+
+	TryLocalInit();
+
+	/* Owner未確定なら短時間だけリトライ（Ownerが確定したら止まる） */
+	if (!bLocalBeginPlayInitialized)
+	{
+		GetWorld()->GetTimerManager().SetTimer(LocalBeginPlayRetryHandle, FTimerDelegate::CreateLambda([this, TryLocalInit]()
+		{
+			TryLocalInit();
+			
+			if (bLocalBeginPlayInitialized)
+			{
+				GetWorld()->GetTimerManager().ClearTimer(LocalBeginPlayRetryHandle);
+			}
+			
+		}), 0.1f, true);
+	}
 }
 
 void AGameDebugMenuManager::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -237,11 +284,17 @@ void AGameDebugMenuManager::OnInitializeManager()
 		GameViewportSubsystem->OnWidgetAdded.AddUObject(this, &AGameDebugMenuManager::OnWidgetAdded);
 		GameViewportSubsystem->OnWidgetRemoved.AddUObject(this, &AGameDebugMenuManager::OnWidgetRemoved);
 
+		const ULocalPlayer* OwnerLocalPlayer = PC->GetLocalPlayer();
 		for(const auto W : FoundWidgets)
 		{
 			if(UGameDebugMenuWidget* DebugMenuWidget = Cast<UGameDebugMenuWidget>(W))
 			{
-				ViewportDebugMenuWidgets.AddUnique(DebugMenuWidget);
+				/* マルチPIE(複数ウィンドウ/複数World)では、全Widget列挙が他World/他LocalPlayerを混ぜることがある。
+				 このManagerのOwner LocalPlayerに紐づくWidgetだけを対象にする*/
+				if (!IsValid(OwnerLocalPlayer) || DebugMenuWidget->GetOwningLocalPlayer() == OwnerLocalPlayer)
+				{
+					ViewportDebugMenuWidgets.AddUnique(DebugMenuWidget);
+				}
 			}
 		}
 	}
@@ -1236,6 +1289,28 @@ void AGameDebugMenuManager::OnWidgetAdded(UWidget* AddWidget, ULocalPlayer* Play
 {
 	if(UGameDebugMenuWidget* W = Cast<UGameDebugMenuWidget>(AddWidget))
 	{
+		/* このManagerのOwner LocalPlayerに紐づくWidgetだけを対象にする */
+		const APlayerController* OwnerPC = Cast<APlayerController>(GetOwner());
+		const ULocalPlayer* OwnerLocalPlayer = OwnerPC ? OwnerPC->GetLocalPlayer() : nullptr;
+
+		if (IsValid(OwnerLocalPlayer))
+		{
+			if (IsValid(Player) && Player != OwnerLocalPlayer)
+			{
+				return;
+			}
+
+			if (W->GetOwningLocalPlayer() != OwnerLocalPlayer)
+			{
+				return;
+			}
+		}
+
+		if (W->GetWorld() != GetWorld())
+		{
+			return;
+		}
+
 		ViewportDebugMenuWidgets.AddUnique(W);
 	}
 }
@@ -1244,6 +1319,18 @@ void AGameDebugMenuManager::OnWidgetRemoved(UWidget* RemoveWidget)
 {
 	if(UGameDebugMenuWidget* W = Cast<UGameDebugMenuWidget>(RemoveWidget))
 	{
+		const APlayerController* OwnerPC = Cast<APlayerController>(GetOwner());
+		const ULocalPlayer* OwnerLocalPlayer = OwnerPC ? OwnerPC->GetLocalPlayer() : nullptr;
+
+		if (IsValid(OwnerLocalPlayer) && W->GetOwningLocalPlayer() != OwnerLocalPlayer)
+		{
+			return;
+		}
+		if (W->GetWorld() != GetWorld())
+		{
+			return;
+		}
+
 		ViewportDebugMenuWidgets.RemoveSingle(W);
 	}
 }

@@ -68,6 +68,10 @@ protected:
 	FTimerHandle InitializeManagerHandle;
 	bool bInitializedManager = false;
 
+	/** BeginPlay時点でOwnerが未確定なことがあるため、ローカル判定ができるまで短時間リトライする */
+	FTimerHandle LocalBeginPlayRetryHandle;
+	bool bLocalBeginPlayInitialized = false;
+
 	/** デバックメニュー用UIアセット */
 	UPROPERTY(EditAnywhere, Category = "GDM")
 	TObjectPtr<UGameDebugMenuManagerAsset> MenuAsset;
