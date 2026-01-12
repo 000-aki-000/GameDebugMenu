@@ -39,9 +39,20 @@ protected:
 
 public:
 	UGameDebugMenuWidget(const FObjectInitializer& ObjectInitializer);
-	virtual void InitializeInputComponent() override;
+	
+protected:
+	virtual void CreateInputComponent() override;
+	virtual void StartProcessingInputScriptDelegates() override;
+	virtual void StopProcessingInputScriptDelegates() override;
 
 public:
+	/**
+	 * UE5.7+: UUserWidget::InitializeInputComponent を override できなくなったため、
+	 * DebugMenu用InputComponent生成は自前で行う（登録/Pushは行わない）。
+	 */
+	UFUNCTION(BlueprintCallable, Category = "GDM|Input")
+	void EnsureDebugMenuInputComponent();
+
 	/**
 	 * ローカルのコントローラーを取得（DebugCamera操作中でも取得できるもの）
 	 */

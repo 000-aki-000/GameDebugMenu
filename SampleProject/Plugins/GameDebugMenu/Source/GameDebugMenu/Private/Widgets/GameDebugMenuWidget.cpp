@@ -20,13 +20,34 @@ UGameDebugMenuWidget::UGameDebugMenuWidget(const FObjectInitializer& ObjectIniti
 	, bActivateMenu(false)
 	, InputHandles()
 {
+	/* UE5.7+: UUserWidgetはBPの入力ノード有無に応じてInputComponentを自動生成/登録し得る。
+	 * GameDebugMenuはUGDMInputSystemComponentでPush/Popを自前管理するため、自動登録は無効化しておく*/
+#if ENGINE_MAJOR_VERSION > 5 || (ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION >= 7)
+	bAutomaticallyRegisterInputOnConstruction = false;
+#endif
 }
 
-void UGameDebugMenuWidget::InitializeInputComponent()
+void UGameDebugMenuWidget::CreateInputComponent()
 {
-	/* PushInputComponentまでしてしまうので呼び出さない */
-//	Super::InitializeInputComponent();
+	/* 手動で生成するので何もしない */
+}
 
+void UGameDebugMenuWidget::StartProcessingInputScriptDelegates()
+{
+	/* 何もしない（意図的）
+	 * GameDebugMenuはUGDMInputSystemComponentで入力スタックを自前管理する。
+	 * ここでSuperを呼ぶとUUserWidgetがInputComponentを勝手にPushして、bBlockInput等でゲーム入力を塞ぎ得る。*/
+}
+
+void UGameDebugMenuWidget::StopProcessingInputScriptDelegates()
+{
+	/* 何もしない（意図的）
+	 * StartProcessingInputScriptDelegates() と対で、UUserWidgetの自動Pop/解除経路が
+	 * プラグイン管理の入力スタックと干渉しないようにする。*/
+}
+
+void UGameDebugMenuWidget::EnsureDebugMenuInputComponent()
+{
 	if (IsValid(InputComponent))
 	{
 		return;
@@ -60,7 +81,7 @@ UGDMEnhancedInputComponent* UGameDebugMenuWidget::GetMyInputComponent() const
 
 bool UGameDebugMenuWidget::RegisterDebugMenuWidgetInputFunction(const UInputAction* Action, const FName FunctionName, const ETriggerEvent TriggerEvent, UObject* FunctionObject)
 {
-	InitializeInputComponent();
+	EnsureDebugMenuInputComponent();
 	
 	if (UGDMEnhancedInputComponent* InputComp = GetMyInputComponent())
 	{
@@ -78,7 +99,7 @@ bool UGameDebugMenuWidget::RegisterDebugMenuWidgetInputFunction(const UInputActi
 
 bool UGameDebugMenuWidget::RegisterDebugMenuWidgetInputEvent(const UInputAction* Action, FOnGameDebugMenuWidgetInputAction Callback, const ETriggerEvent TriggerEvent)
 {
-	InitializeInputComponent();
+	EnsureDebugMenuInputComponent();
 	
 	if (UGDMEnhancedInputComponent* InputComp = GetMyInputComponent())
 	{

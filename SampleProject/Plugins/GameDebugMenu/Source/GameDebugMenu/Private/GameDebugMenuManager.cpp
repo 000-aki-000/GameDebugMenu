@@ -338,7 +338,7 @@ void AGameDebugMenuManager::CreateDebugMenuRootWidget()
 	DebugMenuRootWidget->SetDebugMenuManager(this);
 	DebugMenuRootWidget->AddToViewport(MenuAsset->RootWidgetZOrder);
 	DebugMenuRootWidget->SetVisibility(ESlateVisibility::Collapsed);
-	DebugMenuRootWidget->InitializeInputComponent();
+	DebugMenuRootWidget->EnsureDebugMenuInputComponent();
 	DebugMenuRootWidget->InitializeRootWidget();
 }
 

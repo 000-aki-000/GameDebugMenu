@@ -112,7 +112,7 @@ void UGDMInputSystemComponent::Initialize(UGameDebugMenuManagerAsset* MenuDataAs
 	TArray<APlayerController*> PCs = GetPlayerControllers();
 	for (APlayerController* PC : PCs)
 	{
-		if(UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PC->GetLocalPlayer()))
+		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PC->GetLocalPlayer()))
 		{
 			for (const auto& Data : AddInputMappingContextWhenCreateManager)
 			{
@@ -124,7 +124,11 @@ void UGDMInputSystemComponent::Initialize(UGameDebugMenuManagerAsset* MenuDataAs
 		}
 	}
 	
-	RootWidgetInputComponent = GetOwnerGameDebugMenuManager()->GetDebugMenuRootWidget()->GetMyInputComponent();
+	if (UGameDebugMenuRootWidget* Root = GetOwnerGameDebugMenuManager()->GetDebugMenuRootWidget())
+	{
+		Root->EnsureDebugMenuInputComponent();
+		RootWidgetInputComponent = Root->GetMyInputComponent();
+	}
 }
 
 void UGDMInputSystemComponent::RegisterInputComponent(UInputComponent* InputComponent)
@@ -300,7 +304,10 @@ void UGDMInputSystemComponent::OnOpenMenu()
 			}
 		}
 
-		PC->PushInputComponent(RootWidgetInputComponent);
+		if (IsValid(RootWidgetInputComponent))
+		{
+			PC->PushInputComponent(RootWidgetInputComponent);
+		}
 		
 		if (Group != nullptr)
 		{
@@ -323,7 +330,7 @@ void UGDMInputSystemComponent::OnCloseMenu()
 	}
 	
 	bMenuOpen = false;
-
+	
 	TArray<TWeakObjectPtr<UInputComponent>>* Stack = ActiveInputStacks.Find(CurrentInputGroupName);
 	TArray<APlayerController*> PCs = GetPlayerControllers();
 	for (APlayerController* PC : PCs)
@@ -346,8 +353,11 @@ void UGDMInputSystemComponent::OnCloseMenu()
 				}
 			}
 		}
-
-		PC->PopInputComponent(RootWidgetInputComponent);
+		
+		if (IsValid(RootWidgetInputComponent))
+		{
+			PC->PopInputComponent(RootWidgetInputComponent);
+		}
 	}
 
 	if (Stack != nullptr)
