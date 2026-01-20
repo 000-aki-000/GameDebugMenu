@@ -160,6 +160,15 @@ protected:
 	*/
 	virtual void OnInitializeManager();
 
+	/**
+	 * マネージャーの初期化処理が完了できる状態か判断する関数
+	 * - false を返している間は初期化を完了しない
+	 * - true その後OnInitializeManagerBPが実行される
+	 */
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category="GDM", meta=(DisplayName="IsReadyToInitializeManager", ScriptName="IsReadyToInitializeManager"))
+	bool IsReadyToInitializeManager();
+	virtual bool IsReadyToInitializeManager_Implementation() { return true; }
+
 	UFUNCTION(BlueprintImplementableEvent, Category="GDM", meta=(DisplayName="OnInitializeManager", ScriptName="OnInitializeManager"))
 	void OnInitializeManagerBP();
 	

@@ -263,6 +263,12 @@ void AGameDebugMenuManager::OnInitializeManager()
 		}
 	}
 
+	/* BP側の準備完了を待つ（例：必要なアセットロード待ちなど） */
+	if (!IsReadyToInitializeManager())
+	{
+		return;
+	}
+
 	bInitializedManager = true;
 
 	GetLocalizeStringComponent()->SetJsonSystemComponentValue(GetPropertyJsonSystemComponent());
